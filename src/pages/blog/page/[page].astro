@@ -1,29 +1,11 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { parseBlogPosts, sortBlogPosts, formatBlogDate, blogPostUrl } from '../../../utils/blog';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
-
-  // Parse dates from filenames and sort
-  // With glob loader, post.id is the filename without extension
-  const sortedPosts = posts
-    .map((post) => {
-      const match = post.id.match(/^(\d{4})-(\d{2})-(\d{2})-(.+)$/);
-      if (match) {
-        const [, year, month, day, slug] = match;
-        return {
-          ...post,
-          date: new Date(`${year}-${month}-${day}`),
-          year,
-          month,
-          day,
-          slug,
-        };
-      }
-      return { ...post, date: new Date(), year: '2024', month: '01', day: '01', slug: post.id };
-    })
-    .sort((a, b) => b.date.getTime() - a.date.getTime());
+  const sortedPosts = sortBlogPosts(parseBlogPosts(posts));
 
   const pageSize = 9;
   const totalPages = Math.ceil(sortedPosts.length / pageSize);
@@ -44,26 +26,16 @@ export async function getStaticPaths() {
 }
 
 const { posts, currentPage, totalPages } = Astro.props;
-
-function formatDate(date: Date) {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
 ---
 
 <BaseLayout title={`Blog - Page ${currentPage}`}>
-  <div class="blog-breadcrumbs">
-    <div class="blog-breadcrumbs-inner">
-      <a href="/">Node-RED</a>
-      <span class="separator">/</span>
-      <a href="/blog/">Blog</a>
-      <span class="separator">/</span>
-      <span>Page {currentPage}</span>
-    </div>
-  </div>
+  <nav class="blog-breadcrumbs" aria-label="Breadcrumb">
+    <ol class="blog-breadcrumbs-inner">
+      <li><a href="/">Node-RED</a></li>
+      <li><a href="/blog/">Blog</a></li>
+      <li><span aria-current="page">Page {currentPage}</span></li>
+    </ol>
+  </nav>
 
   <div class="blog-listing">
     <div class="blog-listing-inner">
@@ -72,9 +44,9 @@ function formatDate(date: Date) {
       <div class="posts-grid">
         {posts.map((post: any) => (
           <article class="post-card">
-            <a href={`/blog/${post.year}/${post.month}/${post.day}/${post.slug}/`}>
+            <a href={blogPostUrl(post)}>
               <h2>{post.data.title}</h2>
-              <time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
+              <time datetime={post.date.toISOString()}>{formatBlogDate(post.date)}</time>
               {post.data.description && <p>{post.data.description}</p>}
             </a>
           </article>
@@ -100,7 +72,7 @@ function formatDate(date: Date) {
 
 <style>
   .blog-breadcrumbs {
-    background: #aa4444;
+    background: #C75050;
     min-height: 50px;
     display: flex;
     align-items: center;
@@ -113,7 +85,20 @@ function formatDate(date: Date) {
     width: 100%;
     color: white;
     font-family: 'Roboto Slab', serif;
-    font-size: 18px;
+    font-size: 16px;
+    display: flex;
+    list-style: none;
+  }
+
+  .blog-breadcrumbs-inner li::before {
+    content: '/';
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 10px;
+  }
+
+  .blog-breadcrumbs-inner li:first-child::before {
+    content: '';
+    margin: 0;
   }
 
   .blog-breadcrumbs a {
@@ -123,11 +108,7 @@ function formatDate(date: Date) {
 
   .blog-breadcrumbs a:hover {
     text-decoration: underline;
-  }
-
-  .blog-breadcrumbs .separator {
-    margin: 0 10px;
-    opacity: 0.6;
+    color: white;
   }
 
   .blog-listing {
@@ -140,7 +121,7 @@ function formatDate(date: Date) {
     font-size: 32px;
     margin-bottom: 30px;
     padding-bottom: 15px;
-    border-bottom: 2px solid #B68181;
+    border-bottom: 3px solid #C75050;
   }
 
   .posts-grid {
@@ -151,7 +132,7 @@ function formatDate(date: Date) {
 
   .post-card {
     background: white;
-    border-radius: 4px;
+    border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.2s;
   }
@@ -170,13 +151,13 @@ function formatDate(date: Date) {
   .post-card h2 {
     font-size: 20px;
     margin-bottom: 10px;
-    color: #555;
+    color: #2D2D2D;
   }
 
   .post-card time {
     display: block;
     font-size: 13px;
-    color: #999;
+    color: #6B6B6B;
     margin-bottom: 10px;
   }
 
@@ -196,7 +177,7 @@ function formatDate(date: Date) {
   }
 
   .pagination .current {
-    color: #999;
+    color: #6B6B6B;
     font-size: 14px;
   }
 
@@ -204,13 +185,13 @@ function formatDate(date: Date) {
     font-family: 'Roboto Slab', serif;
     text-decoration: none;
     padding: 10px 20px;
-    background: #aa6767;
+    background: #C75050;
     color: white;
-    border-radius: 4px;
+    border-radius: 8px;
   }
 
   .pagination a:hover {
-    background: #7F4545;
+    background: #A63D3D;
   }
 
   @media (max-width: 768px) {

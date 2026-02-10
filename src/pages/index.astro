@@ -18,11 +18,11 @@ import { users } from '../data/users';
         </p>
         <div class="hero-buttons">
           <a href="/docs/getting-started/" class="button primary">Get Started</a>
-          <a href="/docs/" class="button secondary">Documentation</a>
+          <a href="/docs/" class="button secondary">View Documentation</a>
         </div>
       </div>
       <div class="hero-image">
-        <img src="/images/flow.png" alt="Node-RED Flow Editor" />
+        <img src="/images/flow.png" alt="Node-RED Flow Editor showing a visual programming interface with connected nodes" />
       </div>
     </div>
   </section>
@@ -31,9 +31,9 @@ import { users } from '../data/users';
     <div class="features-inner">
       <div class="feature">
         <div class="feature-icon">
-          <img src="/images/nr-image-browser.png" alt="Browser-based" />
+          <img src="/images/nr-image-browser.png" alt="Browser-based flow editing interface" />
         </div>
-        <h3>Browser-based flow editing</h3>
+        <h2>Browser-based flow editing</h2>
         <p>
           Node-RED provides a browser-based flow editor that makes it easy to wire together flows
           using the wide range of nodes in the palette. Flows can be then deployed to the runtime
@@ -42,9 +42,9 @@ import { users } from '../data/users';
       </div>
       <div class="feature">
         <div class="feature-icon">
-          <img src="/images/nr-image-func.png" alt="JavaScript Functions" />
+          <img src="/images/nr-image-func.png" alt="JavaScript function node" />
         </div>
-        <h3>Built on Node.js</h3>
+        <h2>Built on Node.js</h2>
         <p>
           The light-weight runtime is built on Node.js, taking full advantage of its event-driven,
           non-blocking model. This makes it ideal to run at the edge of the network on low-cost
@@ -53,9 +53,9 @@ import { users } from '../data/users';
       </div>
       <div class="feature">
         <div class="feature-icon">
-          <img src="/images/nr-image-social.png" alt="Social Development" />
+          <img src="/images/nr-image-social.png" alt="Social development and sharing" />
         </div>
-        <h3>Social Development</h3>
+        <h2>Social Development</h2>
         <p>
           The flows created in Node-RED are stored using JSON which can be easily imported and
           exported for sharing with others. An online flow library allows you to share your best
@@ -94,7 +94,7 @@ import { users } from '../data/users';
       <div class="users-grid">
         {users.slice(0, 12).map((user) => (
           <a href={user.url} target="_blank" rel="noopener" class="user-logo">
-            <img src={`/users/${user.logo}`} alt="" loading="lazy" />
+            <img src={`/users/${user.logo}`} alt={user.name} loading="lazy" />
           </a>
         ))}
       </div>
@@ -128,9 +128,9 @@ import { users } from '../data/users';
 
 <style>
   .hero {
-    background: linear-gradient(135deg, #333 0%, #555 100%);
+    background: linear-gradient(135deg, #1E1E1E 0%, #2D2D2D 50%, #3a2020 100%);
     color: white;
-    padding: 60px 20px;
+    padding: 80px 20px;
   }
 
   .hero-inner {
@@ -138,46 +138,52 @@ import { users } from '../data/users';
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 60px;
+    gap: 64px;
     align-items: center;
   }
 
   .hero-content h1 {
-    font-size: 36px;
-    margin-bottom: 20px;
+    font-size: 42px;
+    margin-bottom: 24px;
     color: white;
+    line-height: 1.2;
   }
 
   .hero-content p {
     font-size: 18px;
     line-height: 1.7;
-    margin-bottom: 15px;
-    opacity: 0.9;
+    margin-bottom: 16px;
+    color: rgba(255, 255, 255, 0.85);
   }
 
   .hero-buttons {
     display: flex;
-    gap: 15px;
-    margin-top: 30px;
+    gap: 16px;
+    margin-top: 32px;
   }
 
   .button {
     display: inline-block;
-    padding: 14px 28px;
-    border-radius: 4px;
+    padding: 14px 32px;
+    border-radius: 8px;
     font-family: 'Roboto Slab', serif;
     font-size: 16px;
+    font-weight: 600;
     text-decoration: none;
     transition: all 0.2s;
   }
 
   .button.primary {
-    background: #aa6767;
+    background: #C75050;
     color: white;
+    box-shadow: 0 4px 16px rgba(199, 80, 80, 0.4);
   }
 
   .button.primary:hover {
-    background: #7F4545;
+    background: #A63D3D;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(199, 80, 80, 0.5);
+    text-decoration: none;
   }
 
   .button.secondary {
@@ -188,17 +194,19 @@ import { users } from '../data/users';
 
   .button.secondary:hover {
     background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
   }
 
   .hero-image img {
     width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
   }
 
   .features {
     padding: 80px 20px;
-    background: #eee;
+    background: #f5f5f5;
   }
 
   .features-inner {
@@ -206,19 +214,25 @@ import { users } from '../data/users';
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
+    gap: 32px;
   }
 
   .feature {
     background: white;
     padding: 40px;
-    border-radius: 8px;
+    border-radius: 12px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .feature:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   }
 
   .feature-icon {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
 
   .feature-icon img {
@@ -227,15 +241,15 @@ import { users } from '../data/users';
     object-fit: contain;
   }
 
-  .feature h3 {
+  .feature h2 {
     font-size: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
   }
 
   .feature p {
     font-size: 15px;
-    line-height: 1.6;
-    color: #666;
+    line-height: 1.7;
+    color: #555;
   }
 
   .get-started {
@@ -251,19 +265,19 @@ import { users } from '../data/users';
   .get-started h2 {
     font-size: 32px;
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
   }
 
   .get-started-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
+    gap: 32px;
   }
 
   .get-started-card {
     background: #f8f8f8;
     padding: 40px;
-    border-radius: 8px;
+    border-radius: 12px;
     text-align: center;
     text-decoration: none;
     color: inherit;
@@ -272,8 +286,10 @@ import { users } from '../data/users';
   }
 
   .get-started-card:hover {
-    border-color: #aa6767;
+    border-color: #C75050;
     transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    text-decoration: none;
   }
 
   .get-started-card img {
@@ -289,12 +305,12 @@ import { users } from '../data/users';
 
   .get-started-card p {
     font-size: 14px;
-    color: #666;
+    color: #555;
   }
 
   .users {
     padding: 80px 20px;
-    background: #eee;
+    background: #f5f5f5;
   }
 
   .users-inner {
@@ -305,7 +321,7 @@ import { users } from '../data/users';
   .users h2 {
     font-size: 28px;
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
   }
 
   .users-grid {
@@ -317,17 +333,21 @@ import { users } from '../data/users';
   }
 
   .user-logo {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 20px;
     background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     width: 100%;
-    text-align: center;
-    transition: transform 0.2s;
+    min-height: 80px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   }
 
   .user-logo:hover {
     transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
 
   .user-logo img {
@@ -349,19 +369,19 @@ import { users } from '../data/users';
   .community h2 {
     font-size: 32px;
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
   }
 
   .community-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 25px;
+    gap: 24px;
   }
 
   .community-card {
     background: #f8f8f8;
-    padding: 30px;
-    border-radius: 8px;
+    padding: 32px;
+    border-radius: 12px;
     text-decoration: none;
     color: inherit;
     transition: all 0.2s;
@@ -369,19 +389,21 @@ import { users } from '../data/users';
   }
 
   .community-card:hover {
-    border-color: #aa6767;
+    border-color: #C75050;
     background: #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    text-decoration: none;
   }
 
   .community-card h3 {
     font-size: 18px;
     margin-bottom: 10px;
-    color: #aa4444;
+    color: #C75050;
   }
 
   .community-card p {
     font-size: 14px;
-    color: #666;
+    color: #555;
   }
 
   @media (max-width: 1000px) {
@@ -408,8 +430,12 @@ import { users } from '../data/users';
   }
 
   @media (max-width: 600px) {
+    .hero {
+      padding: 48px 20px;
+    }
+
     .hero-content h1 {
-      font-size: 28px;
+      font-size: 30px;
     }
 
     .hero-buttons {

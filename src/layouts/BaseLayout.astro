@@ -1,10 +1,13 @@
 ---
+import { mainNav, footerLinks } from '../data/navigation';
+
 interface Props {
   title: string;
   description?: string;
 }
 
 const { title, description = 'Low-code programming for event-driven applications' } = Astro.props;
+const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -18,32 +21,37 @@ const { title, description = 'Low-code programming for event-driven applications
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Slab:wght@400;700&family=Ubuntu+Mono&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&family=Ubuntu+Mono&display=swap"
       rel="stylesheet"
     />
   </head>
   <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <header class="nr-header">
       <div class="nr-header-inner">
         <div class="nr-brand">
           <a href="/" class="nr-logo">
-            <img src="/node-red-icon.png" alt="Node-RED" width="40" height="40" />
+            <img src="/node-red-icon.png" alt="" width="40" height="40" />
             <span class="nr-title">Node-RED</span>
           </a>
         </div>
 
-        <nav class="nr-nav desktop-nav">
-          <a href="/" class="nr-nav-link">home</a>
-          <a href="/about/" class="nr-nav-link">about</a>
-          <a href="/blog/" class="nr-nav-link">blog</a>
-          <a href="/docs/" class="nr-nav-link">documentation</a>
-          <a href="https://discourse.nodered.org" class="nr-nav-link" target="_blank" rel="noopener">forum</a>
-          <a href="https://flows.nodered.org" class="nr-nav-link" target="_blank" rel="noopener">flows</a>
-          <a href="https://github.com/node-red/node-red" class="nr-nav-link" target="_blank" rel="noopener">github</a>
+        <nav class="nr-nav desktop-nav" aria-label="Main navigation">
+          {mainNav.map((item) => (
+            <a
+              href={item.href}
+              class:list={['nr-nav-link', { active: item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }]}
+              {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              {...(!item.external && (item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href)) ? { 'aria-current': 'page' } : {})}
+            >
+              {item.label}
+            </a>
+          ))}
         </nav>
 
         <button class="nr-mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -51,59 +59,44 @@ const { title, description = 'Low-code programming for event-driven applications
         </button>
       </div>
 
-      <nav class="nr-nav mobile-nav" aria-hidden="true">
-        <a href="/" class="nr-nav-link">home</a>
-        <a href="/about/" class="nr-nav-link">about</a>
-        <a href="/blog/" class="nr-nav-link">blog</a>
-        <a href="/docs/" class="nr-nav-link">documentation</a>
-        <a href="https://discourse.nodered.org" class="nr-nav-link" target="_blank" rel="noopener">forum</a>
-        <a href="https://flows.nodered.org" class="nr-nav-link" target="_blank" rel="noopener">flows</a>
-        <a href="https://github.com/node-red/node-red" class="nr-nav-link" target="_blank" rel="noopener">github</a>
+      <nav class="nr-nav mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+        {mainNav.map((item) => (
+          <a
+            href={item.href}
+            class:list={['nr-nav-link', { active: item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }]}
+            {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            {item.label}
+          </a>
+        ))}
       </nav>
     </header>
 
-    <main>
+    <main id="main-content">
       <slot />
     </main>
 
-    <footer class="nr-footer">
+    <footer class="nr-footer" aria-label="Site footer">
       <div class="nr-footer-inner">
         <div class="nr-footer-brand">
           <a href="/" class="nr-footer-logo">
-            <img src="/node-red-icon.png" alt="Node-RED" width="50" height="50" />
+            <img src="/node-red-icon.png" alt="" width="50" height="50" />
             <span>Node-RED</span>
           </a>
           <p class="nr-footer-tagline">Low-code programming for event-driven applications</p>
         </div>
 
         <div class="nr-footer-links">
-          <div class="nr-footer-section">
-            <h4>Node-RED</h4>
-            <ul>
-              <li><a href="/docs/">Documentation</a></li>
-              <li><a href="/blog/">Blog</a></li>
-              <li><a href="https://discourse.nodered.org">Forum</a></li>
-              <li><a href="https://flows.nodered.org">Flows Library</a></li>
-            </ul>
-          </div>
-          <div class="nr-footer-section">
-            <h4>Community</h4>
-            <ul>
-              <li><a href="/about/community/slack/">Slack</a></li>
-              <li><a href="https://github.com/node-red/node-red">GitHub</a></li>
-              <li><a href="/about/contribute/">Contribute</a></li>
-              <li><a href="/about/conduct/">Code of Conduct</a></li>
-            </ul>
-          </div>
-          <div class="nr-footer-section">
-            <h4>About</h4>
-            <ul>
-              <li><a href="/about/">About Node-RED</a></li>
-              <li><a href="/about/governance/">Governance</a></li>
-              <li><a href="/about/license/">License</a></li>
-              <li><a href="/about/resources/">Resources</a></li>
-            </ul>
-          </div>
+          {footerLinks.map((section) => (
+            <div class="nr-footer-section">
+              <p class="nr-footer-heading">{section.title}</p>
+              <ul>
+                {section.links.map((link) => (
+                  <li><a href={link.href}>{link.label}</a></li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -139,10 +132,10 @@ const { title, description = 'Low-code programming for event-driven applications
 
   body {
     font-family: 'Open Sans', sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
-    color: #555;
-    background: #eee;
+    font-size: 17px;
+    line-height: 1.7;
+    color: #2D2D2D;
+    background: #f5f5f5;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -153,34 +146,38 @@ const { title, description = 'Low-code programming for event-driven applications
   }
 
   a {
-    color: #aa4444;
+    color: #C75050;
     text-decoration: none;
+    transition: color 0.2s;
   }
 
   a:hover {
     text-decoration: underline;
+    color: #A63D3D;
   }
 
   h1, h2, h3, h4, h5 {
     font-family: 'Roboto Slab', serif;
-    font-weight: normal;
-    color: #555;
+    font-weight: 600;
+    color: #2D2D2D;
+    letter-spacing: -0.01em;
   }
 
   code {
     font-family: 'Ubuntu Mono', monospace;
-    background: #F3E7E7;
-    color: #533;
-    padding: 2px 6px;
-    border-radius: 3px;
+    background: #FFF5F5;
+    color: #D4394B;
+    padding: 2px 8px;
+    border-radius: 4px;
   }
 
   pre {
-    background: #564848;
-    color: #eee;
-    padding: 16px;
-    border-radius: 3px;
+    background: #1E1E1E;
+    color: #D4D4D4;
+    padding: 16px 20px;
+    border-radius: 8px;
     overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   pre code {
@@ -188,12 +185,45 @@ const { title, description = 'Low-code programming for event-driven applications
     color: inherit;
     padding: 0;
   }
+
+  /* Focus indicators for accessibility */
+  :focus-visible {
+    outline: 3px solid #C75050;
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 </style>
 
 <style>
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 16px;
+    background: #C75050;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 0 0 8px 8px;
+    z-index: 1000;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 0;
+  }
+
   .nr-header {
-    background: #333;
-    border-bottom: 5px solid #333;
+    background: #1E1E1E;
+    border-bottom: 3px solid #C75050;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -206,7 +236,7 @@ const { title, description = 'Low-code programming for event-driven applications
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    height: 60px;
+    height: 64px;
   }
 
   .nr-brand {
@@ -220,6 +250,10 @@ const { title, description = 'Low-code programming for event-driven applications
     text-decoration: none;
   }
 
+  .nr-logo:hover {
+    text-decoration: none;
+  }
+
   .nr-logo img {
     width: 40px;
     height: 40px;
@@ -229,7 +263,7 @@ const { title, description = 'Low-code programming for event-driven applications
     font-family: 'Roboto Slab', serif;
     font-weight: 700;
     font-size: 20px;
-    color: #eee;
+    color: #f0f0f0;
   }
 
   .nr-nav {
@@ -239,19 +273,19 @@ const { title, description = 'Low-code programming for event-driven applications
 
   .nr-nav-link {
     font-family: 'Roboto Slab', serif;
-    font-size: 16px;
-    color: #999;
+    font-size: 15px;
+    color: #C0C0C0;
     text-decoration: none;
-    padding: 20px 15px;
-    border-bottom: 5px solid transparent;
-    margin-bottom: -5px;
+    padding: 22px 14px;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -3px;
     transition: color 0.2s, border-color 0.2s;
   }
 
   .nr-nav-link:hover,
   .nr-nav-link.active {
-    color: #eee;
-    border-bottom-color: #eee;
+    color: #f0f0f0;
+    border-bottom-color: #C75050;
     text-decoration: none;
   }
 
@@ -259,25 +293,25 @@ const { title, description = 'Low-code programming for event-driven applications
     display: none;
     background: none;
     border: none;
-    color: #999;
+    color: #C0C0C0;
     cursor: pointer;
     padding: 8px;
   }
 
   .nr-mobile-toggle:hover {
-    color: #eee;
+    color: #f0f0f0;
   }
 
   .mobile-nav {
     display: none;
     flex-direction: column;
-    background: #333;
+    background: #1E1E1E;
     padding: 0 20px 20px;
   }
 
   .mobile-nav .nr-nav-link {
     padding: 12px 0;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #333;
     margin-bottom: 0;
   }
 
@@ -296,18 +330,18 @@ const { title, description = 'Low-code programming for event-driven applications
   }
 
   .nr-footer {
-    background: #333;
-    color: #eee;
+    background: #1E1E1E;
+    color: #f0f0f0;
     margin-top: auto;
   }
 
   .nr-footer-inner {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 40px 20px;
+    padding: 48px 20px;
     display: grid;
     grid-template-columns: 1fr 2fr;
-    gap: 40px;
+    gap: 48px;
   }
 
   .nr-footer-brand a {
@@ -315,10 +349,14 @@ const { title, description = 'Low-code programming for event-driven applications
     align-items: center;
     gap: 12px;
     text-decoration: none;
-    color: #eee;
+    color: #f0f0f0;
     font-family: 'Roboto Slab', serif;
     font-size: 24px;
     font-weight: 700;
+  }
+
+  .nr-footer-brand a:hover {
+    text-decoration: none;
   }
 
   .nr-footer-brand img {
@@ -327,7 +365,7 @@ const { title, description = 'Low-code programming for event-driven applications
   }
 
   .nr-footer-tagline {
-    color: #999;
+    color: #888;
     margin-top: 12px;
     font-size: 14px;
   }
@@ -335,15 +373,15 @@ const { title, description = 'Low-code programming for event-driven applications
   .nr-footer-links {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
+    gap: 32px;
   }
 
-  .nr-footer-section h4 {
+  .nr-footer-heading {
     font-family: 'Roboto Slab', serif;
-    font-size: 16px;
-    font-weight: 400;
+    font-size: 15px;
+    font-weight: 600;
     margin: 0 0 16px 0;
-    color: #eee;
+    color: #f0f0f0;
   }
 
   .nr-footer-section ul {
@@ -357,15 +395,16 @@ const { title, description = 'Low-code programming for event-driven applications
   .nr-footer-section a {
     color: #999;
     font-size: 14px;
+    transition: color 0.2s;
   }
 
   .nr-footer-section a:hover {
-    color: #eee;
+    color: #f0f0f0;
     text-decoration: none;
   }
 
   .nr-footer-bottom {
-    background: #2a2a2a;
+    background: #161616;
     padding: 20px 0;
   }
 
@@ -377,11 +416,12 @@ const { title, description = 'Low-code programming for event-driven applications
 
   .nr-footer-bottom p {
     font-size: 12px;
-    color: #999;
+    color: #888;
   }
 
   .nr-footer-bottom a {
-    color: #aa6767;
+    color: #C75050;
+    text-decoration: underline;
   }
 
   @media (max-width: 768px) {

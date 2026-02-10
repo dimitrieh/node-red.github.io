@@ -6,12 +6,15 @@ export async function getStaticPaths() {
   const aboutPages = await getCollection('about');
 
   return aboutPages
-    .filter((page) => page.id !== 'index.md')
+    .filter((page) => page.id !== 'index.md' && page.id !== 'index')
     .map((page) => {
       // Convert file path to URL slug
       // e.g., "community/index.md" -> "community"
       // e.g., "community/slack/index.md" -> "community/slack"
-      let slug = page.id.replace(/\/index\.md$/, '').replace(/\.md$/, '');
+      let slug = page.id
+        .replace(/\/index\.md$/, '')
+        .replace(/\.md$/, '')
+        .replace(/\/index$/, '');
       return {
         params: { slug },
         props: { page },
@@ -27,27 +30,25 @@ const slugParts = Astro.params.slug?.split('/') || [];
 ---
 
 <BaseLayout title={page.data.title}>
-  <div class="about-breadcrumbs">
-    <div class="about-breadcrumbs-inner">
-      <a href="/">Node-RED</a>
-      <span class="separator">/</span>
-      <a href="/about/">About</a>
+  <nav class="about-breadcrumbs" aria-label="Breadcrumb">
+    <ol class="about-breadcrumbs-inner">
+      <li><a href="/">Node-RED</a></li>
+      <li><a href="/about/">About</a></li>
       {slugParts.map((part, i) => (
-        <>
-          <span class="separator">/</span>
+        <li>
           {i === slugParts.length - 1 ? (
-            <span>{part}</span>
+            <span aria-current="page">{part}</span>
           ) : (
             <a href={`/about/${slugParts.slice(0, i + 1).join('/')}/`}>{part}</a>
           )}
-        </>
+        </li>
       ))}
-    </div>
-  </div>
+    </ol>
+  </nav>
 
   <div class="about-container">
     <aside class="about-sidebar">
-      <nav>
+      <nav aria-label="About section">
         <ul>
           <li><a href="/about/">About Node-RED</a></li>
           <li><a href="/about/community/" class={Astro.params.slug?.startsWith('community') ? 'active' : ''}>Community</a></li>
@@ -60,15 +61,16 @@ const slugParts = Astro.params.slug?.split('/') || [];
       </nav>
     </aside>
 
-    <main class="about-content">
+    <div class="about-content">
+      <h1>{page.data.title}</h1>
       <Content />
-    </main>
+    </div>
   </div>
 </BaseLayout>
 
 <style>
   .about-breadcrumbs {
-    background: #aa4444;
+    background: #C75050;
     min-height: 50px;
     display: flex;
     align-items: center;
@@ -81,7 +83,20 @@ const slugParts = Astro.params.slug?.split('/') || [];
     width: 100%;
     color: white;
     font-family: 'Roboto Slab', serif;
-    font-size: 18px;
+    font-size: 16px;
+    display: flex;
+    list-style: none;
+  }
+
+  .about-breadcrumbs-inner li::before {
+    content: '/';
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 10px;
+  }
+
+  .about-breadcrumbs-inner li:first-child::before {
+    content: '';
+    margin: 0;
   }
 
   .about-breadcrumbs a {
@@ -91,11 +106,7 @@ const slugParts = Astro.params.slug?.split('/') || [];
 
   .about-breadcrumbs a:hover {
     text-decoration: underline;
-  }
-
-  .about-breadcrumbs .separator {
-    margin: 0 10px;
-    opacity: 0.6;
+    color: white;
   }
 
   .about-container {
@@ -125,12 +136,12 @@ const slugParts = Astro.params.slug?.split('/') || [];
   }
 
   .about-sidebar nav a:hover {
-    border-left-color: #B68181;
+    border-left-color: #C75050;
     background: #f5f5f5;
   }
 
   .about-sidebar nav a.active {
-    border-left-color: #B68181;
+    border-left-color: #C75050;
     background: #fff;
     font-weight: 600;
   }
@@ -138,7 +149,7 @@ const slugParts = Astro.params.slug?.split('/') || [];
   .about-content {
     background: white;
     padding: 40px;
-    border-radius: 4px;
+    border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
@@ -146,7 +157,7 @@ const slugParts = Astro.params.slug?.split('/') || [];
     font-size: 28px;
     margin-bottom: 20px;
     padding-bottom: 15px;
-    border-bottom: 2px solid #B68181;
+    border-bottom: 3px solid #C75050;
   }
 
   .about-content :global(h2) {
@@ -172,6 +183,32 @@ const slugParts = Astro.params.slug?.split('/') || [];
   .about-content :global(img) {
     max-width: 100%;
     height: auto;
+  }
+
+  /* Jekyll grid layout support */
+  .about-content :global(.grid) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin: 20px 0;
+  }
+
+  .about-content :global(.col-1-2) {
+    min-width: 0;
+  }
+
+  .about-content :global(.doc-callout) {
+    background: #faf5f5;
+    border-left: 4px solid #C75050;
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  @media (max-width: 600px) {
+    .about-content :global(.grid) {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (max-width: 768px) {

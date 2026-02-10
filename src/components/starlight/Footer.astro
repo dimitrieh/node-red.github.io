@@ -1,44 +1,13 @@
 ---
 import type { Props } from '@astrojs/starlight/props';
-
-const currentYear = new Date().getFullYear();
-
-const footerLinks = [
-  {
-    title: 'Node-RED',
-    links: [
-      { label: 'Documentation', href: '/docs/' },
-      { label: 'Blog', href: '/blog/' },
-      { label: 'Forum', href: 'https://discourse.nodered.org' },
-      { label: 'Flows Library', href: 'https://flows.nodered.org' },
-    ],
-  },
-  {
-    title: 'Community',
-    links: [
-      { label: 'Slack', href: '/about/community/slack/' },
-      { label: 'GitHub', href: 'https://github.com/node-red/node-red' },
-      { label: 'Contribute', href: '/about/contribute/' },
-      { label: 'Code of Conduct', href: '/about/conduct/' },
-    ],
-  },
-  {
-    title: 'About',
-    links: [
-      { label: 'About Node-RED', href: '/about/' },
-      { label: 'Governance', href: '/about/governance/' },
-      { label: 'License', href: '/about/license/' },
-      { label: 'Resources', href: '/about/resources/' },
-    ],
-  },
-];
+import { footerLinks } from '../../data/navigation';
 ---
 
 <footer class="nr-footer">
   <div class="nr-footer-inner">
     <div class="nr-footer-brand">
       <a href="/" class="nr-footer-logo">
-        <img src="/node-red-icon.png" alt="Node-RED" width="50" height="50" />
+        <img src="/node-red-icon.png" alt="" width="50" height="50" />
         <span>Node-RED</span>
       </a>
       <p class="nr-footer-tagline">Low-code programming for event-driven applications</p>
@@ -47,7 +16,7 @@ const footerLinks = [
     <div class="nr-footer-links">
       {footerLinks.map((section) => (
         <div class="nr-footer-section">
-          <h4>{section.title}</h4>
+          <p class="nr-footer-heading">{section.title}</p>
           <ul>
             {section.links.map((link) => (
               <li>
@@ -89,8 +58,8 @@ const footerLinks = [
 
 <style>
   .nr-footer {
-    background: #333;
-    color: #eee;
+    background: #1E1E1E;
+    color: #f0f0f0;
     margin-top: auto;
   }
 
@@ -108,7 +77,7 @@ const footerLinks = [
     align-items: center;
     gap: 12px;
     text-decoration: none;
-    color: #eee;
+    color: #f0f0f0;
     font-family: 'Roboto Slab', serif;
     font-size: 24px;
     font-weight: 700;
@@ -131,12 +100,12 @@ const footerLinks = [
     gap: 30px;
   }
 
-  .nr-footer-section h4 {
+  .nr-footer-heading {
     font-family: 'Roboto Slab', serif;
     font-size: 16px;
     font-weight: 400;
     margin: 0 0 16px 0;
-    color: #eee;
+    color: #f0f0f0;
   }
 
   .nr-footer-section ul {
@@ -157,11 +126,11 @@ const footerLinks = [
   }
 
   .nr-footer-section a:hover {
-    color: #eee;
+    color: #f0f0f0;
   }
 
   .nr-footer-bottom {
-    background: #2a2a2a;
+    background: #161616;
     padding: 20px 0;
   }
 
@@ -183,12 +152,12 @@ const footerLinks = [
   }
 
   .nr-footer-bottom a {
-    color: #aa6767;
-    text-decoration: none;
+    color: #C75050;
+    text-decoration: underline;
   }
 
   .nr-footer-bottom a:hover {
-    text-decoration: underline;
+    color: #e06060;
   }
 
   .nr-footer-social {
@@ -203,7 +172,7 @@ const footerLinks = [
   }
 
   .nr-footer-social a:hover {
-    color: #eee;
+    color: #f0f0f0;
   }
 
   @media (max-width: 768px) {
