@@ -124,6 +124,11 @@ const currentPath = Astro.url.pathname;
             </a>
           </div>
         </div>
+        <div class="nr-footer-openjs">
+          <a href="https://openjsf.org" target="_blank" rel="noopener noreferrer">
+            <img src="/images/openjs_foundation-logo.svg" alt="OpenJS Foundation" class="nr-openjs-logo" />
+          </a>
+        </div>
       </div>
     </footer>
 
@@ -459,6 +464,22 @@ const currentPath = Astro.url.pathname;
   .nr-footer-bottom a {
     color: #C75050;
     text-decoration: underline;
+  }
+
+  .nr-footer-openjs {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 20px 0;
+  }
+
+  .nr-openjs-logo {
+    height: 40px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .nr-openjs-logo:hover {
+    opacity: 1;
   }
 
   @media (max-width: 768px) {
