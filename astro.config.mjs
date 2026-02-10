@@ -62,6 +62,7 @@ export default defineConfig({
         // Override components for Node-RED branding
         Header: './src/components/starlight/Header.astro',
         Footer: './src/components/starlight/Footer.astro',
+        PageFrame: './src/components/starlight/PageFrame.astro',
       },
       head: [
         {
