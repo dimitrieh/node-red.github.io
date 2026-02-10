@@ -1,0 +1,170 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { authors } from '../data/authors';
+
+interface Props {
+  title: string;
+  author: string;
+  date: Date;
+  description?: string;
+}
+
+const { title, author, date, description } = Astro.props;
+
+const authorInfo = authors[author] || { displayName: author, url: '#' };
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="blog-breadcrumbs">
+    <div class="blog-breadcrumbs-inner">
+      <a href="/">Node-RED</a>
+      <span class="separator">/</span>
+      <a href="/blog/">Blog</a>
+    </div>
+  </div>
+
+  <article class="blog-post">
+    <div class="blog-post-inner">
+      <header class="blog-post-header">
+        <h1>{title}</h1>
+        <div class="blog-post-meta">
+          <time datetime={date.toISOString()}>{formattedDate}</time>
+          <span class="separator">|</span>
+          <a href={authorInfo.url} target="_blank" rel="noopener">{authorInfo.displayName}</a>
+        </div>
+      </header>
+
+      <div class="blog-post-content">
+        <slot />
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .blog-breadcrumbs {
+    background: #aa4444;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+  }
+
+  .blog-breadcrumbs-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+  }
+
+  .blog-breadcrumbs a {
+    color: white;
+    font-family: 'Roboto Slab', serif;
+    font-size: 18px;
+    text-decoration: none;
+  }
+
+  .blog-breadcrumbs a:hover {
+    text-decoration: underline;
+  }
+
+  .blog-breadcrumbs .separator {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 10px;
+  }
+
+  .blog-post {
+    background: #fff;
+    max-width: 900px;
+    margin: 30px auto;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .blog-post-inner {
+    padding: 40px 50px;
+  }
+
+  .blog-post-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #B68181;
+  }
+
+  .blog-post-header h1 {
+    font-size: 32px;
+    margin-bottom: 15px;
+  }
+
+  .blog-post-meta {
+    color: #999;
+    font-size: 14px;
+  }
+
+  .blog-post-meta a {
+    color: #aa4444;
+  }
+
+  .blog-post-meta .separator {
+    margin: 0 10px;
+  }
+
+  .blog-post-content {
+    font-size: 16px;
+    line-height: 1.8;
+  }
+
+  .blog-post-content :global(h2) {
+    font-size: 24px;
+    margin: 30px 0 15px;
+  }
+
+  .blog-post-content :global(h3) {
+    font-size: 20px;
+    margin: 25px 0 12px;
+  }
+
+  .blog-post-content :global(p) {
+    margin: 15px 0;
+  }
+
+  .blog-post-content :global(ul),
+  .blog-post-content :global(ol) {
+    margin: 15px 0;
+    padding-left: 30px;
+  }
+
+  .blog-post-content :global(li) {
+    margin: 8px 0;
+  }
+
+  .blog-post-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 20px 0;
+  }
+
+  .blog-post-content :global(blockquote) {
+    border-left: 4px solid #B68181;
+    margin: 20px 0;
+    padding: 10px 20px;
+    background: #faf5f5;
+    font-style: italic;
+  }
+
+  @media (max-width: 768px) {
+    .blog-post-inner {
+      padding: 25px 20px;
+    }
+
+    .blog-post-header h1 {
+      font-size: 26px;
+    }
+  }
+</style>

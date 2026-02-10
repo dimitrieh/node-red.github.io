@@ -7,11 +7,27 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "verify:urls": "npx tsx scripts/verify-urls.ts",
+    "verify:images": "npx tsx scripts/verify-images.ts",
+    "verify:all": "npm run build && npm run verify:urls && npm run verify:images",
+    "test": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.15",
+    "@astrojs/sitemap": "^3.7.0",
     "@astrojs/starlight": "^0.37.6",
     "astro": "^5.6.1",
-    "sharp": "^0.34.2"
+    "lit": "^3.3.2",
+    "sharp": "^0.34.2",
+    "unocss": "^66.6.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@unocss/astro": "^66.6.0",
+    "@unocss/preset-icons": "^66.6.0",
+    "@unocss/preset-wind": "^66.6.0",
+    "vitest": "^4.0.18"
   }
 }

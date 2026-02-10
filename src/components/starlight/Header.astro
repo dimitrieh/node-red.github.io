@@ -1,0 +1,196 @@
+---
+import type { Props } from '@astrojs/starlight/props';
+import Search from '@astrojs/starlight/components/Search.astro';
+import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+
+const { hasSidebar, locale } = Astro.props;
+
+const navItems = [
+  { label: 'home', href: '/', class: '' },
+  { label: 'about', href: '/about/', class: '' },
+  { label: 'blog', href: '/blog/', class: '' },
+  { label: 'documentation', href: '/docs/', class: 'active' },
+  { label: 'forum', href: 'https://discourse.nodered.org', class: '', external: true },
+  { label: 'flows', href: 'https://flows.nodered.org', class: '', external: true },
+  { label: 'github', href: 'https://github.com/node-red/node-red', class: '', external: true },
+];
+---
+
+<header class="nr-header">
+  <div class="nr-header-inner">
+    <div class="nr-brand">
+      <a href="/" class="nr-logo">
+        <img src="/node-red-icon.png" alt="Node-RED" width="40" height="40" />
+        <span class="nr-title">Node-RED</span>
+      </a>
+    </div>
+
+    <nav class="nr-nav desktop-nav">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          class:list={['nr-nav-link', item.class]}
+          {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="nr-header-right">
+      <Search />
+      <ThemeSelect />
+      <button class="nr-mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav class="nr-nav mobile-nav" aria-hidden="true">
+    {navItems.map((item) => (
+      <a
+        href={item.href}
+        class:list={['nr-nav-link', item.class]}
+        {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      >
+        {item.label}
+      </a>
+    ))}
+  </nav>
+</header>
+
+<style>
+  .nr-header {
+    background: #333;
+    border-bottom: 5px solid #333;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nr-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 60px;
+  }
+
+  .nr-brand {
+    flex-shrink: 0;
+  }
+
+  .nr-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .nr-logo img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nr-title {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #eee;
+  }
+
+  .nr-nav {
+    display: flex;
+    gap: 0;
+  }
+
+  .nr-nav-link {
+    font-family: 'Roboto Slab', serif;
+    font-size: 16px;
+    color: #999;
+    text-decoration: none;
+    padding: 20px 15px;
+    border-bottom: 5px solid transparent;
+    margin-bottom: -5px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .nr-nav-link:hover,
+  .nr-nav-link.active {
+    color: #eee;
+    border-bottom-color: #eee;
+  }
+
+  .nr-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nr-mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 8px;
+  }
+
+  .nr-mobile-toggle:hover {
+    color: #eee;
+  }
+
+  .mobile-nav {
+    display: none;
+    flex-direction: column;
+    background: #333;
+    padding: 0 20px 20px;
+  }
+
+  .mobile-nav .nr-nav-link {
+    padding: 12px 0;
+    border-bottom: 1px solid #444;
+    margin-bottom: 0;
+  }
+
+  .mobile-nav .nr-nav-link:last-child {
+    border-bottom: none;
+  }
+
+  .mobile-nav[aria-hidden="false"] {
+    display: flex;
+  }
+
+  @media (max-width: 900px) {
+    .desktop-nav {
+      display: none;
+    }
+
+    .nr-mobile-toggle {
+      display: block;
+    }
+  }
+
+  /* Override Starlight search styling */
+  :global(site-search) {
+    --sl-search-result-highlight-bg: #aa6767;
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector('.nr-mobile-toggle');
+  const mobileNav = document.querySelector('.mobile-nav');
+
+  toggle?.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    mobileNav?.setAttribute('aria-hidden', String(expanded));
+  });
+</script>

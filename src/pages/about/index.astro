@@ -1,0 +1,166 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+
+const aboutPages = await getCollection('about');
+const mainPage = aboutPages.find((page) => page.id === 'index.md');
+
+let Content = null;
+if (mainPage) {
+  const rendered = await render(mainPage);
+  Content = rendered.Content;
+}
+---
+
+<BaseLayout title="About">
+  <div class="about-breadcrumbs">
+    <div class="about-breadcrumbs-inner">
+      <a href="/">Node-RED</a>
+      <span class="separator">/</span>
+      <span>About</span>
+    </div>
+  </div>
+
+  <div class="about-container">
+    <aside class="about-sidebar">
+      <nav>
+        <ul>
+          <li><a href="/about/" class="active">About Node-RED</a></li>
+          <li><a href="/about/community/">Community</a></li>
+          <li><a href="/about/contribute/">Contribute</a></li>
+          <li><a href="/about/governance/">Governance</a></li>
+          <li><a href="/about/license/">License</a></li>
+          <li><a href="/about/releases/">Releases</a></li>
+          <li><a href="/about/conduct/">Code of Conduct</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="about-content">
+      {Content ? <Content /> : <p>Content not found</p>}
+    </main>
+  </div>
+</BaseLayout>
+
+<style>
+  .about-breadcrumbs {
+    background: #aa4444;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+  }
+
+  .about-breadcrumbs-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+    color: white;
+    font-family: 'Roboto Slab', serif;
+    font-size: 18px;
+  }
+
+  .about-breadcrumbs a {
+    color: white;
+    text-decoration: none;
+  }
+
+  .about-breadcrumbs a:hover {
+    text-decoration: underline;
+  }
+
+  .about-breadcrumbs .separator {
+    margin: 0 10px;
+    opacity: 0.6;
+  }
+
+  .about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 40px;
+  }
+
+  .about-sidebar nav ul {
+    list-style: none;
+  }
+
+  .about-sidebar nav li {
+    margin: 0;
+  }
+
+  .about-sidebar nav a {
+    display: block;
+    padding: 10px 15px;
+    color: #666;
+    text-decoration: none;
+    border-left: 4px solid #eee;
+    transition: all 0.2s;
+  }
+
+  .about-sidebar nav a:hover {
+    border-left-color: #B68181;
+    background: #f5f5f5;
+  }
+
+  .about-sidebar nav a.active {
+    border-left-color: #B68181;
+    background: #fff;
+    font-weight: 600;
+  }
+
+  .about-content {
+    background: white;
+    padding: 40px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .about-content :global(h1) {
+    font-size: 28px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #B68181;
+  }
+
+  .about-content :global(h2) {
+    font-size: 22px;
+    margin: 30px 0 15px;
+  }
+
+  .about-content :global(p) {
+    margin: 15px 0;
+    line-height: 1.7;
+  }
+
+  .about-content :global(ul),
+  .about-content :global(ol) {
+    margin: 15px 0;
+    padding-left: 30px;
+  }
+
+  .about-content :global(li) {
+    margin: 8px 0;
+  }
+
+  .about-content :global(img) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  @media (max-width: 768px) {
+    .about-container {
+      grid-template-columns: 1fr;
+    }
+
+    .about-sidebar {
+      order: 2;
+    }
+
+    .about-content {
+      padding: 25px;
+    }
+  }
+</style>
