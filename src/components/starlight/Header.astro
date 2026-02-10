@@ -3,35 +3,30 @@ import type { Props } from '@astrojs/starlight/props';
 import Search from '@astrojs/starlight/components/Search.astro';
 import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
 import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+import { mainNav } from '../../data/navigation';
 
 const { hasSidebar, locale } = Astro.props;
-
-const navItems = [
-  { label: 'home', href: '/', class: '' },
-  { label: 'about', href: '/about/', class: '' },
-  { label: 'blog', href: '/blog/', class: '' },
-  { label: 'documentation', href: '/docs/', class: 'active' },
-  { label: 'forum', href: 'https://discourse.nodered.org', class: '', external: true },
-  { label: 'flows', href: 'https://flows.nodered.org', class: '', external: true },
-  { label: 'github', href: 'https://github.com/node-red/node-red', class: '', external: true },
-];
+const currentPath = Astro.url.pathname;
 ---
 
-<header class="nr-header">
+<a href="#_top" class="skip-link">Skip to main content</a>
+
+<div class="nr-header">
   <div class="nr-header-inner">
     <div class="nr-brand">
       <a href="/" class="nr-logo">
-        <img src="/node-red-icon.png" alt="Node-RED" width="40" height="40" />
+        <img src="/node-red-icon.png" alt="" width="40" height="40" />
         <span class="nr-title">Node-RED</span>
       </a>
     </div>
 
-    <nav class="nr-nav desktop-nav">
-      {navItems.map((item) => (
+    <nav class="nr-nav desktop-nav" aria-label="Main navigation">
+      {mainNav.map((item) => (
         <a
           href={item.href}
-          class:list={['nr-nav-link', item.class]}
+          class:list={['nr-nav-link', { active: item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }]}
           {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          {...(!item.external && (item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href)) ? { 'aria-current': 'page' } : {})}
         >
           {item.label}
         </a>
@@ -42,7 +37,7 @@ const navItems = [
       <Search />
       <ThemeSelect />
       <button class="nr-mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -51,23 +46,40 @@ const navItems = [
     </div>
   </div>
 
-  <nav class="nr-nav mobile-nav" aria-hidden="true">
-    {navItems.map((item) => (
+  <nav class="nr-nav mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+    {mainNav.map((item) => (
       <a
         href={item.href}
-        class:list={['nr-nav-link', item.class]}
+        class:list={['nr-nav-link', { active: item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }]}
         {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       >
         {item.label}
       </a>
     ))}
   </nav>
-</header>
+</div>
 
 <style>
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 16px;
+    background: #C75050;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 0 0 8px 8px;
+    z-index: 1000;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 0;
+  }
+
   .nr-header {
-    background: #333;
-    border-bottom: 5px solid #333;
+    background: #1E1E1E;
+    border-bottom: 3px solid #C75050;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -103,7 +115,7 @@ const navItems = [
     font-family: 'Roboto Slab', serif;
     font-weight: 700;
     font-size: 20px;
-    color: #eee;
+    color: #f0f0f0;
   }
 
   .nr-nav {
@@ -114,18 +126,18 @@ const navItems = [
   .nr-nav-link {
     font-family: 'Roboto Slab', serif;
     font-size: 16px;
-    color: #999;
+    color: #C0C0C0;
     text-decoration: none;
     padding: 20px 15px;
-    border-bottom: 5px solid transparent;
-    margin-bottom: -5px;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -3px;
     transition: color 0.2s, border-color 0.2s;
   }
 
   .nr-nav-link:hover,
   .nr-nav-link.active {
-    color: #eee;
-    border-bottom-color: #eee;
+    color: #f0f0f0;
+    border-bottom-color: #C75050;
   }
 
   .nr-header-right {
@@ -138,25 +150,25 @@ const navItems = [
     display: none;
     background: none;
     border: none;
-    color: #999;
+    color: #C0C0C0;
     cursor: pointer;
     padding: 8px;
   }
 
   .nr-mobile-toggle:hover {
-    color: #eee;
+    color: #f0f0f0;
   }
 
   .mobile-nav {
     display: none;
     flex-direction: column;
-    background: #333;
+    background: #1E1E1E;
     padding: 0 20px 20px;
   }
 
   .mobile-nav .nr-nav-link {
     padding: 12px 0;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #333;
     margin-bottom: 0;
   }
 
@@ -180,7 +192,7 @@ const navItems = [
 
   /* Override Starlight search styling */
   :global(site-search) {
-    --sl-search-result-highlight-bg: #aa6767;
+    --sl-search-result-highlight-bg: #C75050;
   }
 </style>
 

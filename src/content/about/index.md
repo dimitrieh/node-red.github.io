@@ -7,7 +7,7 @@ Node-RED is a flow-based programming tool, originally developed by IBM Emerging 
 
 <div class="grid" style="min-height: 0;">
     <div class="col-1-2">
-        <div class="content feature" style="padding: 20px 0;"><img src="/images/nr-image-1.png" /></div>
+        <div class="content feature" style="padding: 20px 0;"><img src="/images/nr-image-1.png" alt="Node-RED browser-based flow editor interface" /></div>
     </div>
     <div class="col-1-2">
         <div class="content blurb" style="padding: 20px 0;">
@@ -27,12 +27,12 @@ Node-RED is a flow-based programming tool, originally developed by IBM Emerging 
         </div>
     </div>
     <div class="col-1-2">
-        <div class="content feature" style="padding: 20px 0;"><img src="/images/nr-image-2.png" /></div>
+        <div class="content feature" style="padding: 20px 0;"><img src="/images/nr-image-2.png" alt="Node-RED built on Node.js runtime" /></div>
     </div>
 </div>
 <div class="grid" style="min-height: 0;">
     <div class="col-1-2">
-        <div class="content feature" style="padding: 20px 0;"><img src="/images/nr-image-3.png" /></div>
+        <div class="content feature" style="padding: 20px 0;"><img src="/images/nr-image-3.png" alt="Node-RED social development and flow sharing" /></div>
     </div>
     <div class="col-1-2">
         <div class="content blurb" style="padding: 20px 0;">
@@ -85,7 +85,7 @@ For some more of the history and highlights:
 - watch Nick's talk from [Monki Gras 2016](https://www.youtube.com/watch?v=Bbg1017amZs) :
 
 <div style="text-align: center">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/Bbg1017amZs" frameborder="0" allowfullscreen></iframe>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/Bbg1017amZs" frameborder="0" allowfullscreen title="Nick O'Leary - Node-RED talk at Monki Gras 2016"></iframe>
 </div>
 
 

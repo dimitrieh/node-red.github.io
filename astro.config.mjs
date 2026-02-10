@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import UnoCSS from '@unocss/astro';
+
 import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
@@ -42,6 +42,10 @@ export default defineConfig({
         {
           label: 'API Reference',
           autogenerate: { directory: 'docs/api' },
+        },
+        {
+          label: 'Developing Flows',
+          autogenerate: { directory: 'docs/developing-flows' },
         },
         {
           label: 'Developing',
@@ -91,7 +95,6 @@ export default defineConfig({
         },
       ],
     }),
-    UnoCSS({ injectReset: true }),
     sitemap(),
   ],
   redirects: {
