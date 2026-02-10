@@ -57,6 +57,7 @@ const slugParts = Astro.params.slug?.split('/') || [];
           <li><a href="/about/license/" class={Astro.params.slug === 'license' ? 'active' : ''}>License</a></li>
           <li><a href="/about/releases/" class={Astro.params.slug === 'releases' ? 'active' : ''}>Releases</a></li>
           <li><a href="/about/conduct/" class={Astro.params.slug === 'conduct' ? 'active' : ''}>Code of Conduct</a></li>
+          <li><a href="/about/resources/" class={Astro.params.slug?.startsWith('resources') ? 'active' : ''}>Resources</a></li>
         </ul>
       </nav>
     </aside>
