@@ -1,0 +1,391 @@
+/* ===== NODE-RED STARLIGHT THEME ===== */
+
+/* ===== CORE COLOR OVERRIDES ===== */
+:root {
+  /* Map Starlight variables to Node-RED colors */
+  --sl-color-accent-low: #f5e6e6;
+  --sl-color-accent: #aa6767;
+  --sl-color-accent-high: #7F4545;
+  --sl-color-white: #fff;
+  --sl-color-gray-1: #eee;
+  --sl-color-gray-2: #ddd;
+  --sl-color-gray-3: #999;
+  --sl-color-gray-4: #666;
+  --sl-color-gray-5: #555;
+  --sl-color-gray-6: #333;
+  --sl-color-black: #333;
+
+  /* Typography */
+  --sl-font: 'Open Sans', sans-serif;
+  --sl-font-mono: 'Ubuntu Mono', monospace;
+
+  /* Sizing */
+  --sl-content-width: 1155px;
+  --sl-sidebar-width: 25%;
+
+  /* Node-RED specific */
+  --nr-red: #aa6767;
+  --nr-red-hover: #7F4545;
+  --nr-red-dark: #6F0808;
+  --nr-breadcrumb: #aa4444;
+  --nr-toc-accent: #B68181;
+  --nr-bg-dark: #333;
+  --nr-bg-light: #eee;
+  --nr-bg-content: #fff;
+  --nr-bg-code: #564848;
+  --nr-text: #555;
+  --nr-text-muted: #999;
+  --nr-text-light: #eee;
+  --nr-link: #aa4444;
+  --nr-code-text: #533;
+  --nr-code-bg: #F3E7E7;
+}
+
+/* Dark mode overrides - keep similar feel */
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #4a2828;
+  --sl-color-accent: #aa6767;
+  --sl-color-accent-high: #cc8888;
+  --sl-color-bg: #1a1a1a;
+  --sl-color-bg-nav: #222;
+  --sl-color-bg-sidebar: #222;
+}
+
+/* ===== GLOBAL STYLES ===== */
+body {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.6em;
+  color: var(--nr-text);
+}
+
+/* ===== HEADER: Match Node-RED dark header ===== */
+header.header {
+  background: var(--nr-bg-dark) !important;
+  border-bottom: 5px solid var(--nr-bg-dark);
+}
+
+.site-title {
+  font-family: 'Roboto Slab', serif !important;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--nr-text-light) !important;
+}
+
+/* Navigation links */
+starlight-menu-button {
+  color: var(--nr-text-muted);
+}
+
+/* ===== SIDEBAR: Match Node-RED TOC ===== */
+nav.sidebar-content {
+  background: var(--nr-bg-content);
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.sidebar-content a {
+  padding: 6px 10px;
+  border-left: 8px solid var(--nr-bg-light);
+  color: #666;
+  text-decoration: none;
+}
+
+.sidebar-content a:hover {
+  border-left-color: var(--nr-toc-accent);
+}
+
+.sidebar-content a[aria-current="page"],
+.sidebar-content a[aria-current="true"] {
+  border-left-color: var(--nr-toc-accent);
+  background: var(--nr-bg-light);
+  font-weight: 600;
+}
+
+/* Section headers in sidebar */
+.sidebar-content summary,
+.top-level > details > summary {
+  background: var(--nr-toc-accent);
+  color: var(--nr-bg-content);
+  font-family: 'Roboto Slab', serif;
+  padding: 8px 12px;
+  font-weight: 400;
+}
+
+/* ===== CONTENT AREA ===== */
+.main-pane {
+  background: var(--nr-bg-content);
+  padding: 0 30px;
+}
+
+.sl-container {
+  background: var(--nr-bg-light);
+}
+
+/* Title styling */
+.content-panel h1:first-child,
+h1.content-title {
+  border-bottom: 2px solid var(--nr-toc-accent);
+  padding-bottom: 10px;
+  margin-top: 30px;
+  font-family: 'Roboto Slab', serif;
+  font-weight: normal;
+  color: var(--nr-text);
+}
+
+/* All headings */
+h1, h2, h3, h4, h5 {
+  font-family: 'Roboto Slab', serif;
+  font-weight: normal;
+  color: var(--nr-text);
+}
+
+h1 { font-size: 28px; }
+h2 { font-size: 22px; margin-top: 30px; }
+h3 { font-size: 18px; margin-top: 25px; }
+h4 { font-size: 16px; margin-top: 20px; }
+h5 { font-size: 14px; margin-top: 15px; }
+
+/* Content links */
+.sl-markdown-content a {
+  color: var(--nr-link);
+  text-decoration: none;
+}
+
+.sl-markdown-content a:hover {
+  text-decoration: underline;
+}
+
+/* Code blocks */
+.sl-markdown-content pre {
+  background: var(--nr-bg-code) !important;
+  color: var(--nr-text-light) !important;
+  border-radius: 3px;
+  padding: 12px 16px;
+  overflow-x: auto;
+}
+
+.sl-markdown-content pre code {
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Inline code */
+.sl-markdown-content code:not(pre code) {
+  color: var(--nr-code-text);
+  background: var(--nr-code-bg);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+}
+
+/* Tables */
+.sl-markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.sl-markdown-content table th {
+  font-family: 'Roboto Slab', serif;
+  border-bottom: 2px solid var(--nr-toc-accent);
+  text-align: left;
+  padding: 8px 12px;
+  background: transparent;
+}
+
+.sl-markdown-content table td {
+  border-bottom: 1px solid #F4DEDE;
+  padding: 8px 12px;
+}
+
+.sl-markdown-content table tr:hover {
+  background: #faf5f5;
+}
+
+/* Blockquotes */
+.sl-markdown-content blockquote {
+  border-left: 4px solid var(--nr-toc-accent);
+  margin: 20px 0;
+  padding: 10px 20px;
+  background: #faf5f5;
+  color: var(--nr-text);
+}
+
+/* Lists */
+.sl-markdown-content ul,
+.sl-markdown-content ol {
+  padding-left: 30px;
+  margin: 15px 0;
+}
+
+.sl-markdown-content li {
+  margin: 8px 0;
+}
+
+/* Images */
+.sl-markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 3px;
+}
+
+/* ===== BUTTONS ===== */
+.sl-markdown-content a.button,
+button,
+.action-button {
+  background: var(--nr-red);
+  color: var(--nr-bg-content) !important;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: none;
+  font-family: 'Roboto Slab', serif;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-decoration: none !important;
+  display: inline-block;
+}
+
+.sl-markdown-content a.button:hover,
+button:hover,
+.action-button:hover {
+  background: var(--nr-red-hover);
+}
+
+/* ===== FOOTER ===== */
+footer.footer {
+  background: var(--nr-bg-dark) !important;
+  color: var(--nr-text-light);
+  padding: 30px 0;
+}
+
+footer a {
+  color: var(--nr-text-muted);
+}
+
+footer a:hover {
+  color: var(--nr-text-light);
+}
+
+/* ===== BREADCRUMBS ===== */
+nav[aria-label="Breadcrumbs"] {
+  background: var(--nr-breadcrumb);
+  min-height: 50px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+}
+
+nav[aria-label="Breadcrumbs"] a,
+nav[aria-label="Breadcrumbs"] span {
+  color: white !important;
+  font-family: 'Roboto Slab', serif;
+  font-size: 18px;
+}
+
+nav[aria-label="Breadcrumbs"] a:hover {
+  text-decoration: underline;
+}
+
+/* ===== RIGHT SIDEBAR (Table of Contents) ===== */
+.right-sidebar-panel {
+  font-size: 13px;
+}
+
+.right-sidebar-panel h2 {
+  font-family: 'Roboto Slab', serif;
+  font-size: 14px;
+  color: var(--nr-toc-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.right-sidebar-panel a {
+  color: var(--nr-text);
+  border-left: 3px solid transparent;
+  padding-left: 10px;
+}
+
+.right-sidebar-panel a:hover {
+  border-left-color: var(--nr-toc-accent);
+}
+
+.right-sidebar-panel a[aria-current="true"] {
+  border-left-color: var(--nr-toc-accent);
+  color: var(--nr-red);
+}
+
+/* ===== SEARCH ===== */
+site-search button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--nr-text-muted);
+  color: var(--nr-text-muted);
+}
+
+site-search button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--nr-text-light);
+}
+
+/* ===== PAGINATION ===== */
+.pagination-links a {
+  color: var(--nr-link);
+  font-family: 'Roboto Slab', serif;
+}
+
+.pagination-links a:hover {
+  color: var(--nr-red-hover);
+}
+
+/* ===== CALLOUTS/ASIDES ===== */
+.starlight-aside {
+  border-left: 4px solid var(--nr-toc-accent);
+  background: #faf5f5;
+  padding: 16px 20px;
+  margin: 20px 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.starlight-aside--note {
+  border-left-color: #3498db;
+  background: #f0f7fc;
+}
+
+.starlight-aside--tip {
+  border-left-color: #2ecc71;
+  background: #f0fcf5;
+}
+
+.starlight-aside--caution {
+  border-left-color: #f39c12;
+  background: #fef9f0;
+}
+
+.starlight-aside--danger {
+  border-left-color: #e74c3c;
+  background: #fdf2f2;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1100px) {
+  .right-sidebar-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 755px) {
+  header.header {
+    padding: 10px;
+  }
+
+  .site-title {
+    font-size: 18px;
+  }
+
+  h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 17px; }
+}

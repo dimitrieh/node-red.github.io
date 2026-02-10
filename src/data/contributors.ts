@@ -1,0 +1,92 @@
+export interface Contributor {
+  name: string;
+  githubId: string;
+  links: {
+    home?: string;
+    github?: string;
+  };
+}
+
+export interface ContributorGroup {
+  name: string;
+  header: string;
+  footer?: string;
+  people: Contributor[];
+}
+
+export const contributors: ContributorGroup[] = [
+  {
+    name: 'Project Leads',
+    header: 'The creators of Node-RED, who continue to lead the project today.',
+    people: [
+      {
+        name: 'Nick O\'Leary',
+        githubId: '51083',
+        links: {
+          home: 'https://flowfuse.com',
+          github: 'https://github.com/knolleary',
+        },
+      },
+      {
+        name: 'Dave Conway-Jones',
+        githubId: '5375409',
+        links: {
+          github: 'https://github.com/dceejay',
+        },
+      },
+    ],
+  },
+  {
+    name: 'Core Contributors',
+    header: 'People who are regularly contributing to the core project or who have made notable contributions in the project\'s history.',
+    footer: 'Explore the full list <a href="https://github.com/node-red/node-red/graphs/contributors" target="_blank">here</a>',
+    people: [
+      {
+        name: 'Ben Hardill',
+        githubId: '1800845',
+        links: {
+          home: 'https://flowfuse.com',
+          github: 'https://github.com/hardillb',
+        },
+      },
+      {
+        name: 'Steve McLaughlin',
+        githubId: '44235289',
+        links: {
+          home: 'https://flowfuse.com',
+          github: 'https://github.com/Steve-Mcl',
+        },
+      },
+      {
+        name: 'Gauthier Dandele',
+        githubId: '92022724',
+        links: {
+          github: 'https://github.com/GogoVega',
+        },
+      },
+      {
+        name: 'Kazuhito Yokoi',
+        githubId: '20310935',
+        links: {
+          home: 'https://www.hitachi-ac.co.jp/en/',
+          github: 'https://github.com/kazuhitoyokoi',
+        },
+      },
+      {
+        name: 'Hiroyasu Nishiyama',
+        githubId: '30289092',
+        links: {
+          home: 'https://www.hitachi.com',
+          github: 'https://github.com/HiroyasuNishiyama',
+        },
+      },
+      {
+        name: 'Mauricio Bonani',
+        githubId: '29807944',
+        links: {
+          github: 'https://github.com/bonanitech',
+        },
+      },
+    ],
+  },
+];

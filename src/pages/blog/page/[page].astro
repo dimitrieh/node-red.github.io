@@ -1,0 +1,221 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+
+  // Parse dates from filenames and sort
+  // With glob loader, post.id is the filename without extension
+  const sortedPosts = posts
+    .map((post) => {
+      const match = post.id.match(/^(\d{4})-(\d{2})-(\d{2})-(.+)$/);
+      if (match) {
+        const [, year, month, day, slug] = match;
+        return {
+          ...post,
+          date: new Date(`${year}-${month}-${day}`),
+          year,
+          month,
+          day,
+          slug,
+        };
+      }
+      return { ...post, date: new Date(), year: '2024', month: '01', day: '01', slug: post.id };
+    })
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const pageSize = 9;
+  const totalPages = Math.ceil(sortedPosts.length / pageSize);
+
+  // Generate pages 2 onwards (page 1 is handled by index.astro)
+  return Array.from({ length: totalPages - 1 }, (_, i) => {
+    const page = i + 2;
+    const start = (page - 1) * pageSize;
+    return {
+      params: { page: String(page) },
+      props: {
+        posts: sortedPosts.slice(start, start + pageSize),
+        currentPage: page,
+        totalPages,
+      },
+    };
+  });
+}
+
+const { posts, currentPage, totalPages } = Astro.props;
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+---
+
+<BaseLayout title={`Blog - Page ${currentPage}`}>
+  <div class="blog-breadcrumbs">
+    <div class="blog-breadcrumbs-inner">
+      <a href="/">Node-RED</a>
+      <span class="separator">/</span>
+      <a href="/blog/">Blog</a>
+      <span class="separator">/</span>
+      <span>Page {currentPage}</span>
+    </div>
+  </div>
+
+  <div class="blog-listing">
+    <div class="blog-listing-inner">
+      <h1>Blog - Page {currentPage}</h1>
+
+      <div class="posts-grid">
+        {posts.map((post: any) => (
+          <article class="post-card">
+            <a href={`/blog/${post.year}/${post.month}/${post.day}/${post.slug}/`}>
+              <h2>{post.data.title}</h2>
+              <time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
+              {post.data.description && <p>{post.data.description}</p>}
+            </a>
+          </article>
+        ))}
+      </div>
+
+      <nav class="pagination">
+        {currentPage > 1 && (
+          <a href={currentPage === 2 ? '/blog/' : `/blog/page/${currentPage - 1}/`} class="prev">
+            &larr; Newer posts
+          </a>
+        )}
+        <span class="current">Page {currentPage} of {totalPages}</span>
+        {currentPage < totalPages && (
+          <a href={`/blog/page/${currentPage + 1}/`} class="next">
+            Older posts &rarr;
+          </a>
+        )}
+      </nav>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .blog-breadcrumbs {
+    background: #aa4444;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+  }
+
+  .blog-breadcrumbs-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+    color: white;
+    font-family: 'Roboto Slab', serif;
+    font-size: 18px;
+  }
+
+  .blog-breadcrumbs a {
+    color: white;
+    text-decoration: none;
+  }
+
+  .blog-breadcrumbs a:hover {
+    text-decoration: underline;
+  }
+
+  .blog-breadcrumbs .separator {
+    margin: 0 10px;
+    opacity: 0.6;
+  }
+
+  .blog-listing {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+
+  .blog-listing-inner h1 {
+    font-size: 32px;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #B68181;
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 25px;
+  }
+
+  .post-card {
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s;
+  }
+
+  .post-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .post-card a {
+    display: block;
+    padding: 25px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .post-card h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #555;
+  }
+
+  .post-card time {
+    display: block;
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 10px;
+  }
+
+  .post-card p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  .pagination {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-top: 1px solid #ddd;
+  }
+
+  .pagination .current {
+    color: #999;
+    font-size: 14px;
+  }
+
+  .pagination a {
+    font-family: 'Roboto Slab', serif;
+    text-decoration: none;
+    padding: 10px 20px;
+    background: #aa6767;
+    color: white;
+    border-radius: 4px;
+  }
+
+  .pagination a:hover {
+    background: #7F4545;
+  }
+
+  @media (max-width: 768px) {
+    .posts-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

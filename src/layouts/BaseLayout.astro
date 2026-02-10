@@ -1,0 +1,402 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Low-code programming for event-driven applications' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} - Node-RED</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Slab:wght@400;700&family=Ubuntu+Mono&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="nr-header">
+      <div class="nr-header-inner">
+        <div class="nr-brand">
+          <a href="/" class="nr-logo">
+            <img src="/node-red-icon.png" alt="Node-RED" width="40" height="40" />
+            <span class="nr-title">Node-RED</span>
+          </a>
+        </div>
+
+        <nav class="nr-nav desktop-nav">
+          <a href="/" class="nr-nav-link">home</a>
+          <a href="/about/" class="nr-nav-link">about</a>
+          <a href="/blog/" class="nr-nav-link">blog</a>
+          <a href="/docs/" class="nr-nav-link">documentation</a>
+          <a href="https://discourse.nodered.org" class="nr-nav-link" target="_blank" rel="noopener">forum</a>
+          <a href="https://flows.nodered.org" class="nr-nav-link" target="_blank" rel="noopener">flows</a>
+          <a href="https://github.com/node-red/node-red" class="nr-nav-link" target="_blank" rel="noopener">github</a>
+        </nav>
+
+        <button class="nr-mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="nr-nav mobile-nav" aria-hidden="true">
+        <a href="/" class="nr-nav-link">home</a>
+        <a href="/about/" class="nr-nav-link">about</a>
+        <a href="/blog/" class="nr-nav-link">blog</a>
+        <a href="/docs/" class="nr-nav-link">documentation</a>
+        <a href="https://discourse.nodered.org" class="nr-nav-link" target="_blank" rel="noopener">forum</a>
+        <a href="https://flows.nodered.org" class="nr-nav-link" target="_blank" rel="noopener">flows</a>
+        <a href="https://github.com/node-red/node-red" class="nr-nav-link" target="_blank" rel="noopener">github</a>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="nr-footer">
+      <div class="nr-footer-inner">
+        <div class="nr-footer-brand">
+          <a href="/" class="nr-footer-logo">
+            <img src="/node-red-icon.png" alt="Node-RED" width="50" height="50" />
+            <span>Node-RED</span>
+          </a>
+          <p class="nr-footer-tagline">Low-code programming for event-driven applications</p>
+        </div>
+
+        <div class="nr-footer-links">
+          <div class="nr-footer-section">
+            <h4>Node-RED</h4>
+            <ul>
+              <li><a href="/docs/">Documentation</a></li>
+              <li><a href="/blog/">Blog</a></li>
+              <li><a href="https://discourse.nodered.org">Forum</a></li>
+              <li><a href="https://flows.nodered.org">Flows Library</a></li>
+            </ul>
+          </div>
+          <div class="nr-footer-section">
+            <h4>Community</h4>
+            <ul>
+              <li><a href="/about/community/slack/">Slack</a></li>
+              <li><a href="https://github.com/node-red/node-red">GitHub</a></li>
+              <li><a href="/about/contribute/">Contribute</a></li>
+              <li><a href="/about/conduct/">Code of Conduct</a></li>
+            </ul>
+          </div>
+          <div class="nr-footer-section">
+            <h4>About</h4>
+            <ul>
+              <li><a href="/about/">About Node-RED</a></li>
+              <li><a href="/about/governance/">Governance</a></li>
+              <li><a href="/about/license/">License</a></li>
+              <li><a href="/about/resources/">Resources</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="nr-footer-bottom">
+        <div class="nr-footer-bottom-inner">
+          <p>
+            Copyright &copy; OpenJS Foundation and Node-RED contributors. All rights reserved.
+            The <a href="https://openjsf.org">OpenJS Foundation</a> has registered trademarks and uses trademarks.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const toggle = document.querySelector('.nr-mobile-toggle');
+      const mobileNav = document.querySelector('.mobile-nav');
+
+      toggle?.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        mobileNav?.setAttribute('aria-hidden', String(expanded));
+      });
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+    background: #eee;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    flex: 1;
+  }
+
+  a {
+    color: #aa4444;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: 'Roboto Slab', serif;
+    font-weight: normal;
+    color: #555;
+  }
+
+  code {
+    font-family: 'Ubuntu Mono', monospace;
+    background: #F3E7E7;
+    color: #533;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  pre {
+    background: #564848;
+    color: #eee;
+    padding: 16px;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+  }
+</style>
+
+<style>
+  .nr-header {
+    background: #333;
+    border-bottom: 5px solid #333;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nr-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 60px;
+  }
+
+  .nr-brand {
+    flex-shrink: 0;
+  }
+
+  .nr-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .nr-logo img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nr-title {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #eee;
+  }
+
+  .nr-nav {
+    display: flex;
+    gap: 0;
+  }
+
+  .nr-nav-link {
+    font-family: 'Roboto Slab', serif;
+    font-size: 16px;
+    color: #999;
+    text-decoration: none;
+    padding: 20px 15px;
+    border-bottom: 5px solid transparent;
+    margin-bottom: -5px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .nr-nav-link:hover,
+  .nr-nav-link.active {
+    color: #eee;
+    border-bottom-color: #eee;
+    text-decoration: none;
+  }
+
+  .nr-mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 8px;
+  }
+
+  .nr-mobile-toggle:hover {
+    color: #eee;
+  }
+
+  .mobile-nav {
+    display: none;
+    flex-direction: column;
+    background: #333;
+    padding: 0 20px 20px;
+  }
+
+  .mobile-nav .nr-nav-link {
+    padding: 12px 0;
+    border-bottom: 1px solid #444;
+    margin-bottom: 0;
+  }
+
+  .mobile-nav[aria-hidden="false"] {
+    display: flex;
+  }
+
+  @media (max-width: 900px) {
+    .desktop-nav {
+      display: none;
+    }
+
+    .nr-mobile-toggle {
+      display: block;
+    }
+  }
+
+  .nr-footer {
+    background: #333;
+    color: #eee;
+    margin-top: auto;
+  }
+
+  .nr-footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 40px;
+  }
+
+  .nr-footer-brand a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #eee;
+    font-family: 'Roboto Slab', serif;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .nr-footer-brand img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .nr-footer-tagline {
+    color: #999;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .nr-footer-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+  }
+
+  .nr-footer-section h4 {
+    font-family: 'Roboto Slab', serif;
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0 0 16px 0;
+    color: #eee;
+  }
+
+  .nr-footer-section ul {
+    list-style: none;
+  }
+
+  .nr-footer-section li {
+    margin: 8px 0;
+  }
+
+  .nr-footer-section a {
+    color: #999;
+    font-size: 14px;
+  }
+
+  .nr-footer-section a:hover {
+    color: #eee;
+    text-decoration: none;
+  }
+
+  .nr-footer-bottom {
+    background: #2a2a2a;
+    padding: 20px 0;
+  }
+
+  .nr-footer-bottom-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .nr-footer-bottom p {
+    font-size: 12px;
+    color: #999;
+  }
+
+  .nr-footer-bottom a {
+    color: #aa6767;
+  }
+
+  @media (max-width: 768px) {
+    .nr-footer-inner {
+      grid-template-columns: 1fr;
+    }
+
+    .nr-footer-links {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .nr-footer-links {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

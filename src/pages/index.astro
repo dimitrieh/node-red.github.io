@@ -1,0 +1,427 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { users } from '../data/users';
+---
+
+<BaseLayout title="Home">
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <h1>Low-code programming for event-driven applications</h1>
+        <p>
+          Node-RED is a programming tool for wiring together hardware devices, APIs and online services
+          in new and interesting ways.
+        </p>
+        <p>
+          It provides a browser-based editor that makes it easy to wire together flows using the wide
+          range of nodes in the palette that can be deployed to its runtime in a single-click.
+        </p>
+        <div class="hero-buttons">
+          <a href="/docs/getting-started/" class="button primary">Get Started</a>
+          <a href="/docs/" class="button secondary">Documentation</a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="/images/flow.png" alt="Node-RED Flow Editor" />
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="features-inner">
+      <div class="feature">
+        <div class="feature-icon">
+          <img src="/images/nr-image-browser.png" alt="Browser-based" />
+        </div>
+        <h3>Browser-based flow editing</h3>
+        <p>
+          Node-RED provides a browser-based flow editor that makes it easy to wire together flows
+          using the wide range of nodes in the palette. Flows can be then deployed to the runtime
+          in a single-click.
+        </p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <img src="/images/nr-image-func.png" alt="JavaScript Functions" />
+        </div>
+        <h3>Built on Node.js</h3>
+        <p>
+          The light-weight runtime is built on Node.js, taking full advantage of its event-driven,
+          non-blocking model. This makes it ideal to run at the edge of the network on low-cost
+          hardware such as the Raspberry Pi as well as in the cloud.
+        </p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <img src="/images/nr-image-social.png" alt="Social Development" />
+        </div>
+        <h3>Social Development</h3>
+        <p>
+          The flows created in Node-RED are stored using JSON which can be easily imported and
+          exported for sharing with others. An online flow library allows you to share your best
+          flows with the world.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="get-started">
+    <div class="get-started-inner">
+      <h2>Get Started</h2>
+      <div class="get-started-grid">
+        <a href="/docs/getting-started/local/" class="get-started-card">
+          <img src="/images/node-red-getting-started-local.svg" alt="Run locally" />
+          <h3>Run locally</h3>
+          <p>Install Node-RED on your local machine to get started.</p>
+        </a>
+        <a href="/docs/getting-started/docker/" class="get-started-card">
+          <img src="/images/node-red-getting-started-docker.svg" alt="Docker" />
+          <h3>Docker</h3>
+          <p>Run Node-RED in a Docker container for easy deployment.</p>
+        </a>
+        <a href="/docs/getting-started/raspberrypi/" class="get-started-card">
+          <img src="/images/node-red-getting-started-pi.svg" alt="Raspberry Pi" />
+          <h3>Raspberry Pi</h3>
+          <p>Run Node-RED on the Raspberry Pi for IoT projects.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="users">
+    <div class="users-inner">
+      <h2>Trusted by organizations worldwide</h2>
+      <div class="users-grid">
+        {users.slice(0, 12).map((user) => (
+          <a href={user.url} target="_blank" rel="noopener" class="user-logo">
+            <img src={`/users/${user.logo}`} alt="" loading="lazy" />
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="community">
+    <div class="community-inner">
+      <h2>Join the Community</h2>
+      <div class="community-grid">
+        <a href="https://discourse.nodered.org" class="community-card" target="_blank" rel="noopener">
+          <h3>Forum</h3>
+          <p>Get help, share ideas and discuss Node-RED with the community.</p>
+        </a>
+        <a href="/about/community/slack/" class="community-card">
+          <h3>Slack</h3>
+          <p>Join the Node-RED Slack workspace for real-time chat.</p>
+        </a>
+        <a href="https://github.com/node-red/node-red" class="community-card" target="_blank" rel="noopener">
+          <h3>GitHub</h3>
+          <p>Contribute to Node-RED on GitHub or report issues.</p>
+        </a>
+        <a href="https://flows.nodered.org" class="community-card" target="_blank" rel="noopener">
+          <h3>Flow Library</h3>
+          <p>Discover and share flows, nodes and collections.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    background: linear-gradient(135deg, #333 0%, #555 100%);
+    color: white;
+    padding: 60px 20px;
+  }
+
+  .hero-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+
+  .hero-content h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: white;
+  }
+
+  .hero-content p {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 15px;
+    opacity: 0.9;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+  }
+
+  .button {
+    display: inline-block;
+    padding: 14px 28px;
+    border-radius: 4px;
+    font-family: 'Roboto Slab', serif;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .button.primary {
+    background: #aa6767;
+    color: white;
+  }
+
+  .button.primary:hover {
+    background: #7F4545;
+  }
+
+  .button.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .button.secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .hero-image img {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .features {
+    padding: 80px 20px;
+    background: #eee;
+  }
+
+  .features-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+
+  .feature {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .feature-icon {
+    margin-bottom: 20px;
+  }
+
+  .feature-icon img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+  }
+
+  .feature h3 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  .feature p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #666;
+  }
+
+  .get-started {
+    padding: 80px 20px;
+    background: white;
+  }
+
+  .get-started-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .get-started h2 {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .get-started-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+  }
+
+  .get-started-card {
+    background: #f8f8f8;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+  }
+
+  .get-started-card:hover {
+    border-color: #aa6767;
+    transform: translateY(-4px);
+  }
+
+  .get-started-card img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+  }
+
+  .get-started-card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .get-started-card p {
+    font-size: 14px;
+    color: #666;
+  }
+
+  .users {
+    padding: 80px 20px;
+    background: #eee;
+  }
+
+  .users-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .users h2 {
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+    align-items: center;
+    justify-items: center;
+  }
+
+  .user-logo {
+    display: block;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    width: 100%;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+
+  .user-logo:hover {
+    transform: scale(1.05);
+  }
+
+  .user-logo img {
+    max-width: 100%;
+    max-height: 50px;
+    object-fit: contain;
+  }
+
+  .community {
+    padding: 80px 20px;
+    background: white;
+  }
+
+  .community-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .community h2 {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .community-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+  }
+
+  .community-card {
+    background: #f8f8f8;
+    padding: 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+  }
+
+  .community-card:hover {
+    border-color: #aa6767;
+    background: #fff;
+  }
+
+  .community-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #aa4444;
+  }
+
+  .community-card p {
+    font-size: 14px;
+    color: #666;
+  }
+
+  @media (max-width: 1000px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .features-inner {
+      grid-template-columns: 1fr;
+    }
+
+    .get-started-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .users-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .community-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .hero-content h1 {
+      font-size: 28px;
+    }
+
+    .hero-buttons {
+      flex-direction: column;
+    }
+
+    .users-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .community-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
