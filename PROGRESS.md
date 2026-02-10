@@ -5,7 +5,7 @@
 ### Test Results
 - **Build:** 212 pages, zero errors
 - **Unit/Integration (Vitest):** 12/12 passing
-- **E2E (Playwright):** 40/40 passing
+- **E2E (Playwright):** 47/47 passing
 
 ---
 
@@ -62,4 +62,41 @@
 - Homepage (5 tests): hero with dual CTA, features, user logos, community cards, footer
 - Accessibility (8 tests): axe-core audits on 5 page types, skip link, main landmark, logo alt text
 - Responsive (4 tests): mobile menu, desktop nav hidden, hero on mobile, blog on tablet
-- Page Integrity (3 tests): 404 page, RSS feed, all main pages load without errors
+- Page Integrity (4 tests): 404 page, RSS feed, resources page, all main pages load without errors
+- Image Integrity (3 tests): homepage, about pages, blog listing — all images resolve
+- Link Integrity (3 tests): homepage, about page, footer — all internal links resolve
+
+---
+
+## Content Parity Audit (vs nodered.org)
+
+### Phase 1: Fix Broken Homepage Images - COMPLETE
+Fixed 6 broken image references on homepage:
+- Feature images: `nr-image-browser.png` → `nr-image-1.png`, `nr-image-func.png` → `nr-image-2.png`, `nr-image-social.png` → `nr-image-3.png`
+- Get-started images: SVG references → existing PNG platform icons (`platform-local.png`, `platform-local-docker.png`, `platform-device-pi.png`)
+
+### Phase 2: Fix URL Discrepancies - COMPLETE
+- Changed GitHub link from `https://github.com/node-red/node-red` to `https://github.com/node-red` (header nav, footer, homepage)
+- Added missing legal footer links: Terms of Use, Privacy Policy, Bylaws, Cookie Policy
+- Added social media icons: Mastodon, Twitter/X, GitHub, Discourse
+
+### Phase 3: Create Missing Content Pages - COMPLETE
+- Created `/about/resources/` page with logo assets and quick reference links
+- Added "Resources" to about sidebar navigation
+
+### Phase 4: Automated Image/Link Integrity Tests - COMPLETE
+- Added 3 image integrity tests (homepage, about pages, blog listing)
+- Added 3 link integrity tests (homepage, about page, footer)
+- Added resources page load test
+- Fixed resources page image paths (`/about/resources/media/` → `/about/media/`)
+- Total: 47 E2E tests passing
+
+### Phase 5: Blog & Content Parity - COMPLETE
+- Blog page size (9 posts/page) already matches nodered.org — no change needed
+- Scanned all 52 blog posts: 158/160 image references valid
+- 2 broken blog images (`import-dupes.gif`, `git-workflow.png` in 2020-10-15 post) are also 404 on live nodered.org — pre-existing issue, not migration bug
+- All about content validated — no remaining broken references
+
+### Known Issues (also present on live nodered.org)
+- `/blog/content/images/2020/10/import-dupes.gif` — 404 on both sites
+- `/blog/content/images/2020/10/git-workflow.png` — 404 on both sites
