@@ -11,7 +11,7 @@ export const mainNav: NavItem[] = [
   { label: 'documentation', href: '/docs/' },
   { label: 'forum', href: 'https://discourse.nodered.org', external: true },
   { label: 'flows', href: 'https://flows.nodered.org', external: true },
-  { label: 'github', href: 'https://github.com/node-red/node-red', external: true },
+  { label: 'github', href: 'https://github.com/node-red', external: true },
 ];
 
 export const footerLinks = [
@@ -28,7 +28,7 @@ export const footerLinks = [
     title: 'Community',
     links: [
       { label: 'Slack', href: '/about/community/slack/' },
-      { label: 'GitHub', href: 'https://github.com/node-red/node-red' },
+      { label: 'GitHub', href: 'https://github.com/node-red' },
       { label: 'Contribute', href: '/about/contribute/' },
       { label: 'Code of Conduct', href: '/about/conduct/' },
     ],
@@ -52,4 +52,5 @@ export const aboutSidebar = [
   { label: 'License', href: '/about/license/' },
   { label: 'Releases', href: '/about/releases/' },
   { label: 'Code of Conduct', href: '/about/conduct/' },
+  { label: 'Resources', href: '/about/resources/' },
 ];
