@@ -270,6 +270,12 @@ test.describe('Page Integrity', () => {
     expect(content).toContain('Node-RED Blog');
   });
 
+  test('resources page loads', async ({ page }) => {
+    const response = await page.goto('/about/resources/');
+    expect(response?.status()).toBe(200);
+    await expect(page.locator('.about-content')).toBeVisible();
+  });
+
   test('all main pages load without errors', async ({ page }) => {
     const pages = [
       '/',
@@ -282,6 +288,7 @@ test.describe('Page Integrity', () => {
       '/about/contribute/',
       '/about/conduct/',
       '/about/releases/',
+      '/about/resources/',
     ];
 
     for (const url of pages) {
@@ -300,5 +307,131 @@ test.describe('Page Integrity', () => {
       const title = await page.title();
       expect(title).toContain('Node-RED');
     }
+  });
+});
+
+// ===== BROKEN IMAGE DETECTION =====
+test.describe('Image Integrity', () => {
+  test('homepage images all load', async ({ page, request }) => {
+    await page.goto('/');
+    const images = page.locator('img[src]');
+    const count = await images.count();
+    const broken: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const src = await images.nth(i).getAttribute('src');
+      if (!src || src.startsWith('data:')) continue;
+      const url = src.startsWith('http') ? src : `http://localhost:4321${src}`;
+      try {
+        const resp = await request.get(url);
+        if (resp.status() !== 200) broken.push(src);
+      } catch {
+        broken.push(src);
+      }
+    }
+    expect(broken, `Broken images on homepage: ${broken.join(', ')}`).toEqual([]);
+  });
+
+  test('about pages images all load', async ({ page, request }) => {
+    const aboutPages = ['/about/', '/about/community/', '/about/governance/', '/about/resources/'];
+    const broken: string[] = [];
+    for (const url of aboutPages) {
+      await page.goto(url);
+      const images = page.locator('img[src]');
+      const count = await images.count();
+      for (let i = 0; i < count; i++) {
+        const src = await images.nth(i).getAttribute('src');
+        if (!src || src.startsWith('data:') || src.startsWith('http')) continue;
+        const imgUrl = `http://localhost:4321${src}`;
+        try {
+          const resp = await request.get(imgUrl);
+          if (resp.status() !== 200) broken.push(`${url} -> ${src}`);
+        } catch {
+          broken.push(`${url} -> ${src}`);
+        }
+      }
+    }
+    expect(broken, `Broken images: ${broken.join(', ')}`).toEqual([]);
+  });
+
+  test('blog listing images load', async ({ page, request }) => {
+    await page.goto('/blog/');
+    const images = page.locator('img[src]');
+    const count = await images.count();
+    const broken: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const src = await images.nth(i).getAttribute('src');
+      if (!src || src.startsWith('data:') || src.startsWith('http')) continue;
+      const url = `http://localhost:4321${src}`;
+      try {
+        const resp = await request.get(url);
+        if (resp.status() !== 200) broken.push(src);
+      } catch {
+        broken.push(src);
+      }
+    }
+    expect(broken, `Broken images on blog listing: ${broken.join(', ')}`).toEqual([]);
+  });
+});
+
+// ===== INTERNAL LINK INTEGRITY =====
+test.describe('Link Integrity', () => {
+  test('homepage internal links resolve', async ({ page, request }) => {
+    await page.goto('/');
+    const links = page.locator('a[href^="/"]');
+    const count = await links.count();
+    const broken: string[] = [];
+    const checked = new Set<string>();
+    for (let i = 0; i < count; i++) {
+      const href = await links.nth(i).getAttribute('href');
+      if (!href || checked.has(href)) continue;
+      checked.add(href);
+      try {
+        const resp = await request.get(`http://localhost:4321${href}`);
+        if (resp.status() === 404) broken.push(href);
+      } catch {
+        broken.push(href);
+      }
+    }
+    expect(broken, `Broken internal links on homepage: ${broken.join(', ')}`).toEqual([]);
+  });
+
+  test('about page internal links resolve', async ({ page, request }) => {
+    await page.goto('/about/');
+    const links = page.locator('a[href^="/"]');
+    const count = await links.count();
+    const broken: string[] = [];
+    const checked = new Set<string>();
+    for (let i = 0; i < count; i++) {
+      const href = await links.nth(i).getAttribute('href');
+      if (!href || checked.has(href)) continue;
+      checked.add(href);
+      try {
+        const resp = await request.get(`http://localhost:4321${href}`);
+        if (resp.status() === 404) broken.push(href);
+      } catch {
+        broken.push(href);
+      }
+    }
+    expect(broken, `Broken internal links on about: ${broken.join(', ')}`).toEqual([]);
+  });
+
+  test('footer links resolve', async ({ page, request }) => {
+    await page.goto('/');
+    const links = page.locator('footer a[href^="/"], .nr-footer a[href^="/"]');
+    const count = await links.count();
+    const broken: string[] = [];
+    const checked = new Set<string>();
+    for (let i = 0; i < count; i++) {
+      const href = await links.nth(i).getAttribute('href');
+      if (!href || checked.has(href)) continue;
+      checked.add(href);
+      try {
+        const resp = await request.get(`http://localhost:4321${href}`);
+        if (resp.status() === 404) broken.push(href);
+      } catch {
+        broken.push(href);
+      }
+    }
+    expect(broken, `Broken footer links: ${broken.join(', ')}`).toEqual([]);
   });
 });
