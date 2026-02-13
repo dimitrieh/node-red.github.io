@@ -56,14 +56,6 @@
   --nr-text-muted: #999;
 }
 
-/* ===== GLOBAL STYLES ===== */
-body {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 17px;
-  line-height: 1.7;
-  color: var(--nr-text);
-}
-
 /* ===== HEADER: Strip Starlight's default chrome, .nr-header handles visuals ===== */
 header.header {
   background: none;
