@@ -4,24 +4,24 @@ import { users } from '../data/users';
 ---
 
 <BaseLayout title="Home">
-  <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-content">
-        <h1>Low-code programming for event-driven applications</h1>
-        <p>
+  <section class="bg-gradient-to-br from-nr-red-dark via-nr-red to-nr-red-hover text-white py-20 px-5 pb-[120px] relative lt-xl:pb-12 lt-sm:py-12">
+    <div class="max-w-[1200px] mx-auto grid grid-cols-2 gap-16 items-center lt-xl:grid-cols-1 lt-xl:gap-10">
+      <div>
+        <h1 class="text-[42px] mb-6 text-white leading-[1.2] lt-sm:text-[30px]">Low-code programming for event-driven applications</h1>
+        <p class="text-lg leading-[1.7] mb-4 text-white/85">
           Node-RED is a programming tool for wiring together hardware devices, APIs and online services
           in new and interesting ways.
         </p>
-        <p>
+        <p class="text-lg leading-[1.7] mb-4 text-white/85">
           It provides a browser-based editor that makes it easy to wire together flows using the wide
           range of nodes in the palette that can be deployed to its runtime in a single-click.
         </p>
-        <div class="hero-buttons">
-          <a href="/docs/getting-started/" class="button primary">Get Started</a>
-          <a href="/docs/" class="button secondary">View Documentation</a>
+        <div class="flex gap-4 mt-8 lt-sm:flex-col">
+          <a href="/docs/getting-started/" class="inline-block py-3.5 px-8 rounded-lg font-heading text-[16px] font-semibold no-underline bg-nr-red text-white shadow-[0_4px_16px_rgba(199,80,80,0.4)] transition-all duration-200 hover:bg-nr-red-hover hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(199,80,80,0.5)] hover:no-underline">Get Started</a>
+          <a href="/docs/" class="nr-btn-secondary">View Documentation</a>
         </div>
       </div>
-      <div class="hero-video">
+      <div class="relative pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-[0_16px_48px_rgba(0,0,0,0.4)]">
         <iframe
           src="https://www.youtube.com/embed/ksGeUD26Mw0"
           title="Introduction - Node-RED Essentials"
@@ -30,46 +30,47 @@ import { users } from '../data/users';
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen
           loading="lazy"
+          class="absolute top-0 left-0 w-full h-full border-0"
         ></iframe>
       </div>
     </div>
-    <div class="hero-wave">
-      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <div class="absolute bottom-0 left-0 w-full leading-[0]">
+      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-[60px] block">
         <path d="M0,0 C480,60 960,60 1440,0 L1440,60 L0,60 Z" fill="#f5f5f5"/>
       </svg>
     </div>
   </section>
 
-  <section class="features">
-    <div class="features-inner">
-      <div class="feature">
-        <div class="feature-icon">
-          <img src="/images/nr-image-1.png" alt="Browser-based flow editing interface" />
+  <section class="py-20 px-5 bg-nr-bg-light">
+    <div class="max-w-[1200px] mx-auto grid grid-cols-3 gap-8 lt-xl:grid-cols-1">
+      <div class="bg-white p-10 rounded-xl text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
+        <div class="mb-6">
+          <img src="/images/nr-image-1.png" alt="Browser-based flow editing interface" class="w-20 h-20 object-contain" />
         </div>
-        <h2>Browser-based flow editing</h2>
-        <p>
+        <h2 class="text-[20px] mb-4">Browser-based flow editing</h2>
+        <p class="text-[15px] leading-[1.7] text-[#555]">
           Node-RED provides a browser-based flow editor that makes it easy to wire together flows
           using the wide range of nodes in the palette. Flows can be then deployed to the runtime
           in a single-click.
         </p>
       </div>
-      <div class="feature">
-        <div class="feature-icon">
-          <img src="/images/nr-image-2.png" alt="JavaScript function node" />
+      <div class="bg-white p-10 rounded-xl text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
+        <div class="mb-6">
+          <img src="/images/nr-image-2.png" alt="JavaScript function node" class="w-20 h-20 object-contain" />
         </div>
-        <h2>Built on Node.js</h2>
-        <p>
+        <h2 class="text-[20px] mb-4">Built on Node.js</h2>
+        <p class="text-[15px] leading-[1.7] text-[#555]">
           The light-weight runtime is built on Node.js, taking full advantage of its event-driven,
           non-blocking model. This makes it ideal to run at the edge of the network on low-cost
           hardware such as the Raspberry Pi as well as in the cloud.
         </p>
       </div>
-      <div class="feature">
-        <div class="feature-icon">
-          <img src="/images/nr-image-3.png" alt="Social development and sharing" />
+      <div class="bg-white p-10 rounded-xl text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
+        <div class="mb-6">
+          <img src="/images/nr-image-3.png" alt="Social development and sharing" class="w-20 h-20 object-contain" />
         </div>
-        <h2>Social Development</h2>
-        <p>
+        <h2 class="text-[20px] mb-4">Social Development</h2>
+        <p class="text-[15px] leading-[1.7] text-[#555]">
           The flows created in Node-RED are stored using JSON which can be easily imported and
           exported for sharing with others. An online flow library allows you to share your best
           flows with the world.
@@ -78,416 +79,63 @@ import { users } from '../data/users';
     </div>
   </section>
 
-  <section class="get-started">
-    <div class="get-started-inner">
-      <h2>Get Started</h2>
-      <div class="get-started-grid">
-        <a href="/docs/getting-started/local/" class="get-started-card">
-          <img src="/images/platform-local.png" alt="Run locally" />
-          <h3>Run locally</h3>
-          <p>Install Node-RED on your local machine to get started.</p>
+  <section class="py-20 px-5 bg-white">
+    <div class="max-w-[1200px] mx-auto">
+      <h2 class="text-[32px] text-center mb-12">Get Started</h2>
+      <div class="grid grid-cols-3 gap-8 lt-xl:grid-cols-1">
+        <a href="/docs/getting-started/local/" class="bg-[#f8f8f8] p-10 rounded-xl text-center no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:no-underline">
+          <img src="/images/platform-local.png" alt="Run locally" class="w-20 h-20 mb-5" />
+          <h3 class="text-[20px] mb-2.5">Run locally</h3>
+          <p class="text-sm text-[#555]">Install Node-RED on your local machine to get started.</p>
         </a>
-        <a href="/docs/getting-started/docker/" class="get-started-card">
-          <img src="/images/platform-local-docker.png" alt="Docker" />
-          <h3>Docker</h3>
-          <p>Run Node-RED in a Docker container for easy deployment.</p>
+        <a href="/docs/getting-started/docker/" class="bg-[#f8f8f8] p-10 rounded-xl text-center no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:no-underline">
+          <img src="/images/platform-local-docker.png" alt="Docker" class="w-20 h-20 mb-5" />
+          <h3 class="text-[20px] mb-2.5">Docker</h3>
+          <p class="text-sm text-[#555]">Run Node-RED in a Docker container for easy deployment.</p>
         </a>
-        <a href="/docs/getting-started/raspberrypi/" class="get-started-card">
-          <img src="/images/platform-device-pi.png" alt="Raspberry Pi" />
-          <h3>Raspberry Pi</h3>
-          <p>Run Node-RED on the Raspberry Pi for IoT projects.</p>
+        <a href="/docs/getting-started/raspberrypi/" class="bg-[#f8f8f8] p-10 rounded-xl text-center no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:no-underline">
+          <img src="/images/platform-device-pi.png" alt="Raspberry Pi" class="w-20 h-20 mb-5" />
+          <h3 class="text-[20px] mb-2.5">Raspberry Pi</h3>
+          <p class="text-sm text-[#555]">Run Node-RED on the Raspberry Pi for IoT projects.</p>
         </a>
       </div>
     </div>
   </section>
 
-  <section class="users">
-    <div class="users-inner">
-      <h2>Trusted by organizations worldwide</h2>
-      <div class="users-grid">
+  <section class="py-20 px-5 bg-nr-bg-light">
+    <div class="max-w-[1200px] mx-auto">
+      <h2 class="text-[28px] text-center mb-12">Trusted by organizations worldwide</h2>
+      <div class="grid grid-cols-6 gap-5 items-center justify-items-center lt-xl:grid-cols-3 lt-sm:grid-cols-2">
         {users.slice(0, 12).map((user) => (
-          <a href={user.url} target="_blank" rel="noopener" class="user-logo">
-            <img src={`/users/${user.logo}`} alt={user.name} loading="lazy" />
+          <a href={user.url} target="_blank" rel="noopener" class="flex items-center justify-center p-5 bg-white rounded-xl w-full min-h-[80px] transition-all duration-200 shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:scale-105 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
+            <img src={`/users/${user.logo}`} alt={user.name} loading="lazy" class="max-w-full max-h-[50px] object-contain" />
           </a>
         ))}
       </div>
     </div>
   </section>
 
-  <section class="community">
-    <div class="community-inner">
-      <h2>Join the Community</h2>
-      <div class="community-grid">
-        <a href="https://discourse.nodered.org" class="community-card" target="_blank" rel="noopener">
-          <h3>Forum</h3>
-          <p>Get help, share ideas and discuss Node-RED with the community.</p>
+  <section class="py-20 px-5 bg-white">
+    <div class="max-w-[1200px] mx-auto">
+      <h2 class="text-[32px] text-center mb-12">Join the Community</h2>
+      <div class="grid grid-cols-4 gap-6 lt-xl:grid-cols-2 lt-sm:grid-cols-1">
+        <a href="https://discourse.nodered.org" class="bg-[#f8f8f8] p-8 rounded-xl no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:bg-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:no-underline" target="_blank" rel="noopener">
+          <h3 class="text-lg mb-2.5 text-nr-red">Forum</h3>
+          <p class="text-sm text-[#555]">Get help, share ideas and discuss Node-RED with the community.</p>
         </a>
-        <a href="/about/community/slack/" class="community-card">
-          <h3>Slack</h3>
-          <p>Join the Node-RED Slack workspace for real-time chat.</p>
+        <a href="/about/community/slack/" class="bg-[#f8f8f8] p-8 rounded-xl no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:bg-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:no-underline">
+          <h3 class="text-lg mb-2.5 text-nr-red">Slack</h3>
+          <p class="text-sm text-[#555]">Join the Node-RED Slack workspace for real-time chat.</p>
         </a>
-        <a href="https://github.com/node-red" class="community-card" target="_blank" rel="noopener">
-          <h3>GitHub</h3>
-          <p>Contribute to Node-RED on GitHub or report issues.</p>
+        <a href="https://github.com/node-red" class="bg-[#f8f8f8] p-8 rounded-xl no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:bg-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:no-underline" target="_blank" rel="noopener">
+          <h3 class="text-lg mb-2.5 text-nr-red">GitHub</h3>
+          <p class="text-sm text-[#555]">Contribute to Node-RED on GitHub or report issues.</p>
         </a>
-        <a href="https://flows.nodered.org" class="community-card" target="_blank" rel="noopener">
-          <h3>Flow Library</h3>
-          <p>Discover and share flows, nodes and collections.</p>
+        <a href="https://flows.nodered.org" class="bg-[#f8f8f8] p-8 rounded-xl no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:bg-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:no-underline" target="_blank" rel="noopener">
+          <h3 class="text-lg mb-2.5 text-nr-red">Flow Library</h3>
+          <p class="text-sm text-[#555]">Discover and share flows, nodes and collections.</p>
         </a>
       </div>
     </div>
   </section>
 </BaseLayout>
-
-<style>
-  .hero {
-    background: linear-gradient(135deg, #8B2E2E 0%, #C75050 50%, #A63D3D 100%);
-    color: white;
-    padding: 80px 20px 120px;
-    position: relative;
-  }
-
-  .hero-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 64px;
-    align-items: center;
-  }
-
-  .hero-content h1 {
-    font-size: 42px;
-    margin-bottom: 24px;
-    color: white;
-    line-height: 1.2;
-  }
-
-  .hero-content p {
-    font-size: 18px;
-    line-height: 1.7;
-    margin-bottom: 16px;
-    color: rgba(255, 255, 255, 0.85);
-  }
-
-  .hero-buttons {
-    display: flex;
-    gap: 16px;
-    margin-top: 32px;
-  }
-
-  .button {
-    display: inline-block;
-    padding: 14px 32px;
-    border-radius: 8px;
-    font-family: 'Roboto Slab', serif;
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-
-  .button.primary {
-    background: #C75050;
-    color: white;
-    box-shadow: 0 4px 16px rgba(199, 80, 80, 0.4);
-  }
-
-  .button.primary:hover {
-    background: #A63D3D;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(199, 80, 80, 0.5);
-    text-decoration: none;
-  }
-
-  .button.secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-  }
-
-  .button.secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
-    text-decoration: none;
-  }
-
-  .hero-video {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
-  }
-
-  .hero-video iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-
-  .hero-wave {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    line-height: 0;
-  }
-
-  .hero-wave svg {
-    width: 100%;
-    height: 60px;
-    display: block;
-  }
-
-  .features {
-    padding: 80px 20px;
-    background: #f5f5f5;
-  }
-
-  .features-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-  }
-
-  .feature {
-    background: white;
-    padding: 40px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-
-  .feature:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  }
-
-  .feature-icon {
-    margin-bottom: 24px;
-  }
-
-  .feature-icon img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-  }
-
-  .feature h2 {
-    font-size: 20px;
-    margin-bottom: 16px;
-  }
-
-  .feature p {
-    font-size: 15px;
-    line-height: 1.7;
-    color: #555;
-  }
-
-  .get-started {
-    padding: 80px 20px;
-    background: white;
-  }
-
-  .get-started-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .get-started h2 {
-    font-size: 32px;
-    text-align: center;
-    margin-bottom: 48px;
-  }
-
-  .get-started-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-  }
-
-  .get-started-card {
-    background: #f8f8f8;
-    padding: 40px;
-    border-radius: 12px;
-    text-align: center;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.2s;
-    border: 2px solid transparent;
-  }
-
-  .get-started-card:hover {
-    border-color: #C75050;
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    text-decoration: none;
-  }
-
-  .get-started-card img {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 20px;
-  }
-
-  .get-started-card h3 {
-    font-size: 20px;
-    margin-bottom: 10px;
-  }
-
-  .get-started-card p {
-    font-size: 14px;
-    color: #555;
-  }
-
-  .users {
-    padding: 80px 20px;
-    background: #f5f5f5;
-  }
-
-  .users-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .users h2 {
-    font-size: 28px;
-    text-align: center;
-    margin-bottom: 48px;
-  }
-
-  .users-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 20px;
-    align-items: center;
-    justify-items: center;
-  }
-
-  .user-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: white;
-    border-radius: 12px;
-    width: 100%;
-    min-height: 80px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  }
-
-  .user-logo:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  }
-
-  .user-logo img {
-    max-width: 100%;
-    max-height: 50px;
-    object-fit: contain;
-  }
-
-  .community {
-    padding: 80px 20px;
-    background: white;
-  }
-
-  .community-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .community h2 {
-    font-size: 32px;
-    text-align: center;
-    margin-bottom: 48px;
-  }
-
-  .community-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-  }
-
-  .community-card {
-    background: #f8f8f8;
-    padding: 32px;
-    border-radius: 12px;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.2s;
-    border: 2px solid transparent;
-  }
-
-  .community-card:hover {
-    border-color: #C75050;
-    background: #fff;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-    text-decoration: none;
-  }
-
-  .community-card h3 {
-    font-size: 18px;
-    margin-bottom: 10px;
-    color: #C75050;
-  }
-
-  .community-card p {
-    font-size: 14px;
-    color: #555;
-  }
-
-  @media (max-width: 1000px) {
-    .hero-inner {
-      grid-template-columns: 1fr;
-      gap: 40px;
-    }
-
-    .features-inner {
-      grid-template-columns: 1fr;
-    }
-
-    .get-started-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .users-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    .community-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 600px) {
-    .hero {
-      padding: 48px 20px;
-    }
-
-    .hero-content h1 {
-      font-size: 30px;
-    }
-
-    .hero-buttons {
-      flex-direction: column;
-    }
-
-    .users-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .community-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
