@@ -29,174 +29,54 @@ const { posts, currentPage, totalPages } = Astro.props;
 ---
 
 <BaseLayout title={`Blog - Page ${currentPage}`}>
-  <nav class="blog-breadcrumbs" aria-label="Breadcrumb">
-    <ol class="blog-breadcrumbs-inner">
-      <li><a href="/">Node-RED</a></li>
-      <li><a href="/blog/">Blog</a></li>
-      <li><span aria-current="page">Page {currentPage}</span></li>
+  <nav class="nr-breadcrumbs" aria-label="Breadcrumb">
+    <ol class="nr-breadcrumbs-inner">
+      <li><a href="/" class="nr-breadcrumbs-link">Node-RED</a></li>
+      <li><a href="/blog/" class="nr-breadcrumbs-link">Blog</a></li>
+      <li><span aria-current="page" class="text-white">Page {currentPage}</span></li>
     </ol>
   </nav>
 
-  <div class="blog-listing">
-    <div class="blog-listing-inner">
-      <h1>Blog - Page {currentPage}</h1>
+  <div class="max-w-[1200px] mx-auto py-[30px] px-5">
+    <h1 class="text-[32px] mb-[30px] pb-[15px] nr-section-heading">Blog - Page {currentPage}</h1>
 
-      <div class="posts-grid">
-        {posts.map((post: any) => (
-          <article class="post-card">
-            <a href={blogPostUrl(post)}>
-              <h2>{post.data.title}</h2>
-              <time datetime={post.date.toISOString()}>{formatBlogDate(post.date)}</time>
-              {post.data.description && <p>{post.data.description}</p>}
-            </a>
-          </article>
-        ))}
-      </div>
-
-      <nav class="pagination">
-        {currentPage > 1 && (
-          <a href={currentPage === 2 ? '/blog/' : `/blog/page/${currentPage - 1}/`} class="prev">
-            &larr; Newer posts
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-[25px] lt-md:grid-cols-1">
+      {posts.map((post: any) => (
+        <article class="nr-card">
+          <a href={blogPostUrl(post)} class="block p-[25px] no-underline text-inherit hover:no-underline">
+            <h2 class="text-[20px] mb-2.5 text-nr-text">{post.data.title}</h2>
+            <time datetime={post.date.toISOString()} class="block text-[13px] text-nr-text-muted mb-2.5">{formatBlogDate(post.date)}</time>
+            {post.data.description && <p class="text-sm text-[#666] leading-relaxed">{post.data.description}</p>}
           </a>
-        )}
-        <span class="current">Page {currentPage} of {totalPages}</span>
-        {currentPage < totalPages && (
-          <a href={`/blog/page/${currentPage + 1}/`} class="next">
-            Older posts &rarr;
-          </a>
-        )}
-      </nav>
+        </article>
+      ))}
     </div>
+
+    <nav class="mt-10 flex justify-between items-center py-5 border-t border-[#ddd]">
+      {currentPage > 1 && (
+        <a href={currentPage === 2 ? '/blog/' : `/blog/page/${currentPage - 1}/`} class="nr-btn-primary">
+          &larr; Newer posts
+        </a>
+      )}
+      <span class="text-nr-text-muted text-sm">Page {currentPage} of {totalPages}</span>
+      {currentPage < totalPages && (
+        <a href={`/blog/page/${currentPage + 1}/`} class="nr-btn-primary">
+          Older posts &rarr;
+        </a>
+      )}
+    </nav>
   </div>
 </BaseLayout>
 
 <style>
-  .blog-breadcrumbs {
-    background: #C75050;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-  }
-
-  .blog-breadcrumbs-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    width: 100%;
-    color: white;
-    font-family: 'Roboto Slab', serif;
-    font-size: 16px;
-    display: flex;
-    list-style: none;
-  }
-
-  .blog-breadcrumbs-inner li::before {
+  .nr-breadcrumbs-inner li::before {
     content: '/';
     color: rgba(255, 255, 255, 0.6);
     margin: 0 10px;
   }
 
-  .blog-breadcrumbs-inner li:first-child::before {
+  .nr-breadcrumbs-inner li:first-child::before {
     content: '';
     margin: 0;
-  }
-
-  .blog-breadcrumbs a {
-    color: white;
-    text-decoration: none;
-  }
-
-  .blog-breadcrumbs a:hover {
-    text-decoration: underline;
-    color: white;
-  }
-
-  .blog-listing {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 30px 20px;
-  }
-
-  .blog-listing-inner h1 {
-    font-size: 32px;
-    margin-bottom: 30px;
-    padding-bottom: 15px;
-    border-bottom: 3px solid #C75050;
-  }
-
-  .posts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 25px;
-  }
-
-  .post-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.2s;
-  }
-
-  .post-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  .post-card a {
-    display: block;
-    padding: 25px;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .post-card h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
-    color: #2D2D2D;
-  }
-
-  .post-card time {
-    display: block;
-    font-size: 13px;
-    color: #6B6B6B;
-    margin-bottom: 10px;
-  }
-
-  .post-card p {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.5;
-  }
-
-  .pagination {
-    margin-top: 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 0;
-    border-top: 1px solid #ddd;
-  }
-
-  .pagination .current {
-    color: #6B6B6B;
-    font-size: 14px;
-  }
-
-  .pagination a {
-    font-family: 'Roboto Slab', serif;
-    text-decoration: none;
-    padding: 10px 20px;
-    background: #C75050;
-    color: white;
-    border-radius: 8px;
-  }
-
-  .pagination a:hover {
-    background: #A63D3D;
-  }
-
-  @media (max-width: 768px) {
-    .posts-grid {
-      grid-template-columns: 1fr;
-    }
   }
 </style>
