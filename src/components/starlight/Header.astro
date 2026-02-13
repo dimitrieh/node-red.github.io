@@ -9,22 +9,25 @@ const { hasSidebar, locale } = Astro.props;
 const currentPath = Astro.url.pathname;
 ---
 
-<a href="#_top" class="skip-link">Skip to main content</a>
+<a href="#_top" class="absolute top-[-100%] left-4 bg-nr-red text-white px-4 py-2 rounded-b-lg z-[1000] font-semibold no-underline focus:top-0">Skip to main content</a>
 
-<div class="nr-header">
-  <div class="nr-header-inner">
-    <div class="nr-brand">
-      <a href="/" class="nr-logo">
-        <img src="/node-red-icon.png" alt="" width="40" height="40" />
-        <span class="nr-title">Node-RED</span>
+<div class="bg-nr-bg-dark border-b-3 border-nr-red">
+  <div class="max-w-[1200px] mx-auto flex items-center justify-between px-5 h-[60px]">
+    <div class="shrink-0">
+      <a href="/" class="flex items-center gap-3 no-underline">
+        <img src="/node-red-icon.png" alt="" width="40" height="40" class="w-10 h-10" />
+        <span class="font-heading font-bold text-[20px] text-nr-text-light">Node-RED</span>
       </a>
     </div>
 
-    <nav class="nr-nav desktop-nav" aria-label="Main navigation">
+    <nav class="flex gap-0 lt-lg:hidden" aria-label="Main navigation">
       {mainNav.map((item) => (
         <a
           href={item.href}
-          class:list={['nr-nav-link', { active: item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }]}
+          class:list={[
+            'font-heading text-[16px] text-[#C0C0C0] no-underline py-5 px-[15px] border-b-3 border-transparent mb-[-3px] transition-all duration-200 hover:text-nr-text-light hover:border-b-nr-red hover:no-underline',
+            { 'text-nr-text-light! border-b-nr-red!': item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }
+          ]}
           {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           {...(!item.external && (item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href)) ? { 'aria-current': 'page' } : {})}
         >
@@ -33,10 +36,10 @@ const currentPath = Astro.url.pathname;
       ))}
     </nav>
 
-    <div class="nr-header-right">
+    <div class="flex items-center gap-4">
       <Search />
       <ThemeSelect />
-      <button class="nr-mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <button class="hidden lt-lg:block bg-transparent border-none text-[#C0C0C0] cursor-pointer p-2 hover:text-nr-text-light nr-mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -46,11 +49,14 @@ const currentPath = Astro.url.pathname;
     </div>
   </div>
 
-  <nav class="nr-nav mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+  <nav class="hidden flex-col bg-nr-bg-dark px-5 pb-5 mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
     {mainNav.map((item) => (
       <a
         href={item.href}
-        class:list={['nr-nav-link', { active: item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }]}
+        class:list={[
+          'font-heading text-[16px] text-[#C0C0C0] no-underline py-3 border-b border-[#333] transition-all duration-200 hover:text-nr-text-light hover:no-underline',
+          { 'text-nr-text-light!': item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }
+        ]}
         {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       >
         {item.label}
@@ -60,134 +66,10 @@ const currentPath = Astro.url.pathname;
 </div>
 
 <style>
-  .skip-link {
-    position: absolute;
-    top: -100%;
-    left: 16px;
-    background: #C75050;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 0 0 8px 8px;
-    z-index: 1000;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .skip-link:focus {
-    top: 0;
-  }
-
-  .nr-header {
-    background: #1E1E1E;
-    border-bottom: 3px solid #C75050;
-  }
-
-  .nr-header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    height: 60px;
-  }
-
-  .nr-brand {
-    flex-shrink: 0;
-  }
-
-  .nr-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-  }
-
-  .nr-logo img {
-    width: 40px;
-    height: 40px;
-  }
-
-  .nr-title {
-    font-family: 'Roboto Slab', serif;
-    font-weight: 700;
-    font-size: 20px;
-    color: #f0f0f0;
-  }
-
-  .nr-nav {
-    display: flex;
-    gap: 0;
-  }
-
-  .nr-nav-link {
-    font-family: 'Roboto Slab', serif;
-    font-size: 16px;
-    color: #C0C0C0;
-    text-decoration: none;
-    padding: 20px 15px;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -3px;
-    transition: color 0.2s, border-color 0.2s;
-  }
-
-  .nr-nav-link:hover,
-  .nr-nav-link.active {
-    color: #f0f0f0;
-    border-bottom-color: #C75050;
-  }
-
-  .nr-header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .nr-mobile-toggle {
-    display: none;
-    background: none;
-    border: none;
-    color: #C0C0C0;
-    cursor: pointer;
-    padding: 8px;
-  }
-
-  .nr-mobile-toggle:hover {
-    color: #f0f0f0;
-  }
-
-  .mobile-nav {
-    display: none;
-    flex-direction: column;
-    background: #1E1E1E;
-    padding: 0 20px 20px;
-  }
-
-  .mobile-nav .nr-nav-link {
-    padding: 12px 0;
-    border-bottom: 1px solid #333;
-    margin-bottom: 0;
-  }
-
-  .mobile-nav .nr-nav-link:last-child {
-    border-bottom: none;
-  }
-
   .mobile-nav[aria-hidden="false"] {
     display: flex;
   }
 
-  @media (max-width: 900px) {
-    .desktop-nav {
-      display: none;
-    }
-
-    .nr-mobile-toggle {
-      display: block;
-    }
-  }
-
-  /* Override Starlight search styling */
   :global(site-search) {
     --sl-search-result-highlight-bg: #C75050;
   }
