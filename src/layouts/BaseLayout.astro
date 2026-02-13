@@ -25,23 +25,26 @@ const currentPath = Astro.url.pathname;
       rel="stylesheet"
     />
   </head>
-  <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+  <body class="font-sans text-[17px] leading-[1.7] text-nr-text bg-nr-bg-light min-h-screen flex flex-col m-0">
+    <a href="#main-content" class="absolute top-[-100%] left-4 bg-nr-red text-white px-4 py-2 rounded-b-lg z-[1000] font-semibold no-underline focus:top-0">Skip to main content</a>
 
-    <header class="nr-header">
-      <div class="nr-header-inner">
-        <div class="nr-brand">
-          <a href="/" class="nr-logo">
-            <img src="/node-red-icon.png" alt="" width="40" height="40" />
-            <span class="nr-title">Node-RED</span>
+    <header class="bg-nr-bg-dark border-b-3 border-nr-red sticky top-0 z-100">
+      <div class="max-w-[1200px] mx-auto flex items-center justify-between px-5 h-16">
+        <div class="shrink-0">
+          <a href="/" class="flex items-center gap-3 no-underline hover:no-underline">
+            <img src="/node-red-icon.png" alt="" width="40" height="40" class="w-10 h-10" />
+            <span class="font-heading font-bold text-[20px] text-nr-text-light">Node-RED</span>
           </a>
         </div>
 
-        <nav class="nr-nav desktop-nav" aria-label="Main navigation">
+        <nav class="flex gap-0 lt-lg:hidden" aria-label="Main navigation">
           {mainNav.map((item) => (
             <a
               href={item.href}
-              class:list={['nr-nav-link', { active: item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }]}
+              class:list={[
+                'font-heading text-[15px] text-[#C0C0C0] no-underline py-[22px] px-[14px] border-b-3 border-transparent mb-[-3px] transition-all duration-200 hover:text-nr-text-light hover:border-b-nr-red hover:no-underline',
+                { 'text-nr-text-light! border-b-nr-red!': item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }
+              ]}
               {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               {...(!item.external && (item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href)) ? { 'aria-current': 'page' } : {})}
             >
@@ -50,7 +53,7 @@ const currentPath = Astro.url.pathname;
           ))}
         </nav>
 
-        <button class="nr-mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <button class="hidden lt-lg:block bg-transparent border-none text-[#C0C0C0] cursor-pointer p-2 hover:text-nr-text-light nr-mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -59,11 +62,14 @@ const currentPath = Astro.url.pathname;
         </button>
       </div>
 
-      <nav class="nr-nav mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+      <nav class="hidden flex-col bg-nr-bg-dark px-5 pb-5 mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
         {mainNav.map((item) => (
           <a
             href={item.href}
-            class:list={['nr-nav-link', { active: item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }]}
+            class:list={[
+              'font-heading text-[15px] text-[#C0C0C0] no-underline py-3 border-b border-[#333] mb-0 transition-all duration-200 hover:text-nr-text-light hover:no-underline',
+              { 'text-nr-text-light!': item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }
+            ]}
             {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           >
             {item.label}
@@ -72,27 +78,29 @@ const currentPath = Astro.url.pathname;
       </nav>
     </header>
 
-    <main id="main-content">
+    <main id="main-content" class="flex-1">
       <slot />
     </main>
 
-    <footer class="nr-footer" aria-label="Site footer">
-      <div class="nr-footer-inner">
-        <div class="nr-footer-brand">
-          <a href="/" class="nr-footer-logo">
-            <img src="/node-red-icon.png" alt="" width="50" height="50" />
+    <footer class="bg-nr-bg-dark text-nr-text-light mt-auto" aria-label="Site footer">
+      <div class="max-w-[1200px] mx-auto py-12 px-5 grid grid-cols-[1fr_2fr] gap-12 lt-md:grid-cols-1">
+        <div>
+          <a href="/" class="flex items-center gap-3 no-underline text-nr-text-light font-heading text-[24px] font-bold hover:no-underline">
+            <img src="/node-red-icon.png" alt="" width="50" height="50" class="w-[50px] h-[50px]" />
             <span>Node-RED</span>
           </a>
-          <p class="nr-footer-tagline">Low-code programming for event-driven applications</p>
+          <p class="text-[#888] mt-3 text-sm">Low-code programming for event-driven applications</p>
         </div>
 
-        <div class="nr-footer-links">
+        <div class="grid grid-cols-3 gap-8 lt-md:grid-cols-2 lt-sm:grid-cols-1">
           {footerLinks.map((section) => (
-            <div class="nr-footer-section">
-              <p class="nr-footer-heading">{section.title}</p>
-              <ul>
+            <div>
+              <p class="font-heading text-[15px] font-semibold mb-4 text-nr-text-light">{section.title}</p>
+              <ul class="list-none p-0 m-0">
                 {section.links.map((link) => (
-                  <li><a href={link.href}>{link.label}</a></li>
+                  <li class="my-2">
+                    <a href={link.href} class="text-[#999] text-sm no-underline transition-colors duration-200 hover:text-nr-text-light hover:no-underline">{link.label}</a>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -100,33 +108,33 @@ const currentPath = Astro.url.pathname;
         </div>
       </div>
 
-      <div class="nr-footer-bottom">
-        <div class="nr-footer-bottom-inner">
-          <p>
+      <div class="bg-[#161616] py-5">
+        <div class="max-w-[1200px] mx-auto px-5 flex justify-between items-start gap-5 lt-md:flex-col">
+          <p class="text-xs text-[#888] m-0">
             Copyright &copy; OpenJS Foundation and Node-RED contributors. All rights reserved.
-            The <a href="https://openjsf.org">OpenJS Foundation</a> has registered trademarks and uses trademarks.
-            For a list of trademarks of the OpenJS Foundation, please see our <a href="https://trademark-policy.openjsf.org">Trademark Policy</a>
-            and <a href="https://trademark-list.openjsf.org">Trademark List</a>.
-            <a href="https://terms-of-use.openjsf.org">Terms of Use</a> |
-            <a href="https://privacy-policy.openjsf.org">Privacy Policy</a> |
-            <a href="https://bylaws.openjsf.org">Bylaws</a> |
-            <a href="https://www.linuxfoundation.org/cookies">Cookie Policy</a>
+            The <a href="https://openjsf.org" class="text-nr-red underline">OpenJS Foundation</a> has registered trademarks and uses trademarks.
+            For a list of trademarks of the OpenJS Foundation, please see our <a href="https://trademark-policy.openjsf.org" class="text-nr-red underline">Trademark Policy</a>
+            and <a href="https://trademark-list.openjsf.org" class="text-nr-red underline">Trademark List</a>.
+            <a href="https://terms-of-use.openjsf.org" class="text-nr-red underline">Terms of Use</a> |
+            <a href="https://privacy-policy.openjsf.org" class="text-nr-red underline">Privacy Policy</a> |
+            <a href="https://bylaws.openjsf.org" class="text-nr-red underline">Bylaws</a> |
+            <a href="https://www.linuxfoundation.org/cookies" class="text-nr-red underline">Cookie Policy</a>
           </p>
-          <div class="nr-footer-social">
-            <a href="https://social.nodered.org/@nodered" target="_blank" rel="noopener noreferrer me" aria-label="Mastodon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.268 5.313c-.35-2.578-2.617-4.61-5.304-5.004C17.51.242 15.792 0 11.813 0h-.03c-3.98 0-4.835.242-5.288.309C3.882.692 1.496 2.518.917 5.127.64 6.412.61 7.837.661 9.143c.074 1.874.088 3.745.26 5.611.118 1.24.325 2.47.62 3.68.55 2.237 2.777 4.098 4.96 4.857 2.336.792 4.849.923 7.256.38.265-.061.527-.132.786-.213.585-.184 1.27-.39 1.774-.753a.057.057 0 0 0 .023-.043v-1.809a.052.052 0 0 0-.02-.041.053.053 0 0 0-.046-.01 20.282 20.282 0 0 1-4.709.545c-2.73 0-3.463-1.284-3.674-1.818a5.593 5.593 0 0 1-.319-1.433.053.053 0 0 1 .066-.054 19.648 19.648 0 0 0 4.636.536c.564 0 1.128-.028 1.688-.072 2.92-.23 5.707-.868 5.91-6.997.008-.174.023-1.768.023-1.945 0-.596.183-4.229-.025-6.463zM19.56 13.17h-2.74V7.893c0-1.142-.476-1.722-1.427-1.722-1.052 0-1.58.688-1.58 2.05v2.887h-2.724V8.22c0-1.362-.527-2.05-1.58-2.05-.95 0-1.426.58-1.426 1.722v5.278H5.343V7.683c0-1.142.291-2.05.874-2.723.601-.674 1.389-1.019 2.368-1.019 1.133 0 1.993.436 2.568 1.308l.553.928.553-.928c.575-.872 1.435-1.308 2.568-1.308.98 0 1.767.345 2.368 1.019.583.673.874 1.58.874 2.723v5.487z"/></svg>
+          <div class="flex gap-4 shrink-0">
+            <a href="https://social.nodered.org/@nodered" target="_blank" rel="noopener noreferrer me" aria-label="Mastodon" class="text-[#999] no-underline transition-colors duration-200 hover:text-nr-text-light">
+              <div class="i-simple-icons-mastodon w-5 h-5"></div>
             </a>
-            <a href="https://twitter.com/nodered" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <a href="https://twitter.com/nodered" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="text-[#999] no-underline transition-colors duration-200 hover:text-nr-text-light">
+              <div class="i-simple-icons-x w-5 h-5"></div>
             </a>
-            <a href="https://github.com/node-red" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            <a href="https://github.com/node-red" target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="text-[#999] no-underline transition-colors duration-200 hover:text-nr-text-light">
+              <div class="i-simple-icons-github w-5 h-5"></div>
             </a>
           </div>
         </div>
-        <div class="nr-footer-openjs">
+        <div class="max-w-[1200px] mx-auto px-5 pt-4">
           <a href="https://openjsf.org" target="_blank" rel="noopener noreferrer">
-            <img src="/images/openjs_foundation-logo.svg" alt="OpenJS Foundation" class="nr-openjs-logo" />
+            <img src="/images/openjs_foundation-logo.svg" alt="OpenJS Foundation" class="h-10 opacity-80 transition-opacity duration-200 hover:opacity-100" />
           </a>
         </div>
       </div>
@@ -150,21 +158,6 @@ const currentPath = Astro.url.pathname;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-
-  body {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 17px;
-    line-height: 1.7;
-    color: #2D2D2D;
-    background: #f5f5f5;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  main {
-    flex: 1;
   }
 
   a {
@@ -208,13 +201,11 @@ const currentPath = Astro.url.pathname;
     padding: 0;
   }
 
-  /* Focus indicators for accessibility */
   :focus-visible {
     outline: 3px solid #C75050;
     outline-offset: 2px;
   }
 
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -223,278 +214,8 @@ const currentPath = Astro.url.pathname;
       scroll-behavior: auto !important;
     }
   }
-</style>
-
-<style>
-  .skip-link {
-    position: absolute;
-    top: -100%;
-    left: 16px;
-    background: #C75050;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 0 0 8px 8px;
-    z-index: 1000;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .skip-link:focus {
-    top: 0;
-  }
-
-  .nr-header {
-    background: #1E1E1E;
-    border-bottom: 3px solid #C75050;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .nr-header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    height: 64px;
-  }
-
-  .nr-brand {
-    flex-shrink: 0;
-  }
-
-  .nr-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-  }
-
-  .nr-logo:hover {
-    text-decoration: none;
-  }
-
-  .nr-logo img {
-    width: 40px;
-    height: 40px;
-  }
-
-  .nr-title {
-    font-family: 'Roboto Slab', serif;
-    font-weight: 700;
-    font-size: 20px;
-    color: #f0f0f0;
-  }
-
-  .nr-nav {
-    display: flex;
-    gap: 0;
-  }
-
-  .nr-nav-link {
-    font-family: 'Roboto Slab', serif;
-    font-size: 15px;
-    color: #C0C0C0;
-    text-decoration: none;
-    padding: 22px 14px;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -3px;
-    transition: color 0.2s, border-color 0.2s;
-  }
-
-  .nr-nav-link:hover,
-  .nr-nav-link.active {
-    color: #f0f0f0;
-    border-bottom-color: #C75050;
-    text-decoration: none;
-  }
-
-  .nr-mobile-toggle {
-    display: none;
-    background: none;
-    border: none;
-    color: #C0C0C0;
-    cursor: pointer;
-    padding: 8px;
-  }
-
-  .nr-mobile-toggle:hover {
-    color: #f0f0f0;
-  }
-
-  .mobile-nav {
-    display: none;
-    flex-direction: column;
-    background: #1E1E1E;
-    padding: 0 20px 20px;
-  }
-
-  .mobile-nav .nr-nav-link {
-    padding: 12px 0;
-    border-bottom: 1px solid #333;
-    margin-bottom: 0;
-  }
 
   .mobile-nav[aria-hidden="false"] {
     display: flex;
-  }
-
-  @media (max-width: 900px) {
-    .desktop-nav {
-      display: none;
-    }
-
-    .nr-mobile-toggle {
-      display: block;
-    }
-  }
-
-  .nr-footer {
-    background: #1E1E1E;
-    color: #f0f0f0;
-    margin-top: auto;
-  }
-
-  .nr-footer-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 48px 20px;
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 48px;
-  }
-
-  .nr-footer-brand a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: #f0f0f0;
-    font-family: 'Roboto Slab', serif;
-    font-size: 24px;
-    font-weight: 700;
-  }
-
-  .nr-footer-brand a:hover {
-    text-decoration: none;
-  }
-
-  .nr-footer-brand img {
-    width: 50px;
-    height: 50px;
-  }
-
-  .nr-footer-tagline {
-    color: #888;
-    margin-top: 12px;
-    font-size: 14px;
-  }
-
-  .nr-footer-links {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-  }
-
-  .nr-footer-heading {
-    font-family: 'Roboto Slab', serif;
-    font-size: 15px;
-    font-weight: 600;
-    margin: 0 0 16px 0;
-    color: #f0f0f0;
-  }
-
-  .nr-footer-section ul {
-    list-style: none;
-  }
-
-  .nr-footer-section li {
-    margin: 8px 0;
-  }
-
-  .nr-footer-section a {
-    color: #999;
-    font-size: 14px;
-    transition: color 0.2s;
-  }
-
-  .nr-footer-section a:hover {
-    color: #f0f0f0;
-    text-decoration: none;
-  }
-
-  .nr-footer-bottom {
-    background: #161616;
-    padding: 20px 0;
-  }
-
-  .nr-footer-bottom-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
-  .nr-footer-social {
-    display: flex;
-    gap: 16px;
-    flex-shrink: 0;
-  }
-
-  .nr-footer-social a {
-    color: #999;
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .nr-footer-social a:hover {
-    color: #f0f0f0;
-  }
-
-  .nr-footer-bottom p {
-    font-size: 12px;
-    color: #888;
-  }
-
-  .nr-footer-bottom a {
-    color: #C75050;
-    text-decoration: underline;
-  }
-
-  .nr-footer-openjs {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 16px 20px 0;
-  }
-
-  .nr-openjs-logo {
-    height: 40px;
-    opacity: 0.8;
-    transition: opacity 0.2s;
-  }
-
-  .nr-openjs-logo:hover {
-    opacity: 1;
-  }
-
-  @media (max-width: 768px) {
-    .nr-footer-inner {
-      grid-template-columns: 1fr;
-    }
-
-    .nr-footer-links {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 480px) {
-    .nr-footer-links {
-      grid-template-columns: 1fr;
-    }
   }
 </style>
