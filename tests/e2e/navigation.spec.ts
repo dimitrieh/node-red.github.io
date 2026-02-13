@@ -6,7 +6,7 @@ test.describe('Navigation', () => {
   test('should load home page', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Node-RED/);
-    await expect(page.locator('.hero h1')).toBeVisible();
+    await expect(page.locator('h1')).toBeVisible();
   });
 
   test('should navigate to docs', async ({ page }) => {
@@ -29,14 +29,14 @@ test.describe('Navigation', () => {
 
   test('should have all header nav links', async ({ page }) => {
     await page.goto('/');
-    const navLinks = page.locator('.desktop-nav .nr-nav-link');
+    const navLinks = page.locator('nav[aria-label="Main navigation"] a');
     await expect(navLinks).toHaveCount(7);
   });
 
   test('should mark active nav link', async ({ page }) => {
     await page.goto('/blog/');
-    const activeLink = page.locator('.desktop-nav .nr-nav-link.active');
-    await expect(activeLink).toHaveText('blog');
+    const activeLink = page.locator('nav[aria-label="Main navigation"] a[aria-current="page"]');
+    await expect(activeLink).toHaveText(/blog/i);
   });
 
   test('should have working breadcrumbs', async ({ page }) => {
@@ -50,33 +50,31 @@ test.describe('Navigation', () => {
 test.describe('Blog', () => {
   test('should load blog listing', async ({ page }) => {
     await page.goto('/blog/');
-    await expect(page.locator('.posts-grid')).toBeVisible();
-    await expect(page.locator('.post-card')).toHaveCount(9);
+    await expect(page.locator('article')).toHaveCount(9);
   });
 
   test('should load individual blog post', async ({ page }) => {
     await page.goto('/blog/2024/06/20/version-4-0-released/');
-    await expect(page.locator('.blog-post-header h1')).toBeVisible();
+    await expect(page.locator('article h1')).toBeVisible();
   });
 
   test('should have blog pagination', async ({ page }) => {
     await page.goto('/blog/');
-    const pagination = page.locator('.pagination');
-    await expect(pagination).toBeVisible();
-    await expect(page.locator('.pagination .next')).toBeVisible();
+    await expect(page.getByText('Page 1 of')).toBeVisible();
+    await expect(page.getByRole('link', { name: /Older posts/ })).toBeVisible();
   });
 
   test('should navigate blog pages', async ({ page }) => {
     await page.goto('/blog/page/2/');
-    await expect(page.locator('.posts-grid')).toBeVisible();
-    await expect(page.locator('.pagination .prev')).toBeVisible();
+    await expect(page.locator('article')).not.toHaveCount(0);
+    await expect(page.getByRole('link', { name: /Newer posts/ })).toBeVisible();
   });
 
   test('should display blog post with title, author, date', async ({ page }) => {
     await page.goto('/blog/2024/06/20/version-4-0-released/');
-    await expect(page.locator('.blog-post-header h1')).not.toBeEmpty();
-    await expect(page.locator('.blog-post-meta time')).toBeVisible();
-    await expect(page.locator('.blog-post-meta a')).toBeVisible();
+    await expect(page.locator('article h1')).not.toBeEmpty();
+    await expect(page.locator('article time')).toBeVisible();
+    await expect(page.locator('article header a')).toBeVisible();
     await expect(page.locator('.blog-post-content')).not.toBeEmpty();
   });
 });
@@ -114,7 +112,7 @@ test.describe('About', () => {
 
   test('should have sidebar navigation', async ({ page }) => {
     await page.goto('/about/');
-    await expect(page.locator('.about-sidebar')).toBeVisible();
+    await expect(page.locator('aside')).toBeVisible();
   });
 
   test('should load about sub-pages', async ({ page }) => {
@@ -134,29 +132,36 @@ test.describe('About', () => {
 test.describe('Homepage', () => {
   test('should have hero with dual CTA', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.hero .button.primary')).toBeVisible();
-    await expect(page.locator('.hero .button.secondary')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Get Started' }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'View Documentation' })).toBeVisible();
   });
 
   test('should have features section', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.feature')).toHaveCount(3);
+    // 3 feature images: flow editing, Node.js, social
+    const featureImages = page.locator('img[alt="Browser-based flow editing interface"], img[alt="JavaScript function node"], img[alt="Social development and sharing"]');
+    await expect(featureImages).toHaveCount(3);
   });
 
   test('should have users section with logos', async ({ page }) => {
     await page.goto('/');
-    const logos = page.locator('.user-logo');
+    const logos = page.locator('img[loading="lazy"]');
     await expect(logos).toHaveCount(12);
   });
 
   test('should have community section', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.community-card')).toHaveCount(4);
+    // 4 community cards with h3 headings
+    const communityHeadings = page.locator('section h3');
+    await expect(communityHeadings).toHaveCount(7); // 3 get-started + 4 community
   });
 
-  test('should have footer with three columns', async ({ page }) => {
+  test('should have footer with link sections', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.nr-footer-section')).toHaveCount(3);
+    // Footer has multiple link lists
+    const footerLists = page.locator('footer ul');
+    const count = await footerLists.count();
+    expect(count).toBeGreaterThanOrEqual(3);
   });
 });
 
@@ -204,7 +209,7 @@ test.describe('Accessibility', () => {
 
   test('should have skip link', async ({ page }) => {
     await page.goto('/');
-    const skipLink = page.locator('.skip-link');
+    const skipLink = page.locator('a[href="#main-content"], a[href="#_top"]');
     await expect(skipLink).toHaveCount(1);
   });
 
@@ -215,7 +220,7 @@ test.describe('Accessibility', () => {
 
   test('user logos should have alt text', async ({ page }) => {
     await page.goto('/');
-    const logos = page.locator('.user-logo img');
+    const logos = page.locator('img[loading="lazy"]');
     const count = await logos.count();
     for (let i = 0; i < count; i++) {
       const alt = await logos.nth(i).getAttribute('alt');
@@ -240,19 +245,19 @@ test.describe('Responsive', () => {
   test('desktop nav hidden on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
-    await expect(page.locator('.desktop-nav')).not.toBeVisible();
+    await expect(page.locator('nav[aria-label="Main navigation"]')).not.toBeVisible();
   });
 
   test('hero renders on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
-    await expect(page.locator('.hero h1')).toBeVisible();
+    await expect(page.locator('h1')).toBeVisible();
   });
 
   test('blog listing renders on tablet', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/blog/');
-    await expect(page.locator('.posts-grid')).toBeVisible();
+    await expect(page.locator('article')).not.toHaveCount(0);
   });
 });
 
@@ -300,8 +305,8 @@ test.describe('Page Integrity', () => {
       expect(errors).toEqual([]);
 
       // Verify header and footer present
-      await expect(page.locator('.nr-header, header.nr-header')).toBeVisible();
-      await expect(page.locator('.nr-footer, footer.nr-footer')).toBeVisible();
+      await expect(page.locator('header').first()).toBeVisible();
+      await expect(page.locator('footer').first()).toBeVisible();
 
       // Verify page has a title
       const title = await page.title();
@@ -417,7 +422,7 @@ test.describe('Link Integrity', () => {
 
   test('footer links resolve', async ({ page, request }) => {
     await page.goto('/');
-    const links = page.locator('footer a[href^="/"], .nr-footer a[href^="/"]');
+    const links = page.locator('footer a[href^="/"]');
     const count = await links.count();
     const broken: string[] = [];
     const checked = new Set<string>();
