@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import UnoCSS from '@unocss/astro';
 
 import sitemap from '@astrojs/sitemap';
 
@@ -16,6 +17,7 @@ export default defineConfig({
     },
   },
   integrations: [
+    UnoCSS(),
     starlight({
       title: 'Node-RED',
       logo: {
