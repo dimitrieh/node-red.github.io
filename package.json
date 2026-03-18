@@ -15,20 +15,25 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@astrojs/rss": "^4.0.15",
-    "@astrojs/sitemap": "^3.7.0",
-    "@astrojs/starlight": "^0.37.6",
-    "astro": "^5.6.1",
-    "sharp": "^0.34.2"
+    "@astrojs/rss": "^4.0.17",
+    "@astrojs/sitemap": "^3.7.1",
+    "@astrojs/starlight": "^0.38.1",
+    "astro": "^6.0.6",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
-    "@iconify-json/simple-icons": "^1.2.70",
+    "@iconify-json/simple-icons": "^1.2.74",
     "@playwright/test": "^1.58.2",
-    "@unocss/astro": "^66.6.0",
-    "@unocss/preset-icons": "^66.6.0",
-    "@unocss/preset-wind": "^66.6.0",
-    "unocss": "^66.6.0",
-    "vitest": "^4.0.18"
+    "@unocss/astro": "^66.6.7",
+    "@unocss/preset-icons": "^66.6.7",
+    "@unocss/preset-wind": "^66.6.7",
+    "unocss": "^66.6.7",
+    "vite": "^8.0.0",
+    "vite-plus": "^0.1.12",
+    "vitest": "^4.1.0"
+  },
+  "overrides": {
+    "vite": "^8.0.0"
   }
 }
