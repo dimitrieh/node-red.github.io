@@ -29,8 +29,8 @@ export default defineConfig({
       },
     },
     fontFamily: {
-      sans: ['Open Sans', 'sans-serif'],
-      heading: ['Roboto Slab', 'serif'],
+      sans: ['Google Sans Flex', 'sans-serif'],
+      heading: ['Google Sans Flex', 'sans-serif'],
       mono: ['Ubuntu Mono', 'monospace'],
     },
     breakpoints: {

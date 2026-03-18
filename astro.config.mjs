@@ -92,7 +92,7 @@ export default defineConfig({
         {
           tag: 'link',
           attrs: {
-            href: 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Slab:wght@400;700&family=Ubuntu+Mono&display=swap',
+            href: 'https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,100..900&family=Ubuntu+Mono&display=swap',
             rel: 'stylesheet',
           },
         },

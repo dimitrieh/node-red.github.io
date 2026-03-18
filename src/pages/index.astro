@@ -4,138 +4,705 @@ import { users } from '../data/users';
 ---
 
 <BaseLayout title="Home">
-  <section class="bg-gradient-to-br from-nr-red-dark via-nr-red to-nr-red-hover text-white py-20 px-5 pb-[120px] relative lt-xl:pb-12 lt-sm:py-12">
-    <div class="max-w-[1200px] mx-auto grid grid-cols-2 gap-16 items-center lt-xl:grid-cols-1 lt-xl:gap-10">
-      <div>
-        <h1 class="text-[42px] mb-6 text-white leading-[1.2] lt-sm:text-[30px]">Low-code programming for event-driven applications</h1>
-        <p class="text-lg leading-[1.7] mb-4 text-white/85">
-          Node-RED is a programming tool for wiring together hardware devices, APIs and online services
-          in new and interesting ways.
+  <!-- Hero Section -->
+  <section class="hero-section relative overflow-hidden">
+    <div class="grid-raster"></div>
+    <div class="hero-grid">
+      <div class="hero-content">
+        <p class="hero-eyebrow">Open Source / Event-Driven</p>
+        <h1 class="hero-title">
+          Wire anything<span class="text-nr-red">.</span><br />
+          <span class="text-nr-red">Flow</span> everything<span class="text-nr-red">.</span>
+        </h1>
+        <p class="hero-subtitle">
+          Node-RED is a low-code programming tool for wiring together
+          hardware devices, APIs, and online services — with a browser-based
+          visual editor and a lightweight Node.js runtime.
         </p>
-        <p class="text-lg leading-[1.7] mb-4 text-white/85">
-          It provides a browser-based editor that makes it easy to wire together flows using the wide
-          range of nodes in the palette that can be deployed to its runtime in a single-click.
-        </p>
-        <div class="flex gap-4 mt-8 lt-sm:flex-col">
-          <a href="/docs/getting-started/" class="inline-block py-3.5 px-8 rounded-lg font-heading text-[16px] font-semibold no-underline bg-nr-red text-white shadow-[0_4px_16px_rgba(199,80,80,0.4)] transition-all duration-200 hover:bg-nr-red-hover hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(199,80,80,0.5)] hover:no-underline">Get Started</a>
-          <a href="/docs/" class="nr-btn-secondary">View Documentation</a>
+        <div class="hero-actions">
+          <a href="/docs/getting-started/" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="inline-block mr-2 -mt-0.5">
+              <path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Get Started
+          </a>
+          <a href="/docs/" class="btn-ghost">
+            Documentation
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="inline-block ml-1.5 -mt-0.5">
+              <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
         </div>
       </div>
-      <div class="relative pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-[0_16px_48px_rgba(0,0,0,0.4)]">
-        <iframe
-          src="https://www.youtube.com/embed/ksGeUD26Mw0"
-          title="Introduction - Node-RED Essentials"
-          width="560"
-          height="315"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-          loading="lazy"
-          class="absolute top-0 left-0 w-full h-full border-0"
-        ></iframe>
-      </div>
-    </div>
-    <div class="absolute bottom-0 left-0 w-full leading-[0]">
-      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-[60px] block">
-        <path d="M0,0 C480,60 960,60 1440,0 L1440,60 L0,60 Z" fill="#f5f5f5"/>
-      </svg>
-    </div>
-  </section>
-
-  <section class="py-20 px-5 bg-nr-bg-light">
-    <div class="max-w-[1200px] mx-auto grid grid-cols-3 gap-8 lt-xl:grid-cols-1">
-      <div class="bg-white p-10 rounded-xl text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
-        <div class="mb-6">
-          <img src="/images/nr-image-1.png" alt="Browser-based flow editing interface" class="w-20 h-20 object-contain" />
+      <div class="hero-visual">
+        <div class="video-container">
+          <iframe
+            src="https://www.youtube.com/embed/ksGeUD26Mw0"
+            title="Introduction - Node-RED Essentials"
+            width="560"
+            height="315"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
         </div>
-        <h2 class="text-[20px] mb-4">Browser-based flow editing</h2>
-        <p class="text-[15px] leading-[1.7] text-[#555]">
-          Node-RED provides a browser-based flow editor that makes it easy to wire together flows
-          using the wide range of nodes in the palette. Flows can be then deployed to the runtime
-          in a single-click.
-        </p>
-      </div>
-      <div class="bg-white p-10 rounded-xl text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
-        <div class="mb-6">
-          <img src="/images/nr-image-2.png" alt="JavaScript function node" class="w-20 h-20 object-contain" />
-        </div>
-        <h2 class="text-[20px] mb-4">Built on Node.js</h2>
-        <p class="text-[15px] leading-[1.7] text-[#555]">
-          The light-weight runtime is built on Node.js, taking full advantage of its event-driven,
-          non-blocking model. This makes it ideal to run at the edge of the network on low-cost
-          hardware such as the Raspberry Pi as well as in the cloud.
-        </p>
-      </div>
-      <div class="bg-white p-10 rounded-xl text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
-        <div class="mb-6">
-          <img src="/images/nr-image-3.png" alt="Social development and sharing" class="w-20 h-20 object-contain" />
-        </div>
-        <h2 class="text-[20px] mb-4">Social Development</h2>
-        <p class="text-[15px] leading-[1.7] text-[#555]">
-          The flows created in Node-RED are stored using JSON which can be easily imported and
-          exported for sharing with others. An online flow library allows you to share your best
-          flows with the world.
-        </p>
       </div>
     </div>
   </section>
 
-  <section class="py-20 px-5 bg-white">
-    <div class="max-w-[1200px] mx-auto">
-      <h2 class="text-[32px] text-center mb-12">Get Started</h2>
-      <div class="grid grid-cols-3 gap-8 lt-xl:grid-cols-1">
-        <a href="/docs/getting-started/local/" class="bg-[#f8f8f8] p-10 rounded-xl text-center no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:no-underline">
-          <img src="/images/platform-local.png" alt="Run locally" class="w-20 h-20 mb-5" />
-          <h3 class="text-[20px] mb-2.5">Run locally</h3>
-          <p class="text-sm text-[#555]">Install Node-RED on your local machine to get started.</p>
+  <!-- Features Section -->
+  <section class="section-features">
+    <div class="grid-raster"></div>
+    <div class="section-grid">
+      <div class="section-label">
+        <span class="label-marker">/</span> Features
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <img src="/images/nr-image-1.png" alt="" />
+          </div>
+          <h2 class="feature-title">Browser-based flow editing</h2>
+          <p class="feature-text">
+            A powerful visual editor in the browser — drag, drop, and wire nodes
+            together. Deploy flows to the runtime in a single click.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <img src="/images/nr-image-2.png" alt="" />
+          </div>
+          <h2 class="feature-title">Built on Node.js</h2>
+          <p class="feature-text">
+            A lightweight, event-driven runtime that's perfect for running at the
+            edge on low-cost hardware or scaled up in the cloud.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <img src="/images/nr-image-3.png" alt="" />
+          </div>
+          <h2 class="feature-title">Social Development</h2>
+          <p class="feature-text">
+            Flows stored as JSON are easy to version, share, and import. Browse the
+            online flow library for community-contributed solutions.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Get Started Section -->
+  <section class="section-getstarted">
+    <div class="grid-raster"></div>
+    <div class="section-grid">
+      <div class="section-label">
+        <span class="label-marker">/</span> Get Started
+      </div>
+      <div class="getstarted-grid">
+        <a href="/docs/getting-started/local/" class="platform-card">
+          <div class="platform-icon">
+            <img src="/images/platform-local.png" alt="" />
+          </div>
+          <div class="platform-info">
+            <h3 class="platform-name">Run locally</h3>
+            <p class="platform-desc">Install Node-RED on your machine with npm.</p>
+          </div>
+          <svg class="platform-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </a>
-        <a href="/docs/getting-started/docker/" class="bg-[#f8f8f8] p-10 rounded-xl text-center no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:no-underline">
-          <img src="/images/platform-local-docker.png" alt="Docker" class="w-20 h-20 mb-5" />
-          <h3 class="text-[20px] mb-2.5">Docker</h3>
-          <p class="text-sm text-[#555]">Run Node-RED in a Docker container for easy deployment.</p>
+        <a href="/docs/getting-started/docker/" class="platform-card">
+          <div class="platform-icon">
+            <img src="/images/platform-local-docker.png" alt="" />
+          </div>
+          <div class="platform-info">
+            <h3 class="platform-name">Docker</h3>
+            <p class="platform-desc">Run in a container for easy deployment.</p>
+          </div>
+          <svg class="platform-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </a>
-        <a href="/docs/getting-started/raspberrypi/" class="bg-[#f8f8f8] p-10 rounded-xl text-center no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:translate-y-[-4px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:no-underline">
-          <img src="/images/platform-device-pi.png" alt="Raspberry Pi" class="w-20 h-20 mb-5" />
-          <h3 class="text-[20px] mb-2.5">Raspberry Pi</h3>
-          <p class="text-sm text-[#555]">Run Node-RED on the Raspberry Pi for IoT projects.</p>
+        <a href="/docs/getting-started/raspberrypi/" class="platform-card">
+          <div class="platform-icon">
+            <img src="/images/platform-device-pi.png" alt="" />
+          </div>
+          <div class="platform-info">
+            <h3 class="platform-name">Raspberry Pi</h3>
+            <p class="platform-desc">Perfect for IoT and edge computing projects.</p>
+          </div>
+          <svg class="platform-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </a>
       </div>
     </div>
   </section>
 
-  <section class="py-20 px-5 bg-nr-bg-light">
-    <div class="max-w-[1200px] mx-auto">
-      <h2 class="text-[28px] text-center mb-12">Trusted by organizations worldwide</h2>
-      <div class="grid grid-cols-6 gap-5 items-center justify-items-center lt-xl:grid-cols-3 lt-sm:grid-cols-2">
+  <!-- Trusted By Section -->
+  <section class="section-trusted">
+    <div class="grid-raster"></div>
+    <div class="section-grid">
+      <div class="section-label">
+        <span class="label-marker">/</span> Trusted by
+      </div>
+      <div class="trusted-grid">
         {users.slice(0, 12).map((user) => (
-          <a href={user.url} target="_blank" rel="noopener" class="flex items-center justify-center p-5 bg-white rounded-xl w-full min-h-[80px] transition-all duration-200 shadow-[0_1px_4px_rgba(0,0,0,0.05)] hover:scale-105 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
-            <img src={`/users/${user.logo}`} alt={user.name} loading="lazy" class="max-w-full max-h-[50px] object-contain" />
+          <a href={user.url} target="_blank" rel="noopener" class="trusted-logo">
+            <img src={`/users/${user.logo}`} alt={user.name} loading="lazy" />
           </a>
         ))}
       </div>
     </div>
   </section>
 
-  <section class="py-20 px-5 bg-white">
-    <div class="max-w-[1200px] mx-auto">
-      <h2 class="text-[32px] text-center mb-12">Join the Community</h2>
-      <div class="grid grid-cols-4 gap-6 lt-xl:grid-cols-2 lt-sm:grid-cols-1">
-        <a href="https://discourse.nodered.org" class="bg-[#f8f8f8] p-8 rounded-xl no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:bg-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:no-underline" target="_blank" rel="noopener">
-          <h3 class="text-lg mb-2.5 text-nr-red">Forum</h3>
-          <p class="text-sm text-[#555]">Get help, share ideas and discuss Node-RED with the community.</p>
+  <!-- Community Section -->
+  <section class="section-community">
+    <div class="grid-raster"></div>
+    <div class="section-grid">
+      <div class="section-label">
+        <span class="label-marker">/</span> Community
+      </div>
+      <div class="community-grid">
+        <a href="https://discourse.nodered.org" class="community-card" target="_blank" rel="noopener">
+          <div class="community-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="community-name">Forum</h3>
+          <p class="community-desc">Get help, share ideas and discuss Node-RED with the community.</p>
         </a>
-        <a href="/about/community/slack/" class="bg-[#f8f8f8] p-8 rounded-xl no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:bg-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:no-underline">
-          <h3 class="text-lg mb-2.5 text-nr-red">Slack</h3>
-          <p class="text-sm text-[#555]">Join the Node-RED Slack workspace for real-time chat.</p>
+        <a href="/about/community/slack/" class="community-card">
+          <div class="community-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="2" width="6" height="8" rx="3" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="2" y="9" width="8" height="6" rx="3" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="9" y="14" width="6" height="8" rx="3" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="14" y="9" width="8" height="6" rx="3" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <h3 class="community-name">Slack</h3>
+          <p class="community-desc">Join the workspace for real-time chat with developers.</p>
         </a>
-        <a href="https://github.com/node-red" class="bg-[#f8f8f8] p-8 rounded-xl no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:bg-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:no-underline" target="_blank" rel="noopener">
-          <h3 class="text-lg mb-2.5 text-nr-red">GitHub</h3>
-          <p class="text-sm text-[#555]">Contribute to Node-RED on GitHub or report issues.</p>
+        <a href="https://github.com/node-red" class="community-card" target="_blank" rel="noopener">
+          <div class="community-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"/>
+            </svg>
+          </div>
+          <h3 class="community-name">GitHub</h3>
+          <p class="community-desc">Contribute to the project or report issues.</p>
         </a>
-        <a href="https://flows.nodered.org" class="bg-[#f8f8f8] p-8 rounded-xl no-underline text-inherit transition-all duration-200 border-2 border-transparent hover:border-nr-red hover:bg-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:no-underline" target="_blank" rel="noopener">
-          <h3 class="text-lg mb-2.5 text-nr-red">Flow Library</h3>
-          <p class="text-sm text-[#555]">Discover and share flows, nodes and collections.</p>
+        <a href="https://flows.nodered.org" class="community-card" target="_blank" rel="noopener">
+          <div class="community-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="community-name">Flow Library</h3>
+          <p class="community-desc">Discover and share flows, nodes, and collections.</p>
         </a>
       </div>
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  /* ============================================
+     NODE-RED EDITOR GRID RASTER BACKGROUND
+     Inspired by stripe.dev grid + Node-RED editor
+     ============================================ */
+  .grid-raster {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(circle, rgba(199, 80, 80, 0.12) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.08) 100%);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.08) 100%);
+  }
+
+  /* ============================================
+     SECTION LABEL (stripe.dev "/" prefix style)
+     ============================================ */
+  .section-label {
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #999;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 40px;
+  }
+
+  .label-marker {
+    color: #C75050;
+    margin-right: 6px;
+  }
+
+  /* ============================================
+     CSS GRID LAYOUT SYSTEM
+     ============================================ */
+  .section-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================
+     HERO SECTION
+     ============================================ */
+  .hero-section {
+    position: relative;
+    padding: 100px 0 80px;
+    background: #fafafa;
+  }
+
+  .hero-section .grid-raster {
+    background-image:
+      radial-gradient(circle, rgba(199, 80, 80, 0.15) 1px, transparent 1px),
+      linear-gradient(rgba(199, 80, 80, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(199, 80, 80, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px, 96px 96px, 96px 96px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, rgba(0,0,0,0.5) 0%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, rgba(0,0,0,0.5) 0%, transparent 100%);
+  }
+
+  .hero-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #C75050;
+    margin-bottom: 20px;
+  }
+
+  .hero-title {
+    font-size: clamp(40px, 5vw, 64px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #1a1a1a;
+    margin-bottom: 24px;
+  }
+
+  .hero-subtitle {
+    font-size: 18px;
+    line-height: 1.7;
+    color: #666;
+    max-width: 520px;
+    margin-bottom: 36px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    padding: 14px 28px;
+    background: #C75050;
+    color: #fff !important;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none !important;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(199, 80, 80, 0.3);
+  }
+
+  .btn-primary:hover {
+    background: #A63D3D;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(199, 80, 80, 0.4);
+    text-decoration: none !important;
+    color: #fff !important;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    padding: 14px 24px;
+    color: #555 !important;
+    font-weight: 500;
+    font-size: 15px;
+    text-decoration: none !important;
+    transition: all 0.2s;
+    border-radius: 10px;
+    border: 1.5px solid #ddd;
+    background: white;
+  }
+
+  .btn-ghost:hover {
+    color: #C75050 !important;
+    border-color: #C75050;
+    text-decoration: none !important;
+    background: #fff5f5;
+  }
+
+  .hero-visual {
+    position: relative;
+  }
+
+  .video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.06),
+      0 24px 64px rgba(0,0,0,0.12);
+  }
+
+  .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  /* ============================================
+     FEATURES SECTION
+     ============================================ */
+  .section-features {
+    position: relative;
+    padding: 80px 0;
+    background: #fff;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+
+  .feature-card {
+    padding: 36px;
+    border-radius: 14px;
+    border: 1px solid #eee;
+    background: #fafafa;
+    transition: all 0.25s ease;
+  }
+
+  .feature-card:hover {
+    border-color: #C75050;
+    background: #fff;
+    box-shadow: 0 8px 32px rgba(199, 80, 80, 0.08);
+    transform: translateY(-4px);
+  }
+
+  .feature-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .feature-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .feature-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-text {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #666;
+    margin: 0;
+  }
+
+  /* ============================================
+     GET STARTED SECTION
+     ============================================ */
+  .section-getstarted {
+    position: relative;
+    padding: 80px 0;
+    background: #fafafa;
+  }
+
+  .getstarted-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .platform-card {
+    display: grid;
+    grid-template-columns: 56px 1fr 20px;
+    gap: 16px;
+    align-items: center;
+    padding: 24px 28px;
+    border-radius: 14px;
+    border: 1.5px solid #e8e8e8;
+    background: #fff;
+    text-decoration: none !important;
+    transition: all 0.25s ease;
+    color: inherit !important;
+  }
+
+  .platform-card:hover {
+    border-color: #C75050;
+    box-shadow: 0 4px 20px rgba(199, 80, 80, 0.1);
+    transform: translateY(-2px);
+    text-decoration: none !important;
+  }
+
+  .platform-card:hover .platform-arrow {
+    color: #C75050;
+    transform: translateX(3px);
+  }
+
+  .platform-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .platform-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .platform-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+    letter-spacing: -0.01em;
+  }
+
+  .platform-desc {
+    font-size: 14px;
+    color: #888;
+    margin: 0;
+  }
+
+  .platform-arrow {
+    color: #ccc;
+    transition: all 0.2s;
+  }
+
+  /* ============================================
+     TRUSTED BY SECTION
+     ============================================ */
+  .section-trusted {
+    position: relative;
+    padding: 80px 0;
+    background: #fff;
+  }
+
+  .trusted-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+  }
+
+  .trusted-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    min-height: 80px;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    background: #fafafa;
+    transition: all 0.2s;
+    text-decoration: none !important;
+  }
+
+  .trusted-logo:hover {
+    border-color: #ddd;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transform: scale(1.04);
+    text-decoration: none !important;
+  }
+
+  .trusted-logo img {
+    max-width: 100%;
+    max-height: 40px;
+    object-fit: contain;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    filter: grayscale(0.3);
+  }
+
+  .trusted-logo:hover img {
+    opacity: 1;
+    filter: grayscale(0);
+  }
+
+  /* ============================================
+     COMMUNITY SECTION
+     ============================================ */
+  .section-community {
+    position: relative;
+    padding: 80px 0 100px;
+    background: #fafafa;
+  }
+
+  .community-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .community-card {
+    padding: 32px;
+    border-radius: 14px;
+    border: 1.5px solid #e8e8e8;
+    background: #fff;
+    text-decoration: none !important;
+    transition: all 0.25s ease;
+    color: inherit !important;
+  }
+
+  .community-card:hover {
+    border-color: #C75050;
+    box-shadow: 0 8px 32px rgba(199, 80, 80, 0.08);
+    transform: translateY(-4px);
+    text-decoration: none !important;
+  }
+
+  .community-card:hover .community-icon {
+    color: #C75050;
+  }
+
+  .community-icon {
+    color: #aaa;
+    margin-bottom: 20px;
+    transition: color 0.2s;
+  }
+
+  .community-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .community-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #888;
+    margin: 0;
+  }
+
+  /* ============================================
+     RESPONSIVE DESIGN (MOBILE-FIRST OVERRIDES)
+     ============================================ */
+  @media (max-width: 1000px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+
+    .hero-section {
+      padding: 64px 0 60px;
+    }
+
+    .hero-title {
+      font-size: clamp(32px, 6vw, 52px);
+    }
+
+    .features-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .getstarted-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .trusted-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .community-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero-section {
+      padding: 48px 0 44px;
+    }
+
+    .hero-title {
+      font-size: 32px;
+    }
+
+    .hero-subtitle {
+      font-size: 16px;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .section-features,
+    .section-getstarted,
+    .section-trusted,
+    .section-community {
+      padding: 56px 0;
+    }
+
+    .platform-card {
+      grid-template-columns: 48px 1fr 16px;
+      padding: 20px;
+    }
+
+    .trusted-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .community-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .community-card {
+      padding: 24px;
+    }
+
+    .feature-card {
+      padding: 28px;
+    }
+  }
+</style>
