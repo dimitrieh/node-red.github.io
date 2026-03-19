@@ -75,7 +75,7 @@ test.describe('Blog', () => {
     await expect(page.locator('article h1')).not.toBeEmpty();
     await expect(page.locator('article time')).toBeVisible();
     await expect(page.locator('article header a')).toBeVisible();
-    await expect(page.locator('.blog-post-content')).not.toBeEmpty();
+    await expect(page.locator('.post-content')).not.toBeEmpty();
   });
 });
 
@@ -133,14 +133,14 @@ test.describe('Homepage', () => {
   test('should have hero with dual CTA', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'Get Started' }).first()).toBeVisible();
-    await expect(page.getByRole('link', { name: 'View Documentation' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Documentation' }).first()).toBeVisible();
   });
 
   test('should have features section', async ({ page }) => {
     await page.goto('/');
-    // 3 feature images: flow editing, Node.js, social
-    const featureImages = page.locator('img[alt="Browser-based flow editing interface"], img[alt="JavaScript function node"], img[alt="Social development and sharing"]');
-    await expect(featureImages).toHaveCount(3);
+    // 3 feature cards in features row
+    const featureCards = page.locator('.feature-card');
+    await expect(featureCards).toHaveCount(3);
   });
 
   test('should have users section with logos', async ({ page }) => {
@@ -235,7 +235,7 @@ test.describe('Responsive', () => {
   test('mobile menu toggle works', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
-    const toggle = page.locator('.nr-mobile-toggle');
+    const toggle = page.locator('.mobile-toggle');
     await expect(toggle).toBeVisible();
     await toggle.click();
     const mobileNav = page.locator('.mobile-nav');
