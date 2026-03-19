@@ -1,0 +1,2411 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - navigation "Site's main navigation" [ref=e10]:
+        - generic [ref=e13]:
+          - link "Go back to homepage" [ref=e15] [cursor=pointer]:
+            - /url: /
+            - img [ref=e16]
+          - list [ref=e21]:
+            - listitem [ref=e22]:
+              - button "Product" [ref=e23]:
+                - text: Product
+                - img [ref=e24]
+            - listitem [ref=e26]:
+              - button "Resources" [ref=e27]:
+                - text: Resources
+                - img [ref=e28]
+            - listitem [ref=e30]:
+              - link "Extensions" [ref=e31] [cursor=pointer]:
+                - /url: /extensions
+            - listitem [ref=e32]:
+              - link "Docs" [ref=e33] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=e34]:
+              - link "Pricing" [ref=e35] [cursor=pointer]:
+                - /url: /pricing
+        - list [ref=e36]:
+          - listitem [ref=e37]:
+            - button "Command menu" [ref=e38]:
+              - img [ref=e39]
+              - generic [ref=e42]: Ctrl + Shift + P
+          - listitem [ref=e47]
+          - listitem [ref=e48]:
+            - link "Sign up" [ref=e49] [cursor=pointer]:
+              - /url: /sign_up
+              - text: Sign up
+              - generic [ref=e50]: S
+          - listitem [ref=e51]:
+            - link "Download" [ref=e52] [cursor=pointer]:
+              - /url: /download
+              - text: Download
+              - generic [ref=e53]: D
+    - main [ref=e56]:
+      - generic [ref=e57]:
+        - img [ref=e75]
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - heading "Love your editor again" [level=1] [ref=e82]
+            - paragraph [ref=e83]: Zed is a minimal code editor crafted for speed and collaboration with humans and AI.
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - link "Download now" [ref=e86] [cursor=pointer]:
+                - /url: /download
+                - img [ref=e87]
+                - text: Download now
+                - generic [ref=e89]: D
+              - link "Clone source" [ref=e90] [cursor=pointer]:
+                - /url: https://github.com/zed-industries/zed
+                - img [ref=e91]
+                - text: Clone source
+                - generic [ref=e94]: C
+            - paragraph [ref=e95]: Available for macOS, Linux, and Windows
+          - img
+          - img
+        - img [ref=e103]
+      - generic [ref=e131]:
+        - generic [ref=e132]:
+          - paragraph [ref=e133]: Fast
+          - paragraph [ref=e134]: Written from scratch in Rust to efficiently leverage multiple CPU cores and your GPU.
+        - generic [ref=e135]:
+          - paragraph [ref=e136]: Intelligent
+          - paragraph [ref=e137]: Integrate LLMs into your workflow to generate, transform, and analyze code.
+        - generic [ref=e138]:
+          - paragraph [ref=e139]: Collaborative
+          - paragraph [ref=e140]: Chat with teammates, write notes together, and share your screen and project.
+      - generic [ref=e170]:
+        - button "Play video" [ref=e172] [cursor=pointer]:
+          - img [ref=e173]
+          - text: Watch Demo
+        - generic [ref=e175]:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                  - generic:
+                    - img
+                  - generic:
+                    - img
+                - generic:
+                  - button "zed.dev"
+                  - button "main"
+                - generic:
+                  - button "Avatar":
+                    - img "Avatar"
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: 9 Changes
+                      - generic:
+                        - button:
+                          - img
+                        - button "Stage All"
+                    - generic:
+                      - generic:
+                        - paragraph: Tracked
+                        - generic:
+                          - generic:
+                            - img
+                            - generic: src
+                            - button:
+                              - checkbox
+                          - generic:
+                            - generic:
+                              - generic:
+                                - img
+                                - generic: services
+                                - button:
+                                  - checkbox
+                              - generic:
+                                - generic:
+                                  - img
+                                  - generic: coffee.ts
+                                  - button:
+                                    - checkbox
+                            - generic:
+                              - generic:
+                                - img
+                                - generic: utils
+                                - button:
+                                  - checkbox
+                              - generic:
+                                - generic:
+                                  - img
+                                  - generic: monday.ts
+                                  - button:
+                                    - checkbox
+                                - generic:
+                                  - img
+                                  - generic: sleep.ts
+                                  - button:
+                                    - checkbox
+                        - paragraph: Untracked
+                        - generic:
+                          - generic:
+                            - img
+                            - generic: src/utils
+                            - button:
+                              - checkbox
+                          - generic:
+                            - generic:
+                              - img
+                              - generic: excuses.ts
+                              - button:
+                                - checkbox
+                            - generic:
+                              - img
+                              - generic: meeting-survival.ts
+                              - button:
+                                - checkbox
+                      - generic:
+                        - generic:
+                          - img
+                          - button "zed.dev/"
+                          - button "more-coffee"
+                          - button "Fetch":
+                            - generic:
+                              - img
+                              - text: Fetch
+                            - generic:
+                              - img
+                        - generic:
+                          - button:
+                            - img
+                          - textbox "Enter commit message"
+                          - generic:
+                            - button [disabled]:
+                              - img
+                            - generic:
+                              - button:
+                                - img
+                              - button "Commit Tracked" [disabled]:
+                                - text: Commit Tracked
+                                - generic:
+                                  - img
+                        - generic:
+                          - text: Fixed the thing that broke the thing
+                          - button:
+                            - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - button:
+                          - img
+                        - button:
+                          - img
+                      - generic:
+                        - generic:
+                          - paragraph: meeting-scheduler.tsx
+                        - generic:
+                          - paragraph: catware.rs
+                        - generic:
+                          - generic:
+                            - img
+                          - paragraph: Uncommitted changes
+                        - generic:
+                          - generic:
+                            - img
+                          - paragraph: panic
+                      - generic:
+                        - button:
+                          - img
+                        - button:
+                          - img
+                        - button:
+                          - img
+                    - generic:
+                      - generic:
+                        - generic: src/components/meeting-scheduler.tsx
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - generic:
+                      - generic:
+                        - code:
+                          - generic:
+                            - generic:
+                              - generic: "1"
+                            - generic: "\"use client\""
+                          - generic:
+                            - generic:
+                              - generic: "2"
+                          - generic:
+                            - generic:
+                              - generic: "3"
+                            - generic: import * as React from "react"
+                          - generic:
+                            - generic:
+                              - generic: "4"
+                            - generic: "import { format, addMinutes, isAfter } from \"date-fns\""
+                          - generic:
+                            - generic:
+                              - generic: "5"
+                          - generic:
+                            - generic:
+                              - generic: "6"
+                            - generic: // Types for our "essential" meeting system
+                          - generic:
+                            - generic:
+                              - generic: "7"
+                            - generic: "interface Meeting {"
+                          - generic:
+                            - generic:
+                              - generic: "8"
+                            - generic: "id: string"
+                          - generic:
+                            - generic:
+                              - generic: "9"
+                            - generic: "title: string"
+                          - generic:
+                            - generic:
+                              - generic: "10"
+                            - generic:
+                              - button "couldHaveBeenAnEmail"
+                              - text: ": boolean"
+                            - generic: "'couldHaveBeenAnEmail' is declared but its value is never read."
+                          - generic:
+                            - generic:
+                              - generic: "11"
+                            - generic: "attendees: string[]"
+                          - generic:
+                            - generic:
+                              - generic: "12"
+                            - generic: "snacksProvided: boolean"
+                          - generic:
+                            - generic:
+                              - generic: "13"
+                            - generic:
+                              - button "actuallyStartsOnTime"
+                              - text: ": number"
+                            - generic: Type 'string' is not assignable to type 'number'.
+                          - generic:
+                            - generic:
+                              - generic: "14"
+                            - generic: "}"
+                          - generic:
+                            - generic:
+                              - generic: "15"
+                          - generic:
+                            - generic:
+                              - generic: "16"
+                            - generic: type MeetingStatus = "scheduled" | "running-late" | "cancelled" | "eternal"
+                          - generic:
+                            - generic:
+                              - generic: "17"
+                          - generic:
+                            - generic:
+                              - generic: "18"
+                            - generic:
+                              - text: function validateMeeting(
+                              - button "atendees"
+                              - text: ": string[]): boolean {"
+                            - generic: Consider using 'attendees' instead of 'atendees' for clarity.
+                          - generic:
+                            - generic:
+                              - generic: "19"
+                            - generic: return atendees.length > 0 && atendees.length < 50
+                          - generic:
+                            - generic:
+                              - generic: "20"
+                            - generic: "}"
+                          - generic:
+                            - generic:
+                              - generic: "21"
+                          - generic:
+                            - generic:
+                              - generic: "22"
+                            - generic:
+                              - text: let
+                              - button "agendaItem"
+                              - text: = "Discuss why we need more meetings"
+                            - generic: "'agendaItem' can be declared as 'const' since it is never reassigned."
+                          - generic:
+                            - generic:
+                              - generic: "23"
+                          - generic:
+                            - generic:
+                              - generic: "24"
+                            - generic: const MEETING_EXCUSES = [
+                          - generic:
+                            - generic:
+                              - generic: "25"
+                            - generic: "\"Sorry, I was on mute\","
+                          - generic:
+                            - generic:
+                              - generic: "26"
+                            - generic: "\"Can everyone see my screen?\","
+                          - generic:
+                            - generic:
+                              - generic: "27"
+                            - generic: "\"Let's take this offline\","
+                          - generic:
+                            - generic:
+                              - generic: "28"
+                            - generic: "\"Per my last email...\","
+                          - generic:
+                            - generic:
+                              - generic: "29"
+                            - generic: "\"I have a hard stop in 5 minutes\","
+                          - generic:
+                            - generic:
+                              - generic: "30"
+                            - generic: "] as const"
+                          - generic:
+                            - generic:
+                              - generic: "31"
+                          - generic:
+                            - generic:
+                              - generic: "32"
+                            - generic: /** Props for the world's most essential component */
+                          - generic:
+                            - generic:
+                              - generic: "33"
+                            - generic: "interface MeetingSchedulerProps {"
+                          - generic:
+                            - generic:
+                              - generic: "34"
+                            - generic: "defaultDuration?: number"
+                          - generic:
+                            - generic:
+                              - generic: "35"
+                            - generic: "maxAttendees?: number"
+                          - generic:
+                            - generic:
+                              - generic: "36"
+                            - generic: "requiresSnacks?: boolean"
+                          - generic:
+                            - generic:
+                              - generic: "37"
+                            - generic: "onMeetingCreate?: (meeting: Meeting) => void"
+                          - generic:
+                            - generic:
+                              - generic: "38"
+                            - generic: "onEscapeAttempt?: () => never"
+                          - generic:
+                            - generic:
+                              - generic: "39"
+                            - generic: "}"
+                          - generic:
+                            - generic:
+                              - generic: "40"
+                          - generic:
+                            - generic:
+                              - generic: "41"
+                            - generic: /**
+                          - generic:
+                            - generic:
+                              - generic: "42"
+                            - generic: "* MeetingScheduler - Because your calendar wasn't full enough"
+                          - generic:
+                            - generic:
+                              - generic: "43"
+                            - generic: "* @description Helps you schedule meetings about scheduling meetings"
+                          - generic:
+                            - generic:
+                              - generic: "44"
+                            - generic: "*/"
+                          - generic:
+                            - generic:
+                              - generic: "45"
+                            - generic: "export function MeetingScheduler({"
+                          - generic:
+                            - generic:
+                              - generic: "46"
+                            - generic: defaultDuration = 60,
+                          - generic:
+                            - generic:
+                              - generic: "47"
+                            - generic: maxAttendees = 100,
+                          - generic:
+                            - generic:
+                              - generic: "48"
+                            - generic: requiresSnacks = true,
+                          - generic:
+                            - generic:
+                              - generic: "49"
+                            - generic: onMeetingCreate,
+                          - generic:
+                            - generic:
+                              - generic: "50"
+                            - generic: onEscapeAttempt,
+                          - generic:
+                            - generic:
+                              - generic: "51"
+                            - generic: "}: MeetingSchedulerProps): React.ReactElement {"
+                          - generic:
+                            - generic:
+                              - generic: "52"
+                            - generic: const [meetings, setMeetings] = React.useState<Meeting[]>([])
+                          - generic:
+                            - generic:
+                              - generic: "53"
+                            - generic: const [excuseIndex, setExcuseIndex] = React.useState(0)
+                          - generic:
+                            - generic:
+                              - generic: "54"
+                            - generic: const [isLoading, setIsLoading] = React.useState<boolean>(false)
+                          - generic:
+                            - generic:
+                              - generic: "55"
+                          - generic:
+                            - generic:
+                              - generic: "56"
+                            - generic: const formRef = React.useRef<HTMLFormElement>(null)
+                          - generic:
+                            - generic:
+                              - generic: "57"
+                            - generic: const sanityRef = React.useRef<number>(100)
+                          - generic:
+                            - generic:
+                              - generic: "58"
+                          - generic:
+                            - generic:
+                              - generic: "59"
+                            - generic: // Memoized excuse rotation
+                          - generic:
+                            - generic:
+                              - generic: "60"
+                            - generic: "const currentExcuse = React.useMemo(() => {"
+                          - generic:
+                            - generic:
+                              - generic: "61"
+                            - generic: return MEETING_EXCUSES[excuseIndex % MEETING_EXCUSES.length]
+                          - generic:
+                            - generic:
+                              - generic: "62"
+                            - generic: "}, [excuseIndex])"
+                          - generic:
+                            - generic:
+                              - generic: "63"
+                          - generic:
+                            - generic:
+                              - generic: "64"
+                            - generic: "// Effect: Gradually decrease sanity"
+                          - generic:
+                            - generic:
+                              - generic: "65"
+                            - generic: "React.useEffect(() => {"
+                          - generic:
+                            - generic:
+                              - generic: "66"
+                            - generic: "const interval = setInterval(() => {"
+                          - generic:
+                            - generic:
+                              - generic: "67"
+                            - generic: sanityRef.current = Math.max(0, sanityRef.current - 1)
+                          - generic:
+                            - generic:
+                              - generic: "68"
+                            - generic: "if (sanityRef.current === 0) {"
+                          - generic:
+                            - generic:
+                              - generic: "69"
+                            - generic: console.warn("Developer sanity depleted")
+                          - generic:
+                            - generic:
+                              - generic: "70"
+                            - generic: "}"
+                          - generic:
+                            - generic:
+                              - generic: "71"
+                            - generic: "}, 60000)"
+                          - generic:
+                            - generic:
+                              - generic: "72"
+                          - generic:
+                            - generic:
+                              - generic: "73"
+                            - generic: return () => clearInterval(interval)
+                          - generic:
+                            - generic:
+                              - generic: "74"
+                            - generic: "}, [])"
+                          - generic:
+                            - generic:
+                              - generic: "75"
+                          - generic:
+                            - generic:
+                              - generic: "76"
+                            - generic: // Callback for creating meetings
+                          - generic:
+                            - generic:
+                              - generic: "77"
+                            - generic: const handleCreateMeeting = React.useCallback(
+                          - generic:
+                            - generic:
+                              - generic: "78"
+                            - generic: "async (title: string, attendees: string[]) => {"
+                          - generic:
+                            - generic:
+                              - generic: "79"
+                            - generic: "if (!validateMeeting(attendees)) {"
+                          - generic:
+                            - generic:
+                              - generic: "80"
+                            - generic: throw new Error("Invalid attendee count")
+                          - generic:
+                            - generic:
+                              - generic: "81"
+                            - generic: "}"
+                          - generic:
+                            - generic:
+                              - generic: "82"
+                          - generic:
+                            - generic:
+                              - generic: "83"
+                            - generic: setIsLoading(true)
+                          - generic:
+                            - generic:
+                              - generic: "84"
+                          - generic:
+                            - generic:
+                              - generic: "85"
+                            - generic: "try {"
+                          - generic:
+                            - generic:
+                              - generic: "86"
+                            - generic: "const newMeeting: Meeting = {"
+                          - generic:
+                            - generic:
+                              - generic: "87"
+                            - generic: "id: crypto.randomUUID(),"
+                          - generic:
+                            - generic:
+                              - generic: "88"
+                            - generic: "title: title || \"Meeting about meetings\","
+                          - generic:
+                            - generic:
+                              - generic: "89"
+                            - generic: "couldHaveBeenAnEmail: true,"
+                          - generic:
+                            - generic:
+                              - generic: "90"
+                            - generic: attendees,
+                          - generic:
+                            - generic:
+                              - generic: "91"
+                            - generic: "snacksProvided: requiresSnacks,"
+                          - generic:
+                            - generic:
+                              - generic: "92"
+                            - generic: "actuallyStartsOnTime: \"never\", // This causes the error"
+                          - generic:
+                            - generic:
+                              - generic: "93"
+                            - generic: "}"
+                          - generic:
+                            - generic:
+                              - generic: "94"
+                          - generic:
+                            - generic:
+                              - generic: "95"
+                            - generic: setMeetings((prev) => [...prev, newMeeting])
+                          - generic:
+                            - generic:
+                              - generic: "96"
+                            - generic: onMeetingCreate?.(newMeeting)
+                          - generic:
+                            - generic:
+                              - generic: "97"
+                            - generic: setExcuseIndex((i) => i + 1)
+                          - generic:
+                            - generic:
+                              - generic: "98"
+                            - generic: "} catch (error) {"
+                          - generic:
+                            - generic:
+                              - generic: "99"
+                            - generic: console.error("Failed to create meeting:", error)
+                          - generic:
+                            - generic:
+                              - generic: "100"
+                            - generic: "} finally {"
+                          - generic:
+                            - generic:
+                              - generic: "101"
+                            - generic: setIsLoading(false)
+                          - generic:
+                            - generic:
+                              - generic: "102"
+                            - generic: "}"
+                          - generic:
+                            - generic:
+                              - generic: "103"
+                            - generic: "},"
+                          - generic:
+                            - generic:
+                              - generic: "104"
+                            - generic: "[requiresSnacks, onMeetingCreate]"
+                          - generic:
+                            - generic:
+                              - generic: "105"
+                            - generic: )
+                          - generic:
+                            - generic:
+                              - generic: "106"
+                          - generic:
+                            - generic:
+                              - generic: "107"
+                            - generic: // Render the meeting madness
+                          - generic:
+                            - generic:
+                              - generic: "108"
+                            - generic: return (
+                          - generic:
+                            - generic:
+                              - generic: "109"
+                            - generic: <div className="meeting-scheduler p-6 bg-white rounded-lg shadow-xl">
+                          - generic:
+                            - generic:
+                              - generic: "110"
+                            - generic: <header className="mb-4 border-b pb-2">
+                          - generic:
+                            - generic:
+                              - generic: "111"
+                            - generic: <h1 className="text-2xl font-bold text-gray-900">
+                          - generic:
+                            - generic:
+                              - generic: "112"
+                            - generic: 📅 Meeting Scheduler Pro™
+                          - generic:
+                            - generic:
+                              - generic: "113"
+                            - generic: </h1>
+                          - generic:
+                            - generic:
+                              - generic: "114"
+                            - generic: <p className="text-sm text-gray-500 italic">
+                          - generic:
+                            - generic:
+                              - generic: "115"
+                            - generic: "\"{currentExcuse}\""
+                          - generic:
+                            - generic:
+                              - generic: "116"
+                            - generic: </p>
+                          - generic:
+                            - generic:
+                              - generic: "117"
+                            - generic: </header>
+                          - generic:
+                            - generic:
+                              - generic: "118"
+                          - generic:
+                            - generic:
+                              - generic: "119"
+                            - generic: <form
+                          - generic:
+                            - generic:
+                              - generic: "120"
+                            - generic: "ref={formRef}"
+                          - generic:
+                            - generic:
+                              - generic: "121"
+                            - generic: "onSubmit={(e) => {"
+                          - generic:
+                            - generic:
+                              - generic: "122"
+                            - generic: e.preventDefault()
+                          - generic:
+                            - generic:
+                              - generic: "123"
+                            - generic:
+                              - text: handleCreateMeeting("Sync", [
+                              - generic: "\"everyone@company.com\""
+                              - text: "])"
+                          - generic:
+                            - generic:
+                              - generic: "124"
+                            - generic: "}}"
+                          - generic:
+                            - generic:
+                              - generic: "125"
+                            - generic: className="space-y-4"
+                          - generic:
+                            - generic:
+                              - generic: "126"
+                            - generic: ">"
+                          - generic:
+                            - generic:
+                              - generic: "127"
+                            - generic: <input
+                          - generic:
+                            - generic:
+                              - generic: "128"
+                            - generic: type="text"
+                          - generic:
+                            - generic:
+                              - generic: "129"
+                            - generic: placeholder="Meeting title (optional, like agendas)"
+                          - generic:
+                            - generic:
+                              - generic: "130"
+                            - generic: className="w-full px-3 py-2 border rounded"
+                          - generic:
+                            - generic:
+                              - generic: "131"
+                            - generic: "maxLength={255}"
+                          - generic:
+                            - generic:
+                              - generic: "132"
+                            - generic: />
+                          - generic:
+                            - generic:
+                              - generic: "133"
+                          - generic:
+                            - generic:
+                              - generic: "134"
+                            - generic: <select
+                          - generic:
+                            - generic:
+                              - generic: "135"
+                            - generic: "defaultValue={defaultDuration}"
+                          - generic:
+                            - generic:
+                              - generic: "136"
+                            - generic: className="w-full px-3 py-2 border rounded"
+                          - generic:
+                            - generic:
+                              - generic: "137"
+                            - generic: ">"
+                          - generic:
+                            - generic:
+                              - generic: "138"
+                            - generic: "<option value={30}>30 min (ambitious)</option>"
+                          - generic:
+                            - generic:
+                              - generic: "139"
+                            - generic: "<option value={60}>1 hour (realistic)</option>"
+                          - generic:
+                            - generic:
+                              - generic: "140"
+                            - generic: "<option value={120}>2 hours (why?)</option>"
+                          - generic:
+                            - generic:
+                              - generic: "141"
+                            - generic: "<option value={480}>All day (send help)</option>"
+                          - generic:
+                            - generic:
+                              - generic: "142"
+                            - generic: </select>
+                          - generic:
+                            - generic:
+                              - generic: "143"
+                          - generic:
+                            - generic:
+                              - generic: "144"
+                            - generic: <button
+                          - generic:
+                            - generic:
+                              - generic: "145"
+                            - generic: type="submit"
+                          - generic:
+                            - generic:
+                              - generic: "146"
+                            - generic: "disabled={isLoading}"
+                          - generic:
+                            - generic:
+                              - generic: "147"
+                            - generic: className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                          - generic:
+                            - generic:
+                              - generic: "148"
+                            - generic: ">"
+                          - generic:
+                            - generic:
+                              - generic: "149"
+                            - generic: "{isLoading ? \"Syncing calendars...\" : \"Schedule Meeting\"}"
+                          - generic:
+                            - generic:
+                              - generic: "150"
+                            - generic: </button>
+                          - generic:
+                            - generic:
+                              - generic: "151"
+                            - generic: </form>
+                          - generic:
+                            - generic:
+                              - generic: "152"
+                          - generic:
+                            - generic:
+                              - generic: "153"
+                            - generic: "{meetings.length > 0 && ("
+                          - generic:
+                            - generic:
+                              - generic: "154"
+                            - generic: <ul className="mt-6 divide-y">
+                          - generic:
+                            - generic:
+                              - generic: "155"
+                            - generic: "{meetings.map((meeting) => ("
+                          - generic:
+                            - generic:
+                              - generic: "156"
+                            - generic: "<li key={meeting.id} className=\"py-3\">"
+                          - generic:
+                            - generic:
+                              - generic: "157"
+                            - generic: "<span className=\"font-medium\">{meeting.title}</span>"
+                          - generic:
+                            - generic:
+                              - generic: "158"
+                            - generic: <span className="text-gray-400 ml-2">
+                          - generic:
+                            - generic:
+                              - generic: "159"
+                            - generic: "({meeting.attendees.length} victims)"
+                          - generic:
+                            - generic:
+                              - generic: "160"
+                            - generic: </span>
+                          - generic:
+                            - generic:
+                              - generic: "161"
+                            - generic: </li>
+                          - generic:
+                            - generic:
+                              - generic: "162"
+                            - generic: "))}"
+                          - generic:
+                            - generic:
+                              - generic: "163"
+                            - generic: </ul>
+                          - generic:
+                            - generic:
+                              - generic: "164"
+                            - generic: ")}"
+                          - generic:
+                            - generic:
+                              - generic: "165"
+                            - generic: </div>
+                          - generic:
+                            - generic:
+                              - generic: "166"
+                            - generic: )
+                          - generic:
+                            - generic:
+                              - generic: "167"
+                            - generic: "}"
+                          - generic:
+                            - generic:
+                              - generic: "168"
+                          - generic:
+                            - generic:
+                              - generic: "169"
+                            - generic: export default MeetingScheduler
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: zed.dev — zsh
+                      - generic:
+                        - button:
+                          - img
+                        - button:
+                          - img
+                        - button:
+                          - img
+                    - generic:
+                      - generic:
+                        - generic: ███████╗███████╗██████╗
+                        - generic: ╚══███╔╝██╔════╝██╔══██╗
+                        - generic: ███╔╝ █████╗ ██║ ██║
+                        - generic: ███╔╝ ██╔══╝ ██║ ██║
+                        - generic: ███████╗███████╗██████╔╝
+                        - generic: ╚══════╝╚══════╝╚═════╝
+                      - generic:
+                        - generic:
+                          - generic: Editor
+                          - generic: ":"
+                          - generic: Zed
+                        - generic:
+                          - generic: Version
+                          - generic: ":"
+                          - generic: 0.228.0
+                        - generic:
+                          - generic: Platform
+                          - generic: ":"
+                          - generic: macOS
+                - status
+              - generic:
+                - generic:
+                  - button:
+                    - img
+                  - button:
+                    - img
+                  - button:
+                    - img
+                  - button:
+                    - img
+                  - button:
+                    - img
+                  - generic:
+                    - button "1":
+                      - img
+                      - text: "1"
+                    - button "5":
+                      - img
+                      - text: "5"
+                - generic:
+                  - button:
+                    - img
+                  - button:
+                    - img
+                  - button:
+                    - img
+                  - button:
+                    - img
+      - generic [ref=e190]:
+        - img
+      - generic [ref=e215]:
+        - heading "Trusted by world-class developers & industry leading teams" [level=2] [ref=e217]
+        - generic [ref=e218]:
+          - generic:
+            - img [ref=e219]
+            - img [ref=e221]
+          - generic:
+            - img [ref=e223]
+            - img [ref=e225]
+          - generic:
+            - img [ref=e227]
+            - img [ref=e229]
+          - generic:
+            - img [ref=e231]
+            - img [ref=e233]
+          - generic:
+            - img [ref=e235]
+            - img [ref=e238]
+          - generic:
+            - img [ref=e240]
+            - img [ref=e242]
+        - generic [ref=e244]:
+          - generic [ref=e245]:
+            - blockquote [ref=e246]: “ Yes! Now I can have shortcuts to run and debug tests. Ever since snippets were added, Zed has all of the features I could ask for in an editor.”
+            - generic [ref=e247]:
+              - img "José Valim's avatar" [ref=e1287]
+              - generic [ref=e251]:
+                - paragraph [ref=e252]: José Valim
+                - paragraph [ref=e253]: Creator of Elixir
+              - img [ref=e254]
+          - generic [ref=e256]:
+            - img [ref=e257]
+            - blockquote [ref=e259]: “ I've had my mind blown using Zed with Claude 3.5 Sonnet. I wrote up a few sentences around a research idea and Claude 3.5 Sonnet delivered a first pass in seconds. When I spotted some small mistakes, I highlighted the parts I wanted to change and shared feedback for it to fix. I was able to go from idea to running experiment code in half an hour—it was really easy and fun.”
+            - generic [ref=e260]:
+              - img "Ethan Perez's avatar" [ref=e1288]
+              - generic [ref=e264]:
+                - paragraph [ref=e265]: Ethan Perez
+                - paragraph [ref=e266]: Adversarial Robustness Research Lead
+            - img
+          - generic [ref=e267]:
+            - blockquote [ref=e268]: “ This is obviously a product built with love and care. I can tell it from two minutes of using it. Kudos to the team.”
+            - generic [ref=e269]:
+              - img "Dan Abramov's avatar" [ref=e1289]
+              - generic [ref=e273]:
+                - paragraph [ref=e274]: Dan Abramov
+                - paragraph [ref=e275]: Engineer and React Core team member
+              - img [ref=e276]
+          - generic [ref=e278]:
+            - blockquote [ref=e279]: “ My god it is so fast. Boot time, UI interaction, typing latency. I feel it. I knew VS Code always felt sluggish, but I didn't realize how good things could really be. I'm honestly astounded.”
+            - generic [ref=e280]:
+              - img "Matt Baker's avatar" [ref=e1290]
+              - generic [ref=e284]:
+                - paragraph [ref=e285]: Matt Baker
+                - paragraph [ref=e286]: Principal Engineer
+              - img [ref=e287]
+          - generic [ref=e289]:
+            - blockquote [ref=e290]: “ I’ve started using Zed, and I love it. Lots of subtle innovations (multibuffers, inlay hints, collaboration). Thoughtful, precise design. And the speed, the speed!”
+            - generic [ref=e291]:
+              - img "Mike Bostock's avatar" [ref=e1291]
+              - generic [ref=e295]:
+                - paragraph [ref=e296]: Mike Bostock
+                - paragraph [ref=e297]: Creator of D3.js, founder of Observable
+              - img [ref=e298]
+      - generic [ref=e315]:
+        - img
+      - generic [ref=e337]:
+        - generic [ref=e338]:
+          - generic [ref=e339]:
+            - heading "Zed Just Works" [level=2] [ref=e340]
+            - paragraph [ref=e341]: Incredibly powerful out of the box. And it only gets better as, every week, there's always a new version.
+          - generic [ref=e342]:
+            - link "View Roadmap" [ref=e343] [cursor=pointer]:
+              - /url: /roadmap
+              - text: View Roadmap
+              - img [ref=e344]
+            - link "View Releases" [ref=e346] [cursor=pointer]:
+              - /url: /releases
+              - text: View Releases
+              - img [ref=e347]
+        - generic [ref=e349]:
+          - generic [ref=e350]:
+            - link "Learn More →" [ref=e354] [cursor=pointer]:
+              - /url: /windows
+            - generic [ref=e355]:
+              - paragraph [ref=e356]: Zed for Windows
+              - paragraph [ref=e357]: It's here—fast, native, and ready for your team.
+          - generic [ref=e358]:
+            - generic [ref=e361]:
+              - link "Learn More →" [ref=e362] [cursor=pointer]:
+                - /url: /debugger
+              - button "Expand Video" [ref=e363] [cursor=pointer]:
+                - generic [ref=e364]: Expand Video
+                - img [ref=e365]
+            - generic [ref=e370]:
+              - paragraph [ref=e371]: Debugger
+              - paragraph [ref=e372]: Built on the Debug Adapter Protocol (DAP), native support for debugging across multiple programming languages.
+          - generic [ref=e373]:
+            - generic [ref=e376]:
+              - link "Learn More →" [ref=e377] [cursor=pointer]:
+                - /url: /agentic
+              - button "Expand Video" [ref=e378] [cursor=pointer]:
+                - generic [ref=e379]: Expand Video
+                - img [ref=e380]
+            - generic [ref=e385]:
+              - paragraph [ref=e386]: Agentic Editing
+              - paragraph [ref=e387]: Zed natively supports agentic editing, enabling fluent collaboration between humans and AI.
+          - generic [ref=e388]:
+            - generic [ref=e391]:
+              - link "Learn More →" [ref=e392] [cursor=pointer]:
+                - /url: /git
+              - button "Expand Video" [ref=e393] [cursor=pointer]:
+                - generic [ref=e394]: Expand Video
+                - img [ref=e395]
+            - generic [ref=e400]:
+              - paragraph [ref=e401]: Native Git Support
+              - paragraph [ref=e402]: First-class support for staging, committing, pulling, pushing, viewing diffs, and many more Git operations.
+          - generic [ref=e403]:
+            - generic [ref=e406]:
+              - link "Learn More →" [ref=e407] [cursor=pointer]:
+                - /url: /edit-prediction
+              - button "Expand Video" [ref=e408] [cursor=pointer]:
+                - generic [ref=e409]: Expand Video
+                - img [ref=e410]
+            - generic [ref=e415]:
+              - paragraph [ref=e416]: Edit Prediction
+              - paragraph [ref=e417]: A tool that anticipates your next move. Powered by Zeta, our new open-source, open-data language model.
+        - generic [ref=e418]:
+          - generic [ref=e419]:
+            - paragraph [ref=e420]: Remote Development
+            - paragraph [ref=e421]: Your machine only runs the Zed UI, while the actual codebase runs on a remote server.
+          - generic [ref=e422]:
+            - paragraph [ref=e423]: Multibuffer editing
+            - paragraph [ref=e424]: Multibuffers compose excerpts from across the codebase in one editable surface.
+          - generic [ref=e425]:
+            - paragraph [ref=e426]: Vim-friendly
+            - paragraph [ref=e427]: First-class modal editing via Vim bindings, including features like text objects and marks.
+      - generic [ref=e442]:
+        - img
+      - generic [ref=e1292]:
+        - generic [ref=e1297]:
+          - img:
+            - generic:
+              - img
+        - img [ref=e1312]
+        - generic [ref=e1319]:
+          - img
+          - generic [ref=e1320]:
+            - heading "Open Source" [level=2] [ref=e1321]
+            - paragraph [ref=e1322]: Zed is built by a global, growing, and thriving community of thousand of developers.
+          - generic [ref=e1323]:
+            - generic:
+              - generic:
+                - img "@mrnugget"
+                - img "@loczek"
+                - generic:
+                  - img "Zed"
+                - img "@bajrangCoder"
+                - img "@cameron1024"
+                - generic:
+                  - img "Zed"
+                - img "@lemorage"
+                - img "@Takk8IS"
+                - img "@JonGretar"
+                - img "@lnay"
+                - img "@chbk"
+                - img "@d1y"
+                - img "@bobbymannino"
+                - img "@AidanV"
+                - img "@hron"
+                - img "@5brian"
+                - img "@mikebronner"
+                - img "@lingyaochu"
+                - img "@Anthony-Eid"
+                - img "@someone13574"
+                - img "@errmayank"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@tomhoule"
+                - img "@hokein"
+                - img "@Kethku"
+                - img "@dsp-ant"
+                - img "@WhySoBad"
+                - img "@probably-neb"
+                - img "@devzeth"
+                - img "@abdelq"
+                - img "@5herlocked"
+                - img "@notpeter"
+                - img "@madcodelife"
+                - generic:
+                  - img "Zed"
+                - img "@romaninsh"
+                - img "@rxptr"
+                - img "@blopker"
+                - img "@suxiaoshao"
+                - img "@slightknack"
+                - img "@mgsloan"
+                - img "@nathansobo"
+                - generic:
+                  - img "Zed"
+                - img "@injust"
+                - img "@vitallium"
+                - img "@RemcoSmitsDev"
+                - img "@0x2CA"
+                - img "@kvark"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@ddoemonn"
+                - img "@ognevny"
+                - img "@PixelJanitor"
+                - img "@thedadams"
+                - img "@ForLoveOfCats"
+                - generic:
+                  - img "Zed"
+                - img "@JunkuiZhang"
+                - img "@KyleBarton"
+                - generic:
+                  - img "Zed"
+                - img "@marius851000"
+                - img "@ozacod"
+                - img "@akbxr"
+                - generic:
+                  - img "Zed"
+                - img "@gko"
+                - img "@petros"
+                - img "@XDeme1"
+                - img "@mikebenfield"
+                - img "@marcocondrache"
+                - img "@CharlesChen0823"
+                - img "@findrakecil"
+                - img "@iamnbutler"
+                - img "@maxbrunsfeld"
+                - img "@AlvaroParker"
+                - img "@marcospb19"
+                - generic:
+                  - img "Zed"
+                - img "@HactarCE"
+                - img "@timvermeulen"
+                - img "@katie-z-geer"
+                - img "@MatinAniss"
+                - img "@warrenjokinen"
+                - img "@davewa"
+                - img "@PKief"
+                - img "@jeffreyguenther"
+                - img "@artemevsevev"
+                - generic:
+                  - img "Zed"
+                - img "@zaucy"
+                - img "@versecafe"
+                - img "@JosephTLyons"
+                - img "@amtoaer"
+                - img "@gaauwe"
+                - img "@osyvokon"
+                - img "@localcc"
+                - img "@jenslys"
+                - img "@fdncred"
+                - img "@morgankrey"
+                - generic:
+                  - img "Zed"
+                - img "@KCaverly"
+                - img "@cppcoffee"
+                - generic:
+                  - img "Zed"
+                - img "@valentinegb"
+                - img "@P1n3appl3"
+                - img "@Be-ing"
+                - img "@agu-z"
+                - img "@romgrk"
+                - img "@tmickleydoyle"
+                - img "@jvmncs"
+                - img "@rtfeldman"
+                - generic:
+                  - img "Zed"
+                - img "@afgomez"
+                - img "@djsauble"
+                - img "@bcomnes"
+                - img "@alygin"
+                - img "@SomeoneToIgnore"
+                - img "@tidely"
+                - generic:
+                  - img "Zed"
+                - img "@Simek"
+                - img "@WeetHet"
+                - img "@ya7010"
+                - img "@rgbkrk"
+                - img "@fantacell"
+                - img "@apricotbucket28"
+                - img "@AaronFeickert"
+                - generic:
+                  - img "Zed"
+                - img "@sonufrienko"
+                - img "@tartarughina"
+                - img "@FloppyDisco"
+                - generic:
+                  - img "Zed"
+                - img "@kazatsuyu"
+                - img "@zelenenka"
+                - img "@playdohface"
+                - generic:
+                  - img "Zed"
+                - img "@huacnlee"
+                - img "@eholk"
+                - img "@jansol"
+                - img "@MostlyKIGuess"
+                - img "@nia-e"
+                - generic:
+                  - img "Zed"
+                - img "@feeiyu"
+                - generic:
+                  - img "Zed"
+                - img "@sourcefrog"
+                - generic:
+                  - img "Zed"
+                - img "@davidbarsky"
+                - img "@bnjjj"
+                - img "@imumesh18"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@jacobtread"
+                - img "@Zertsov"
+                - img "@Kalmaegi"
+              - generic:
+                - img "@mrnugget"
+                - img "@loczek"
+                - generic:
+                  - img "Zed"
+                - img "@bajrangCoder"
+                - img "@cameron1024"
+                - generic:
+                  - img "Zed"
+                - img "@lemorage"
+                - img "@Takk8IS"
+                - img "@JonGretar"
+                - img "@lnay"
+                - img "@chbk"
+                - img "@d1y"
+                - img "@bobbymannino"
+                - img "@AidanV"
+                - img "@hron"
+                - img "@5brian"
+                - img "@mikebronner"
+                - img "@lingyaochu"
+                - img "@Anthony-Eid"
+                - img "@someone13574"
+                - img "@errmayank"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@tomhoule"
+                - img "@hokein"
+                - img "@Kethku"
+                - img "@dsp-ant"
+                - img "@WhySoBad"
+                - img "@probably-neb"
+                - img "@devzeth"
+                - img "@abdelq"
+                - img "@5herlocked"
+                - img "@notpeter"
+                - img "@madcodelife"
+                - generic:
+                  - img "Zed"
+                - img "@romaninsh"
+                - img "@rxptr"
+                - img "@blopker"
+                - img "@suxiaoshao"
+                - img "@slightknack"
+                - img "@mgsloan"
+                - img "@nathansobo"
+                - generic:
+                  - img "Zed"
+                - img "@injust"
+                - img "@vitallium"
+                - img "@RemcoSmitsDev"
+                - img "@0x2CA"
+                - img "@kvark"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@ddoemonn"
+                - img "@ognevny"
+                - img "@PixelJanitor"
+                - img "@thedadams"
+                - img "@ForLoveOfCats"
+                - generic:
+                  - img "Zed"
+                - img "@JunkuiZhang"
+                - img "@KyleBarton"
+                - generic:
+                  - img "Zed"
+                - img "@marius851000"
+                - img "@ozacod"
+                - img "@akbxr"
+                - generic:
+                  - img "Zed"
+                - img "@gko"
+                - img "@petros"
+                - img "@XDeme1"
+                - img "@mikebenfield"
+                - img "@marcocondrache"
+                - img "@CharlesChen0823"
+                - img "@findrakecil"
+                - img "@iamnbutler"
+                - img "@maxbrunsfeld"
+                - img "@AlvaroParker"
+                - img "@marcospb19"
+                - generic:
+                  - img "Zed"
+                - img "@HactarCE"
+                - img "@timvermeulen"
+                - img "@katie-z-geer"
+                - img "@MatinAniss"
+                - img "@warrenjokinen"
+                - img "@davewa"
+                - img "@PKief"
+                - img "@jeffreyguenther"
+                - img "@artemevsevev"
+                - generic:
+                  - img "Zed"
+                - img "@zaucy"
+                - img "@versecafe"
+                - img "@JosephTLyons"
+                - img "@amtoaer"
+                - img "@gaauwe"
+                - img "@osyvokon"
+                - img "@localcc"
+                - img "@jenslys"
+                - img "@fdncred"
+                - img "@morgankrey"
+                - generic:
+                  - img "Zed"
+                - img "@KCaverly"
+                - img "@cppcoffee"
+                - generic:
+                  - img "Zed"
+                - img "@valentinegb"
+                - img "@P1n3appl3"
+                - img "@Be-ing"
+                - img "@agu-z"
+                - img "@romgrk"
+                - img "@tmickleydoyle"
+                - img "@jvmncs"
+                - img "@rtfeldman"
+                - generic:
+                  - img "Zed"
+                - img "@afgomez"
+                - img "@djsauble"
+                - img "@bcomnes"
+                - img "@alygin"
+                - img "@SomeoneToIgnore"
+                - img "@tidely"
+                - generic:
+                  - img "Zed"
+                - img "@Simek"
+                - img "@WeetHet"
+                - img "@ya7010"
+                - img "@rgbkrk"
+                - img "@fantacell"
+                - img "@apricotbucket28"
+                - img "@AaronFeickert"
+                - generic:
+                  - img "Zed"
+                - img "@sonufrienko"
+                - img "@tartarughina"
+                - img "@FloppyDisco"
+                - generic:
+                  - img "Zed"
+                - img "@kazatsuyu"
+                - img "@zelenenka"
+                - img "@playdohface"
+                - generic:
+                  - img "Zed"
+                - img "@huacnlee"
+                - img "@eholk"
+                - img "@jansol"
+                - img "@MostlyKIGuess"
+                - img "@nia-e"
+                - generic:
+                  - img "Zed"
+                - img "@feeiyu"
+                - generic:
+                  - img "Zed"
+                - img "@sourcefrog"
+                - generic:
+                  - img "Zed"
+                - img "@davidbarsky"
+                - img "@bnjjj"
+                - img "@imumesh18"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@jacobtread"
+                - img "@Zertsov"
+                - img "@Kalmaegi"
+            - generic [ref=e1324]:
+              - generic [ref=e1325]:
+                - generic [ref=e1326]: "0"
+                - paragraph [ref=e1327]: Forks
+              - generic [ref=e1328]:
+                - generic [ref=e1329]: "0"
+                - paragraph [ref=e1330]: Stars
+              - generic [ref=e1331]:
+                - generic [ref=e1332]: "0"
+                - paragraph [ref=e1333]: Contributors
+              - generic [ref=e1334]:
+                - generic [ref=e1335]: "0"
+                - paragraph [ref=e1336]: PRs merged last month
+            - generic:
+              - generic:
+                - img "@injust"
+                - img "@cppcoffee"
+                - img "@jacobtread"
+                - img "@Anthony-Eid"
+                - generic:
+                  - img "Zed"
+                - img "@agu-z"
+                - img "@notpeter"
+                - generic:
+                  - img "Zed"
+                - img "@PixelJanitor"
+                - img "@hron"
+                - img "@amtoaer"
+                - img "@nathansobo"
+                - img "@feeiyu"
+                - img "@5herlocked"
+                - img "@rgbkrk"
+                - generic:
+                  - img "Zed"
+                - img "@apricotbucket28"
+                - img "@localcc"
+                - img "@dsp-ant"
+                - img "@gaauwe"
+                - img "@jansol"
+                - img "@eholk"
+                - img "@bcomnes"
+                - generic:
+                  - img "Zed"
+                - img "@marcospb19"
+                - img "@timvermeulen"
+                - img "@SomeoneToIgnore"
+                - img "@Kalmaegi"
+                - img "@djsauble"
+                - img "@ya7010"
+                - img "@vitallium"
+                - img "@artemevsevev"
+                - generic:
+                  - img "Zed"
+                - img "@zaucy"
+                - img "@lingyaochu"
+                - img "@jvmncs"
+                - generic:
+                  - img "Zed"
+                - img "@fdncred"
+                - img "@AaronFeickert"
+                - img "@RemcoSmitsDev"
+                - img "@bajrangCoder"
+                - img "@JonGretar"
+                - generic:
+                  - img "Zed"
+                - img "@iamnbutler"
+                - img "@WhySoBad"
+                - generic:
+                  - img "Zed"
+                - img "@Simek"
+                - img "@gko"
+                - img "@probably-neb"
+                - img "@jenslys"
+                - generic:
+                  - img "Zed"
+                - img "@ozacod"
+                - generic:
+                  - img "Zed"
+                - img "@lemorage"
+                - img "@alygin"
+                - img "@romaninsh"
+                - img "@fantacell"
+                - img "@CharlesChen0823"
+                - img "@Kethku"
+                - img "@AidanV"
+                - img "@afgomez"
+                - img "@WeetHet"
+                - generic:
+                  - img "Zed"
+                - img "@ognevny"
+                - img "@cameron1024"
+                - img "@akbxr"
+                - img "@Be-ing"
+                - img "@playdohface"
+                - img "@JosephTLyons"
+                - img "@JunkuiZhang"
+                - img "@zelenenka"
+                - img "@osyvokon"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@devzeth"
+                - generic:
+                  - img "Zed"
+                - img "@mikebronner"
+                - img "@jeffreyguenther"
+                - img "@MostlyKIGuess"
+                - img "@XDeme1"
+                - generic:
+                  - img "Zed"
+                - img "@marcocondrache"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@warrenjokinen"
+                - img "@imumesh18"
+                - img "@kvark"
+                - img "@romgrk"
+                - img "@bobbymannino"
+                - img "@valentinegb"
+                - img "@davidbarsky"
+                - img "@d1y"
+                - img "@davewa"
+                - img "@5brian"
+                - img "@findrakecil"
+                - img "@ddoemonn"
+                - img "@rxptr"
+                - img "@loczek"
+                - img "@petros"
+                - img "@errmayank"
+                - img "@versecafe"
+                - img "@tidely"
+                - img "@nia-e"
+                - generic:
+                  - img "Zed"
+                - img "@rtfeldman"
+                - img "@0x2CA"
+                - img "@Zertsov"
+                - img "@mikebenfield"
+                - img "@AlvaroParker"
+                - img "@P1n3appl3"
+                - img "@tmickleydoyle"
+                - img "@marius851000"
+                - img "@tartarughina"
+                - img "@tomhoule"
+                - img "@kazatsuyu"
+                - img "@mrnugget"
+                - img "@blopker"
+                - img "@maxbrunsfeld"
+                - img "@sonufrienko"
+                - img "@hokein"
+                - img "@katie-z-geer"
+                - generic:
+                  - img "Zed"
+                - img "@mgsloan"
+                - img "@KyleBarton"
+                - img "@KCaverly"
+                - img "@abdelq"
+                - img "@sourcefrog"
+                - img "@Takk8IS"
+                - generic:
+                  - img "Zed"
+                - img "@chbk"
+                - generic:
+                  - img "Zed"
+                - img "@someone13574"
+                - img "@suxiaoshao"
+                - img "@huacnlee"
+                - img "@bnjjj"
+                - generic:
+                  - img "Zed"
+                - img "@PKief"
+                - img "@morgankrey"
+                - img "@slightknack"
+                - img "@ForLoveOfCats"
+                - img "@thedadams"
+                - img "@madcodelife"
+                - img "@HactarCE"
+                - img "@lnay"
+                - img "@MatinAniss"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@FloppyDisco"
+              - generic:
+                - img "@injust"
+                - img "@cppcoffee"
+                - img "@jacobtread"
+                - img "@Anthony-Eid"
+                - generic:
+                  - img "Zed"
+                - img "@agu-z"
+                - img "@notpeter"
+                - generic:
+                  - img "Zed"
+                - img "@PixelJanitor"
+                - img "@hron"
+                - img "@amtoaer"
+                - img "@nathansobo"
+                - img "@feeiyu"
+                - img "@5herlocked"
+                - img "@rgbkrk"
+                - generic:
+                  - img "Zed"
+                - img "@apricotbucket28"
+                - img "@localcc"
+                - img "@dsp-ant"
+                - img "@gaauwe"
+                - img "@jansol"
+                - img "@eholk"
+                - img "@bcomnes"
+                - generic:
+                  - img "Zed"
+                - img "@marcospb19"
+                - img "@timvermeulen"
+                - img "@SomeoneToIgnore"
+                - img "@Kalmaegi"
+                - img "@djsauble"
+                - img "@ya7010"
+                - img "@vitallium"
+                - img "@artemevsevev"
+                - generic:
+                  - img "Zed"
+                - img "@zaucy"
+                - img "@lingyaochu"
+                - img "@jvmncs"
+                - generic:
+                  - img "Zed"
+                - img "@fdncred"
+                - img "@AaronFeickert"
+                - img "@RemcoSmitsDev"
+                - img "@bajrangCoder"
+                - img "@JonGretar"
+                - generic:
+                  - img "Zed"
+                - img "@iamnbutler"
+                - img "@WhySoBad"
+                - generic:
+                  - img "Zed"
+                - img "@Simek"
+                - img "@gko"
+                - img "@probably-neb"
+                - img "@jenslys"
+                - generic:
+                  - img "Zed"
+                - img "@ozacod"
+                - generic:
+                  - img "Zed"
+                - img "@lemorage"
+                - img "@alygin"
+                - img "@romaninsh"
+                - img "@fantacell"
+                - img "@CharlesChen0823"
+                - img "@Kethku"
+                - img "@AidanV"
+                - img "@afgomez"
+                - img "@WeetHet"
+                - generic:
+                  - img "Zed"
+                - img "@ognevny"
+                - img "@cameron1024"
+                - img "@akbxr"
+                - img "@Be-ing"
+                - img "@playdohface"
+                - img "@JosephTLyons"
+                - img "@JunkuiZhang"
+                - img "@zelenenka"
+                - img "@osyvokon"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@devzeth"
+                - generic:
+                  - img "Zed"
+                - img "@mikebronner"
+                - img "@jeffreyguenther"
+                - img "@MostlyKIGuess"
+                - img "@XDeme1"
+                - generic:
+                  - img "Zed"
+                - img "@marcocondrache"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@warrenjokinen"
+                - img "@imumesh18"
+                - img "@kvark"
+                - img "@romgrk"
+                - img "@bobbymannino"
+                - img "@valentinegb"
+                - img "@davidbarsky"
+                - img "@d1y"
+                - img "@davewa"
+                - img "@5brian"
+                - img "@findrakecil"
+                - img "@ddoemonn"
+                - img "@rxptr"
+                - img "@loczek"
+                - img "@petros"
+                - img "@errmayank"
+                - img "@versecafe"
+                - img "@tidely"
+                - img "@nia-e"
+                - generic:
+                  - img "Zed"
+                - img "@rtfeldman"
+                - img "@0x2CA"
+                - img "@Zertsov"
+                - img "@mikebenfield"
+                - img "@AlvaroParker"
+                - img "@P1n3appl3"
+                - img "@tmickleydoyle"
+                - img "@marius851000"
+                - img "@tartarughina"
+                - img "@tomhoule"
+                - img "@kazatsuyu"
+                - img "@mrnugget"
+                - img "@blopker"
+                - img "@maxbrunsfeld"
+                - img "@sonufrienko"
+                - img "@hokein"
+                - img "@katie-z-geer"
+                - generic:
+                  - img "Zed"
+                - img "@mgsloan"
+                - img "@KyleBarton"
+                - img "@KCaverly"
+                - img "@abdelq"
+                - img "@sourcefrog"
+                - img "@Takk8IS"
+                - generic:
+                  - img "Zed"
+                - img "@chbk"
+                - generic:
+                  - img "Zed"
+                - img "@someone13574"
+                - img "@suxiaoshao"
+                - img "@huacnlee"
+                - img "@bnjjj"
+                - generic:
+                  - img "Zed"
+                - img "@PKief"
+                - img "@morgankrey"
+                - img "@slightknack"
+                - img "@ForLoveOfCats"
+                - img "@thedadams"
+                - img "@madcodelife"
+                - img "@HactarCE"
+                - img "@lnay"
+                - img "@MatinAniss"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - generic:
+                  - img "Zed"
+                - img "@FloppyDisco"
+        - img [ref=e1346]
+        - generic [ref=e1348]:
+          - img:
+            - generic:
+              - img
+      - generic [ref=e483]:
+        - img
+      - generic [ref=e506]:
+        - generic [ref=e507]:
+          - generic [ref=e508]:
+            - heading "AI that works the way you code" [level=2] [ref=e509]
+            - paragraph [ref=e510]: Zed doesn't lock you into one model, it gives you the fastest way to collaborate with any agent.
+          - link "Learn about AI in Zed" [ref=e511] [cursor=pointer]:
+            - /url: https://zed.dev/docs/ai/overview
+            - text: Learn about AI in Zed
+            - img [ref=e512]
+        - generic [ref=e515]:
+          - tablist [ref=e516]:
+            - tab "Agentic Editing Delegate work to the agent, follow their progress live and review changes with ease. Learn More" [selected] [ref=e517]:
+              - img
+              - heading "Agentic Editing" [level=3] [ref=e519]
+              - paragraph [ref=e520]: Delegate work to the agent, follow their progress live and review changes with ease.
+              - link "Learn More" [ref=e521] [cursor=pointer]:
+                - /url: https://zed.dev/docs/ai/agent-panel
+                - text: Learn More
+                - img [ref=e522]
+            - tab "Edit Prediction" [ref=e524]:
+              - generic [ref=e525]:
+                - text: Edit Prediction
+                - img [ref=e526]
+            - tab "Inline Assistant" [ref=e527]:
+              - generic [ref=e528]:
+                - text: Inline Assistant
+                - img [ref=e529]
+            - tab "Text Threads" [ref=e530]:
+              - generic [ref=e531]:
+                - text: Text Threads
+                - img [ref=e532]
+          - tabpanel "Agentic Editing Delegate work to the agent, follow their progress live and review changes with ease. Learn More" [ref=e1354]:
+            - button "Expand Video" [ref=e537] [cursor=pointer]:
+              - generic [ref=e538]: Expand Video
+              - img [ref=e539]
+      - generic [ref=e559]:
+        - img
+      - generic [ref=e584]:
+        - generic [ref=e585]:
+          - generic [ref=e586]:
+            - heading "Growing extensions ecosystem" [level=2] [ref=e587]
+            - paragraph [ref=e588]: Boost your Zed experience by choosing from hundreds of extensions that broaden language support, offer different themes, and more.
+          - generic [ref=e589]:
+            - link "Create Extension" [ref=e590] [cursor=pointer]:
+              - /url: https://zed.dev/docs/extensions/developing-extensions
+              - text: Create Extension
+              - img [ref=e591]
+            - link "View All Extensions" [ref=e593] [cursor=pointer]:
+              - /url: /extensions
+              - text: View All Extensions
+              - img [ref=e594]
+        - generic [ref=e596]:
+          - link "HTML 4.5M HTML support. Isaac Clayton" [ref=e597] [cursor=pointer]:
+            - /url: /extensions/html
+            - generic [ref=e598]:
+              - paragraph [ref=e599]: HTML
+              - paragraph [ref=e600]:
+                - img [ref=e601]
+                - text: 4.5M
+            - paragraph [ref=e604]: HTML support.
+            - generic [ref=e605]:
+              - img [ref=e606]
+              - paragraph [ref=e609]: Isaac Clayton
+          - link "TOML 860k TOML support. Max Brunsfeld, Ammar Arif" [ref=e610] [cursor=pointer]:
+            - /url: /extensions/toml
+            - generic [ref=e611]:
+              - paragraph [ref=e612]: TOML
+              - paragraph [ref=e613]:
+                - img [ref=e614]
+                - text: 860k
+            - paragraph [ref=e617]: TOML support.
+            - generic [ref=e618]:
+              - img [ref=e619]
+              - paragraph [ref=e622]: Max Brunsfeld, Ammar Arif
+          - link "Catppuccin 796k 🦀 Soothing pastel theme for Zed Catppuccin" [ref=e623] [cursor=pointer]:
+            - /url: /extensions/catppuccin
+            - generic [ref=e624]:
+              - paragraph [ref=e625]: Catppuccin
+              - paragraph [ref=e626]:
+                - img [ref=e627]
+                - text: 796k
+            - paragraph [ref=e630]: 🦀 Soothing pastel theme for Zed
+            - generic [ref=e631]:
+              - img [ref=e632]
+              - paragraph [ref=e635]: Catppuccin
+          - link "Java 659k Java support. Java Extension Contributors" [ref=e636] [cursor=pointer]:
+            - /url: /extensions/java
+            - generic [ref=e637]:
+              - paragraph [ref=e638]: Java
+              - paragraph [ref=e639]:
+                - img [ref=e640]
+                - text: 659k
+            - paragraph [ref=e643]: Java support.
+            - generic [ref=e644]:
+              - img [ref=e645]
+              - paragraph [ref=e648]: Java Extension Contributors
+          - link "Git Firefly 644k Provides Git Syntax Highlighting d1y, Peter Tripp" [ref=e649] [cursor=pointer]:
+            - /url: /extensions/git-firefly
+            - generic [ref=e650]:
+              - paragraph [ref=e651]: Git Firefly
+              - paragraph [ref=e652]:
+                - img [ref=e653]
+                - text: 644k
+            - paragraph [ref=e656]: Provides Git Syntax Highlighting
+            - generic [ref=e657]:
+              - img [ref=e658]
+              - paragraph [ref=e661]: d1y, Peter Tripp
+          - link "Dockerfile 615k Dockerfile support. d1y, joshmeads" [ref=e662] [cursor=pointer]:
+            - /url: /extensions/dockerfile
+            - generic [ref=e663]:
+              - paragraph [ref=e664]: Dockerfile
+              - paragraph [ref=e665]:
+                - img [ref=e666]
+                - text: 615k
+            - paragraph [ref=e669]: Dockerfile support.
+            - generic [ref=e670]:
+              - img [ref=e671]
+              - paragraph [ref=e674]: d1y, joshmeads
+          - link "PHP 532k PHP support. Piotr Osiewicz" [ref=e675] [cursor=pointer]:
+            - /url: /extensions/php
+            - generic [ref=e676]:
+              - paragraph [ref=e677]: PHP
+              - paragraph [ref=e678]:
+                - img [ref=e679]
+                - text: 532k
+            - paragraph [ref=e682]: PHP support.
+            - generic [ref=e683]:
+              - img [ref=e684]
+              - paragraph [ref=e687]: Piotr Osiewicz
+          - link "SQL 508k SQL language support. nervenes, notpeter, phileix, tammyxiong" [ref=e688] [cursor=pointer]:
+            - /url: /extensions/sql
+            - generic [ref=e689]:
+              - paragraph [ref=e690]: SQL
+              - paragraph [ref=e691]:
+                - img [ref=e692]
+                - text: 508k
+            - paragraph [ref=e695]: SQL language support.
+            - generic [ref=e696]:
+              - img [ref=e697]
+              - paragraph [ref=e700]: nervenes, notpeter, phileix, tammyxiong
+          - link "Ruby 384k Ruby support. Vitaly Slobodin" [ref=e701] [cursor=pointer]:
+            - /url: /extensions/ruby
+            - generic [ref=e702]:
+              - paragraph [ref=e703]: Ruby
+              - paragraph [ref=e704]:
+                - img [ref=e705]
+                - text: 384k
+            - paragraph [ref=e708]: Ruby support.
+            - generic [ref=e709]:
+              - img [ref=e710]
+              - paragraph [ref=e713]: Vitaly Slobodin
+          - link "Vue 374k Vue support. Zed Industries" [ref=e714] [cursor=pointer]:
+            - /url: /extensions/vue
+            - generic [ref=e715]:
+              - paragraph [ref=e716]: Vue
+              - paragraph [ref=e717]:
+                - img [ref=e718]
+                - text: 374k
+            - paragraph [ref=e721]: Vue support.
+            - generic [ref=e722]:
+              - img [ref=e723]
+              - paragraph [ref=e726]: Zed Industries
+          - link "macOS Classic Theme 369k A macOS native style theme, let it same like native app in macOS. Jason Lee" [ref=e727] [cursor=pointer]:
+            - /url: /extensions/macos-classic
+            - generic [ref=e728]:
+              - paragraph [ref=e729]: macOS Classic Theme
+              - paragraph [ref=e730]:
+                - img [ref=e731]
+                - text: 369k
+            - paragraph [ref=e734]: A macOS native style theme, let it same like native app in macOS.
+            - generic [ref=e735]:
+              - img [ref=e736]
+              - paragraph [ref=e739]: Jason Lee
+          - link "Catppuccin Icons 346k 🦊 Soothing pastel icons for Zed Catppuccin" [ref=e740] [cursor=pointer]:
+            - /url: /extensions/catppuccin-icons
+            - generic [ref=e741]:
+              - paragraph [ref=e742]: Catppuccin Icons
+              - paragraph [ref=e743]:
+                - img [ref=e744]
+                - text: 346k
+            - paragraph [ref=e747]: 🦊 Soothing pastel icons for Zed
+            - generic [ref=e748]:
+              - img [ref=e749]
+              - paragraph [ref=e752]: Catppuccin
+          - link "Make 311k Makefile syntax highlighting Caius Durling, d1y, Marshall Bowers, Luke Naylor, Igor Támara, Michael Alexander, Donnie Adams" [ref=e753] [cursor=pointer]:
+            - /url: /extensions/make
+            - generic [ref=e754]:
+              - paragraph [ref=e755]: Make
+              - paragraph [ref=e756]:
+                - img [ref=e757]
+                - text: 311k
+            - paragraph [ref=e760]: Makefile syntax highlighting
+            - generic [ref=e761]:
+              - img [ref=e762]
+              - paragraph [ref=e765]: Caius Durling, d1y, Marshall Bowers, Luke Naylor, Igor Támara, Michael Alexander, Donnie Adams
+          - link "SCSS 306k SCSS and SASS support Raunak Raj" [ref=e766] [cursor=pointer]:
+            - /url: /extensions/scss
+            - generic [ref=e767]:
+              - paragraph [ref=e768]: SCSS
+              - paragraph [ref=e769]:
+                - img [ref=e770]
+                - text: 306k
+            - paragraph [ref=e773]: SCSS and SASS support
+            - generic [ref=e774]:
+              - img [ref=e775]
+              - paragraph [ref=e778]: Raunak Raj
+          - link "Material Icon Theme 289k Material Design icons. Zed Industries" [ref=e779] [cursor=pointer]:
+            - /url: /extensions/material-icon-theme
+            - generic [ref=e780]:
+              - paragraph [ref=e781]: Material Icon Theme
+              - paragraph [ref=e782]:
+                - img [ref=e783]
+                - text: 289k
+            - paragraph [ref=e786]: Material Design icons.
+            - generic [ref=e787]:
+              - img [ref=e788]
+              - paragraph [ref=e791]: Zed Industries
+          - link "Tokyo Night Themes 271k Tokyo Night Themes ssaunderss" [ref=e792] [cursor=pointer]:
+            - /url: /extensions/tokyo-night
+            - generic [ref=e793]:
+              - paragraph [ref=e794]: Tokyo Night Themes
+              - paragraph [ref=e795]:
+                - img [ref=e796]
+                - text: 271k
+            - paragraph [ref=e799]: Tokyo Night Themes
+            - generic [ref=e800]:
+              - img [ref=e801]
+              - paragraph [ref=e804]: ssaunderss
+          - link "Lua 234k Lua support. Max Brunsfeld" [ref=e805] [cursor=pointer]:
+            - /url: /extensions/lua
+            - generic [ref=e806]:
+              - paragraph [ref=e807]: Lua
+              - paragraph [ref=e808]:
+                - img [ref=e809]
+                - text: 234k
+            - paragraph [ref=e812]: Lua support.
+            - generic [ref=e813]:
+              - img [ref=e814]
+              - paragraph [ref=e817]: Max Brunsfeld
+          - link "XML 230k XML syntax support. sweetppro" [ref=e818] [cursor=pointer]:
+            - /url: /extensions/xml
+            - generic [ref=e819]:
+              - paragraph [ref=e820]: XML
+              - paragraph [ref=e821]:
+                - img [ref=e822]
+                - text: 230k
+            - paragraph [ref=e825]: XML syntax support.
+            - generic [ref=e826]:
+              - img [ref=e827]
+              - paragraph [ref=e830]: sweetppro
+          - link "C# 229k C# support. fminkowski, Fabian Freimueller" [ref=e831] [cursor=pointer]:
+            - /url: /extensions/csharp
+            - generic [ref=e832]:
+              - paragraph [ref=e833]: C#
+              - paragraph [ref=e834]:
+                - img [ref=e835]
+                - text: 229k
+            - paragraph [ref=e838]: C# support.
+            - generic [ref=e839]:
+              - img [ref=e840]
+              - paragraph [ref=e843]: fminkowski, Fabian Freimueller
+          - link "Svelte 218k Svelte support Zed Industries" [ref=e844] [cursor=pointer]:
+            - /url: /extensions/svelte
+            - generic [ref=e845]:
+              - paragraph [ref=e846]: Svelte
+              - paragraph [ref=e847]:
+                - img [ref=e848]
+                - text: 218k
+            - paragraph [ref=e851]: Svelte support
+            - generic [ref=e852]:
+              - img [ref=e853]
+              - paragraph [ref=e856]: Zed Industries
+      - generic [ref=e873]:
+        - img
+      - generic [ref=e895]:
+        - generic [ref=e896]:
+          - generic [ref=e897]:
+            - heading "Built with ultimate care" [level=2] [ref=e898]
+            - paragraph [ref=e899]: Every single feature in Zed has been designed to advance the state of the art. Anything less isn’t worth building.
+          - link "Learn More" [ref=e900] [cursor=pointer]:
+            - /url: https://zed.dev/docs/editing-code
+            - text: Learn More
+            - img [ref=e901]
+        - generic [ref=e904]:
+          - tablist [ref=e905]:
+            - tab "Language Server Protocol support Fully integrate your language of choice. Learn More" [selected] [ref=e906]:
+              - img
+              - heading "Language Server Protocol support" [level=3] [ref=e908]
+              - paragraph [ref=e909]: Fully integrate your language of choice.
+              - link "Learn More" [ref=e910] [cursor=pointer]:
+                - /url: https://zed.dev/docs/configuring-languages
+                - text: Learn More
+                - img [ref=e911]
+            - tab "Outline view" [ref=e913]:
+              - generic [ref=e914]:
+                - text: Outline view
+                - img [ref=e915]
+            - tab "Text and line manipulation" [ref=e916]:
+              - generic [ref=e917]:
+                - text: Text and line manipulation
+                - img [ref=e918]
+          - tabpanel "Language Server Protocol support Fully integrate your language of choice. Learn More" [ref=e1355]:
+            - button "Expand Video" [ref=e923] [cursor=pointer]:
+              - generic [ref=e924]: Expand Video
+              - img [ref=e925]
+        - generic [ref=e930]:
+          - img
+        - generic [ref=e931]:
+          - generic [ref=e932]:
+            - paragraph [ref=e933]: Helix Mode
+            - paragraph [ref=e934]: Feel at home with Helix and Vim.
+          - generic [ref=e935]:
+            - paragraph [ref=e936]: Diagnostics Multibuffer
+            - paragraph [ref=e937]: Project-wide errors and warnings.
+          - generic [ref=e938]:
+            - paragraph [ref=e939]: Dev Containers
+            - paragraph [ref=e940]: Consistent development environment.
+          - generic [ref=e941]:
+            - paragraph [ref=e942]: CLI
+            - paragraph [ref=e943]: Use Zed from the command line.
+          - generic [ref=e944]:
+            - paragraph [ref=e945]: Rainbow Brackets
+            - paragraph [ref=e946]: Easily move around deeply nested code.
+          - generic [ref=e947]:
+            - paragraph [ref=e948]: Built-in REPL
+            - paragraph [ref=e949]: Run code interactively through Jupyter kernels.
+          - generic [ref=e950]:
+            - paragraph [ref=e951]: Syntax-aware selections
+            - paragraph [ref=e952]: Efficiently select syntax nodes.
+          - generic [ref=e953]:
+            - paragraph [ref=e954]: Inlay Hints
+            - paragraph [ref=e955]: Peek through your code.
+      - generic [ref=e969]:
+        - img
+      - generic [ref=e970]:
+        - generic [ref=e980]:
+          - img:
+            - generic:
+              - img
+        - generic [ref=e991]:
+          - img
+          - generic [ref=e992]:
+            - generic [ref=e993]:
+              - paragraph [ref=e994]: A letter
+              - heading "From the team" [level=2] [ref=e995]
+              - paragraph [ref=e996]:
+                - text: Programming and the tools we use to do so are changing. As the culmination of 15 years of work developing
+                - text: industry-leading tools for developers like Atom, Electron,
+                - text: and Tree-sitter, Zed strives to be at the forefront of this transformation.
+              - separator [ref=e997]
+              - paragraph [ref=e998]: We're confident that the future of software development lies in fluent collaboration between humans and AI. Crafted from the ground up, Zed is here to make this vision a reality.
+              - generic [ref=e999]:
+                - generic [ref=e1000]:
+                  - link "Nathan Sobo's GitHub profile" [ref=e1001] [cursor=pointer]:
+                    - /url: https://github.com/nathansobo
+                    - img "Nathan Sobo" [ref=e1004]
+                  - link "Antonio Scandurra's GitHub profile" [ref=e1005] [cursor=pointer]:
+                    - /url: https://github.com/as-cii
+                    - img "Antonio Scandurra" [ref=e1008]
+                  - link "Max Brunsfeld's GitHub profile" [ref=e1009] [cursor=pointer]:
+                    - /url: https://github.com/maxbrunsfeld
+                    - img "Max Brunsfeld" [ref=e1012]
+                - paragraph [ref=e1013]: Zed Industries
+                - generic [ref=e1014]: Nathan Sobo, Antonio Scandurra, Max Brunsfeld
+            - img [ref=e1015]
+        - generic [ref=e1017]:
+          - img:
+            - generic:
+              - img
+      - generic [ref=e1028]:
+        - img
+      - generic [ref=e1052]:
+        - generic [ref=e1053]:
+          - generic [ref=e1054]:
+            - heading "The latest from Zed" [level=2] [ref=e1055]
+            - paragraph [ref=e1056]: Check out recent announcements, the Zed Decoded series, and other in-depth posts about Zed behind the curtains.
+          - link "View Blog" [ref=e1057] [cursor=pointer]:
+            - /url: /blog
+            - text: View Blog
+            - img [ref=e1058]
+        - generic [ref=e1060]:
+          - link "Introducing Zed for Education Introducing Zed for Education Empowering the next generation of developers with Zed's Pro features, free for one year. Katie Geer Katie Geer March 9th, 2026 Newest" [ref=e1061] [cursor=pointer]:
+            - /url: /blog/student-plan
+            - generic [ref=e1062]:
+              - img
+              - img "Introducing Zed for Education" [ref=e1064]
+            - generic [ref=e1065]:
+              - heading "Introducing Zed for Education" [level=2] [ref=e1066]
+              - paragraph [ref=e1067]: Empowering the next generation of developers with Zed's Pro features, free for one year.
+              - generic [ref=e1068]:
+                - generic [ref=e1069]:
+                  - img "Katie Geer" [ref=e1072]
+                  - paragraph [ref=e1073]: Katie Geer
+                - generic [ref=e1074]:
+                  - paragraph [ref=e1075]: March 9th, 2026
+                  - generic [ref=e1076]: Newest
+          - 'link "Hidden Gems: Part 3 Hidden Gems: Part 3 Favorite workflows and hidden features from the Zed team and community. Joseph Lyons Joseph Lyons March 3rd, 2026" [ref=e1077] [cursor=pointer]':
+            - /url: /blog/hidden-gems-part-3
+            - generic [ref=e1078]:
+              - img
+              - 'img "Hidden Gems: Part 3" [ref=e1080]'
+            - generic [ref=e1081]:
+              - 'heading "Hidden Gems: Part 3" [level=2] [ref=e1082]'
+              - paragraph [ref=e1083]: Favorite workflows and hidden features from the Zed team and community.
+              - generic [ref=e1084]:
+                - generic [ref=e1085]:
+                  - img "Joseph Lyons" [ref=e1088]
+                  - paragraph [ref=e1089]: Joseph Lyons
+                - paragraph [ref=e1091]: March 3rd, 2026
+          - link "Split Diffs are Here Split Diffs are Here View your code changes in a split diff view in Zed. Cole Miller Cole Miller February 18th, 2026" [ref=e1092] [cursor=pointer]:
+            - /url: /blog/split-diffs
+            - generic [ref=e1093]:
+              - img
+              - img "Split Diffs are Here" [ref=e1095]
+            - generic [ref=e1096]:
+              - heading "Split Diffs are Here" [level=2] [ref=e1097]
+              - paragraph [ref=e1098]: View your code changes in a split diff view in Zed.
+              - generic [ref=e1099]:
+                - generic [ref=e1100]:
+                  - img "Cole Miller" [ref=e1103]
+                  - paragraph [ref=e1104]: Cole Miller
+                - paragraph [ref=e1106]: February 18th, 2026
+      - generic [ref=e1119]:
+        - img
+      - generic [ref=e1120]:
+        - generic [ref=e1123]:
+          - img:
+            - generic:
+              - img
+        - generic [ref=e1138]:
+          - img "Zed's logo" [ref=e1141]
+          - generic [ref=e1142]:
+            - heading "Daily drive with Zed" [level=2] [ref=e1143]
+            - paragraph [ref=e1144]: Code at the speed of thought.
+          - generic [ref=e1145]:
+            - link "Download now" [ref=e1146] [cursor=pointer]:
+              - /url: /download
+              - img [ref=e1147]
+              - text: Download now
+              - generic [ref=e1149]: D
+            - link "Clone source" [ref=e1150] [cursor=pointer]:
+              - /url: https://github.com/zed-industries/zed
+              - img [ref=e1151]
+              - text: Clone source
+              - generic [ref=e1154]: C
+          - img
+        - generic [ref=e1162]:
+          - img:
+            - generic:
+              - img
+    - contentinfo [ref=e1169]:
+      - generic [ref=e1188]:
+        - generic [ref=e1189]:
+          - generic [ref=e1190]:
+            - heading "Zed Industries © 2026" [level=3] [ref=e1191]
+            - separator [ref=e1192]
+            - paragraph [ref=e1193]:
+              - link "Sign Up" [ref=e1194] [cursor=pointer]:
+                - /url: /sign_up
+              - text: · Have an account?
+              - link "Sign In" [ref=e1195] [cursor=pointer]:
+                - /url: /sign_in
+            - paragraph [ref=e1196]:
+              - link "Terms of Service" [ref=e1197] [cursor=pointer]:
+                - /url: /terms
+              - text: ·
+              - link "Attributions" [ref=e1198] [cursor=pointer]:
+                - /url: /attributions
+            - button "Manage Site Cookies" [ref=e1199]
+          - generic [ref=e1200]:
+            - heading "Product" [level=3] [ref=e1201]
+            - list [ref=e1202]:
+              - listitem [ref=e1203]:
+                - link "Download" [ref=e1204] [cursor=pointer]:
+                  - /url: /download
+              - listitem [ref=e1205]:
+                - link "Releases" [ref=e1206] [cursor=pointer]:
+                  - /url: /releases
+              - listitem [ref=e1207]:
+                - link "Extensions" [ref=e1208] [cursor=pointer]:
+                  - /url: /extensions
+              - listitem [ref=e1209]:
+                - link "Roadmap" [ref=e1210] [cursor=pointer]:
+                  - /url: /roadmap
+              - listitem [ref=e1211]:
+                - link "Docs" [ref=e1212] [cursor=pointer]:
+                  - /url: /docs
+              - listitem [ref=e1213]:
+                - link "GitHub↗" [ref=e1214] [cursor=pointer]:
+                  - /url: https://github.com/zed-industries/zed
+              - listitem [ref=e1215]:
+                - link "Status↗" [ref=e1216] [cursor=pointer]:
+                  - /url: https://status.zed.dev
+          - generic [ref=e1217]:
+            - heading "Resources" [level=3] [ref=e1218]
+            - list [ref=e1219]:
+              - listitem [ref=e1220]:
+                - link "FAQ" [ref=e1221] [cursor=pointer]:
+                  - /url: /faq
+              - listitem [ref=e1222]:
+                - link "CLA" [ref=e1223] [cursor=pointer]:
+                  - /url: /cla
+              - listitem [ref=e1224]:
+                - link "Community" [ref=e1225] [cursor=pointer]:
+                  - /url: /community
+              - listitem [ref=e1226]:
+                - link "Support" [ref=e1227] [cursor=pointer]:
+                  - /url: /support
+              - listitem [ref=e1228]:
+                - link "Discussions↗" [ref=e1229] [cursor=pointer]:
+                  - /url: https://github.com/zed-industries/zed/discussions
+              - listitem [ref=e1230]:
+                - link "Subscribe" [ref=e1231] [cursor=pointer]:
+                  - /url: /subscribe
+              - listitem [ref=e1232]:
+                - link "Theme Builder" [ref=e1233] [cursor=pointer]:
+                  - /url: /theme-builder
+              - listitem [ref=e1234]:
+                - link "Yearly Recaps" [ref=e1235] [cursor=pointer]:
+                  - /url: /2025
+          - generic [ref=e1236]:
+            - heading "Company" [level=3] [ref=e1237]
+            - list [ref=e1238]:
+              - listitem [ref=e1239]:
+                - link "Blog" [ref=e1240] [cursor=pointer]:
+                  - /url: /blog
+              - listitem [ref=e1241]:
+                - link "About" [ref=e1242] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e1243]:
+                - link "Values" [ref=e1244] [cursor=pointer]:
+                  - /url: /values
+              - listitem [ref=e1245]:
+                - link "Team" [ref=e1246] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=e1247]:
+                - link "Jobs" [ref=e1248] [cursor=pointer]:
+                  - /url: /jobs
+              - listitem [ref=e1249]:
+                - link "Brand" [ref=e1250] [cursor=pointer]:
+                  - /url: /brand
+              - listitem [ref=e1251]:
+                - link "Merch↗" [ref=e1252] [cursor=pointer]:
+                  - /url: https://merch.zed.dev
+          - generic [ref=e1253]:
+            - heading "Social" [level=3] [ref=e1254]
+            - list [ref=e1255]:
+              - listitem [ref=e1256]:
+                - link "Twitter↗" [ref=e1257] [cursor=pointer]:
+                  - /url: https://twitter.com/zeddotdev
+              - listitem [ref=e1258]:
+                - link "Bluesky↗" [ref=e1259] [cursor=pointer]:
+                  - /url: https://bsky.app/profile/zed.dev
+              - listitem [ref=e1260]:
+                - link "YouTube↗" [ref=e1261] [cursor=pointer]:
+                  - /url: https://www.youtube.com/@zeddotdev
+              - listitem [ref=e1262]:
+                - link "Discord↗" [ref=e1263] [cursor=pointer]:
+                  - /url: https://discord.com/invite/zedindustries
+              - listitem [ref=e1264]:
+                - link "Reddit↗" [ref=e1265] [cursor=pointer]:
+                  - /url: https://www.reddit.com/r/ZedEditor/
+        - generic [ref=e1266]:
+          - img
+          - img
+          - img [ref=e1267]
+  - alert [ref=e1356]
+  - generic:
+    - img
+    - paragraph: Activating Demo…
