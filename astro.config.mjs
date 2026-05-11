@@ -105,5 +105,11 @@ export default defineConfig({
     '/docs/hardware/raspberrypi': '/docs/getting-started/raspberrypi',
     '/docs/hardware/beagleboneblack': '/docs/getting-started/beaglebone',
     '/docs/platforms/docker': '/docs/getting-started/docker',
+    '/docs/api/ui/autocomplete': '/docs/api/ui/autoComplete',
+    '/docs/api/ui/editablelist': '/docs/api/ui/editableList',
+    '/docs/api/ui/searchbox': '/docs/api/ui/searchBox',
+    '/docs/api/ui/treelist': '/docs/api/ui/treeList',
+    '/docs/api/ui/typedinput': '/docs/api/ui/typedInput',
+    '/feed.xml': '/blog/rss/',
   },
 });

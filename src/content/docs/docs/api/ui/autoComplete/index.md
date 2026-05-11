@@ -1,5 +1,6 @@
 ---
 title: "AutoComplete"
+slug: docs/api/ui/autoComplete
 sidebar:
   order: 0
 ---

@@ -62,6 +62,24 @@ const docsResult = verifySection('docs', join(DIST_DIR, 'docs'), 138);
 const blogResult = verifySection('blog', join(DIST_DIR, 'blog'), 52);
 const aboutResult = verifySection('about', join(DIST_DIR, 'about'), 11);
 
+// Case-sensitive paths that must match live nodered.org exactly.
+// GitHub Pages / most static hosts are case-sensitive, so the file system
+// path is the URL. Lowercased variants would 404 against external links.
+const caseSensitivePaths = [
+  'docs/api/ui/autoComplete/index.html',
+  'docs/api/ui/editableList/index.html',
+  'docs/api/ui/searchBox/index.html',
+  'docs/api/ui/treeList/index.html',
+  'docs/api/ui/typedInput/index.html',
+  'blog/rss/index.xml',
+];
+
+const missingCaseSensitive = caseSensitivePaths.filter((p) => !existsSync(join(DIST_DIR, p)));
+if (missingCaseSensitive.length > 0) {
+  console.error('\n✗ Missing case-sensitive paths (URL parity with nodered.org broken):');
+  for (const p of missingCaseSensitive) console.error(`  - /${p.replace(/\/index\.html$/, '/')}`);
+}
+
 const totalPages = docsResult.found + blogResult.found + aboutResult.found;
 const expectedTotal = 138 + 52 + 11;
 
@@ -87,7 +105,7 @@ console.log(`About Pages:  ${aboutResult.found}/${aboutResult.total} (${Math.rou
 console.log('─────────────────────────');
 console.log(`OVERALL:      ${totalPages}/${expectedTotal} (${status.summary.percentComplete}%)`);
 
-if (status.summary.percentComplete >= 100) {
+if (status.summary.percentComplete >= 100 && missingCaseSensitive.length === 0) {
   console.log('\n✓ Migration verification PASSED!');
   process.exit(0);
 } else {

@@ -1,5 +1,6 @@
 ---
 title: "EditableList Widget"
+slug: docs/api/ui/editableList
 sidebar:
   order: 0
 ---

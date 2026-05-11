@@ -1,6 +1,6 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
-import { parseBlogPosts, sortBlogPosts, blogPostUrl } from '../utils/blog';
+import { parseBlogPosts, sortBlogPosts, blogPostUrl } from '../../../utils/blog';
 import type { APIContext } from 'astro';
 
 export async function GET(context: APIContext) {

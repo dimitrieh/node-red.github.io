@@ -1,5 +1,6 @@
 ---
 title: "TypedInput Widget"
+slug: docs/api/ui/typedInput
 sidebar:
   order: 0
 ---

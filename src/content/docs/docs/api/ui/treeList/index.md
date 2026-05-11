@@ -1,5 +1,6 @@
 ---
 title: "TreeList Widget"
+slug: docs/api/ui/treeList
 sidebar:
   order: 0
 ---

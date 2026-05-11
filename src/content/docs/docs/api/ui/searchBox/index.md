@@ -1,5 +1,6 @@
 ---
 title: "SearchBox Widget"
+slug: docs/api/ui/searchBox
 sidebar:
   order: 0
 ---
