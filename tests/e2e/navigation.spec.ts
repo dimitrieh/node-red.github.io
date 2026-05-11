@@ -269,10 +269,42 @@ test.describe('Page Integrity', () => {
   });
 
   test('RSS feed exists', async ({ page }) => {
-    const response = await page.goto('/feed.xml');
+    const response = await page.goto('/blog/rss/');
     expect(response?.status()).toBe(200);
     const content = await page.content();
     expect(content).toContain('Node-RED Blog');
+  });
+
+  test('legacy /feed.xml redirects to /blog/rss/', async ({ page }) => {
+    const response = await page.goto('/feed.xml');
+    expect(response?.status()).toBe(200);
+    const content = await page.content();
+    expect(content).toMatch(/\/blog\/rss\/?/);
+  });
+
+  test('API UI widget pages preserve camelCase URLs', async ({ page }) => {
+    const widgets = ['autoComplete', 'editableList', 'searchBox', 'treeList', 'typedInput'];
+    for (const w of widgets) {
+      const response = await page.goto(`/docs/api/ui/${w}/`);
+      expect(response?.status(), `expected 200 for /docs/api/ui/${w}/`).toBe(200);
+      await expect(page.locator('h1')).toBeVisible();
+    }
+  });
+
+  test('lowercased widget URLs redirect to camelCase', async ({ page }) => {
+    const widgets = [
+      ['autocomplete', 'autoComplete'],
+      ['editablelist', 'editableList'],
+      ['searchbox', 'searchBox'],
+      ['treelist', 'treeList'],
+      ['typedinput', 'typedInput'],
+    ];
+    for (const [lower, camel] of widgets) {
+      const response = await page.goto(`/docs/api/ui/${lower}/`);
+      expect(response?.status()).toBe(200);
+      const content = await page.content();
+      expect(content, `expected redirect target for ${lower}`).toContain(`/docs/api/ui/${camel}`);
+    }
   });
 
   test('resources page loads', async ({ page }) => {

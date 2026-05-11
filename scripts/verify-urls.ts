@@ -71,7 +71,7 @@ const caseSensitivePaths = [
   'docs/api/ui/searchBox/index.html',
   'docs/api/ui/treeList/index.html',
   'docs/api/ui/typedInput/index.html',
-  'blog/rss/index.xml',
+  'blog/rss/index.html',
 ];
 
 const missingCaseSensitive = caseSensitivePaths.filter((p) => !existsSync(join(DIST_DIR, p)));
