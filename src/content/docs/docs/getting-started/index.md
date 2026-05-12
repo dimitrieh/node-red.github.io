@@ -12,7 +12,7 @@ such as a Raspberry Pi or in the cloud and follow the guides below.
 <div class="post-preview">
   <a href="local">
     <div class="post-header">
-      <img src="/images/platform-local.png">
+      <img src="/images/platform-local.png" alt="">
       <h2>Running locally</h2>
     </div>
     <div class="post-content">
@@ -24,7 +24,7 @@ such as a Raspberry Pi or in the cloud and follow the guides below.
 <div class="post-preview">
   <a href="raspberrypi">
     <div class="post-header">
-      <img src="/images/platform-device-pi.png">
+      <img src="/images/platform-device-pi.png" alt="">
       <h2>Raspberry Pi</h2>
     </div>
     <div class="post-content">
@@ -36,7 +36,7 @@ such as a Raspberry Pi or in the cloud and follow the guides below.
 <div class="post-preview">
   <a href="docker">
     <div class="post-header">
-     <img src="/images/platform-local-docker.png">
+     <img src="/images/platform-local-docker.png" alt="">
       <h2>Docker</h2>
     </div>
     <div class="post-content">
@@ -48,7 +48,7 @@ such as a Raspberry Pi or in the cloud and follow the guides below.
 <div class="post-preview">
   <a href="development">
     <div class="post-header">
-      <img src="/images/platform-local-dev.png">
+      <img src="/images/platform-local-dev.png" alt="">
       <h2>Install from git</h2>
     </div>
     <div class="post-content">
@@ -61,7 +61,7 @@ such as a Raspberry Pi or in the cloud and follow the guides below.
 <div class="post-preview">
   <a href="beaglebone">
     <div class="post-header">
-      <img src="/images/platform-device.png">
+      <img src="/images/platform-device.png" alt="">
       <h2>BeagleBone Boards</h2>
     </div>
     <div class="post-content">
@@ -73,7 +73,7 @@ such as a Raspberry Pi or in the cloud and follow the guides below.
 <div class="post-preview">
   <a href="android">
     <div class="post-header">
-      <img src="/images/platform-android.png">
+      <img src="/images/platform-android.png" alt="">
       <h2>Android</h2>
     </div>
     <div class="post-content">
@@ -85,7 +85,7 @@ such as a Raspberry Pi or in the cloud and follow the guides below.
 <div class="post-preview">
   <a href="flowfuse">
     <div class="post-header">
-      <img src="/images/platform-cloud.png">
+      <img src="/images/platform-cloud.png" alt="">
       <h2>FlowFuse</h2>
     </div>
     <div class="post-content">
@@ -97,7 +97,7 @@ such as a Raspberry Pi or in the cloud and follow the guides below.
 <div class="post-preview">
   <a href="aws">
     <div class="post-header">
-      <img src="/images/platform-cloud.png">
+      <img src="/images/platform-cloud.png" alt="">
       <h2>AWS</h2>
     </div>
     <div class="post-content">
@@ -109,7 +109,7 @@ such as a Raspberry Pi or in the cloud and follow the guides below.
 <div class="post-preview">
   <a href="azure">
     <div class="post-header">
-      <img src="/images/platform-cloud.png">
+      <img src="/images/platform-cloud.png" alt="">
       <h2>Microsoft Azure</h2>
     </div>
     <div class="post-content">
