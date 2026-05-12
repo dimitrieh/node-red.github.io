@@ -145,8 +145,13 @@ test.describe('Homepage', () => {
 
   test('should have users section with logos', async ({ page }) => {
     await page.goto('/');
-    const logos = page.locator('img[loading="lazy"]');
-    await expect(logos).toHaveCount(12);
+    // The "Trusted by" wall renders the full set of users.ts entries
+    // (matches the old Jekyll site which rendered all of them shuffled
+    // at page load). Previously this was sliced to the first 12 which
+    // alphabetically excluded most of the community. Lock in the full
+    // grid as the source-of-truth count.
+    const logos = page.locator('.trusted-logo img');
+    await expect(logos).toHaveCount(47);
   });
 
   test('should have community section', async ({ page }) => {
