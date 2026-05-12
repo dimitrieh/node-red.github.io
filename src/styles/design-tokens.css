@@ -85,6 +85,47 @@
   --grid-gap: 24px;
   --grid-padding: 48px;
   --grid-columns: 12;
+
+  /* ── Semantic surface tokens (light = default) ──
+     Theme-aware tokens used by marketing pages. Dark mode overrides
+     these via [data-theme='dark'] below, matching Starlight's toggle. */
+  --nr-surface: var(--nr-white);
+  --nr-surface-alt: var(--nr-gray-50);
+  --nr-surface-elevated: var(--nr-white);
+  --nr-text-strong: var(--nr-black);
+  --nr-text-body: var(--nr-gray-900);
+  --nr-text-muted: var(--nr-gray-700);
+  --nr-text-faint: var(--nr-gray-500);
+  --nr-border: var(--nr-gray-200);
+  --nr-border-strong: var(--nr-gray-300);
+  --nr-raster-line: rgba(199, 80, 80, 0.10);
+  --nr-raster-line-strong: rgba(199, 80, 80, 0.12);
+  --nr-raster-line-subtle: rgba(199, 80, 80, 0.05);
+}
+
+/* ===================================================================
+   DARK MODE TOKENS
+   Activated by Starlight's <html data-theme="dark"> attribute.
+   =================================================================== */
+:root[data-theme='dark'] {
+  --nr-surface: #18181B;
+  --nr-surface-alt: #111114;
+  --nr-surface-elevated: #1F1F23;
+  --nr-text-strong: #FAFAFA;
+  --nr-text-body: #E4E4E7;
+  --nr-text-muted: #B5B5BD;
+  --nr-text-faint: #8A8A93;
+  --nr-border: #2E2E33;
+  --nr-border-strong: #3F3F46;
+  /* Keep accent colours but tone the light wash to a more legible variant */
+  --nr-red-light: rgba(199, 80, 80, 0.18);
+  --nr-red-subtle: rgba(199, 80, 80, 0.12);
+  --nr-code-bg: #2A1A1A;
+  --nr-code-text: #FF8585;
+  --nr-raster-line: rgba(199, 80, 80, 0.14);
+  --nr-raster-line-strong: rgba(199, 80, 80, 0.18);
+  --nr-raster-line-subtle: rgba(199, 80, 80, 0.07);
+  color-scheme: dark;
 }
 
 /* ── Tablet adjustments ── */
@@ -150,8 +191,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(199, 80, 80, 0.10) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(199, 80, 80, 0.10) 1px, transparent 1px);
+    linear-gradient(var(--nr-raster-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nr-raster-line) 1px, transparent 1px);
   background-size: 20px 20px;
   pointer-events: none;
   border-radius: inherit;
@@ -161,8 +202,8 @@
 /* Hero variant — stronger grid with radial fade */
 .nr-raster-hero::before {
   background-image:
-    linear-gradient(rgba(199, 80, 80, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(199, 80, 80, 0.12) 1px, transparent 1px);
+    linear-gradient(var(--nr-raster-line-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nr-raster-line-strong) 1px, transparent 1px);
   background-size: 20px 20px;
   mask: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
   -webkit-mask: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
@@ -181,8 +222,8 @@
 /* Subtle variant — for content sections */
 .nr-raster-subtle::before {
   background-image:
-    linear-gradient(rgba(199, 80, 80, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(199, 80, 80, 0.05) 1px, transparent 1px);
+    linear-gradient(var(--nr-raster-line-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nr-raster-line-subtle) 1px, transparent 1px);
   background-size: 20px 20px;
   mask: radial-gradient(ellipse 90% 80% at 50% 40%, black 20%, transparent 80%);
   -webkit-mask: radial-gradient(ellipse 90% 80% at 50% 40%, black 20%, transparent 80%);
@@ -191,7 +232,7 @@
 /* Dot variant — lighter alternative */
 .nr-raster-dots::before {
   background-image:
-    radial-gradient(circle, rgba(199, 80, 80, 0.15) 1px, transparent 1px);
+    radial-gradient(circle, var(--nr-raster-line-strong) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
