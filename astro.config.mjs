@@ -31,31 +31,31 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Getting Started',
-          autogenerate: { directory: 'docs/getting-started' },
+          items: [{ autogenerate: { directory: 'docs/getting-started' } }],
         },
         {
           label: 'User Guide',
-          autogenerate: { directory: 'docs/user-guide' },
+          items: [{ autogenerate: { directory: 'docs/user-guide' } }],
         },
         {
           label: 'Creating Nodes',
-          autogenerate: { directory: 'docs/creating-nodes' },
+          items: [{ autogenerate: { directory: 'docs/creating-nodes' } }],
         },
         {
           label: 'API Reference',
-          autogenerate: { directory: 'docs/api' },
+          items: [{ autogenerate: { directory: 'docs/api' } }],
         },
         {
           label: 'Developing Flows',
-          autogenerate: { directory: 'docs/developing-flows' },
+          items: [{ autogenerate: { directory: 'docs/developing-flows' } }],
         },
         {
           label: 'Developing',
-          autogenerate: { directory: 'docs/developing' },
+          items: [{ autogenerate: { directory: 'docs/developing' } }],
         },
         {
           label: 'Tutorials',
-          autogenerate: { directory: 'docs/tutorials' },
+          items: [{ autogenerate: { directory: 'docs/tutorials' } }],
         },
         { label: 'FAQ', slug: 'docs/faq' },
         { label: 'Telemetry', slug: 'docs/telemetry' },
