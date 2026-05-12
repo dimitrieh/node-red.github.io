@@ -42,52 +42,8 @@ const authorInfo = authors[author] || { displayName: author, url: '#' };
 </BaseLayout>
 
 <style>
-  .breadcrumb-bar {
-    background: var(--nr-red);
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    padding: 0 var(--grid-padding);
-  }
-
-  .breadcrumb-list {
-    max-width: var(--grid-max-width);
-    margin: 0 auto;
-    width: 100%;
-    display: flex;
-    list-style: none;
-    gap: 0;
-    font-family: var(--font-sans);
-    font-size: var(--text-body-sm);
-  }
-
-  .breadcrumb-list li {
-    display: flex;
-    align-items: center;
-  }
-
-  .breadcrumb-list li::before {
-    content: '/';
-    color: rgba(255, 255, 255, 0.5);
-    margin: 0 10px;
-  }
-
-  .breadcrumb-list li:first-child::before {
-    content: '';
-    margin: 0;
-  }
-
-  .breadcrumb-list a,
-  .breadcrumb-list span {
-    color: white;
-    text-decoration: none;
-    letter-spacing: -0.01em;
-  }
-
-  .breadcrumb-list a:hover {
-    text-decoration: underline;
-    color: white;
-  }
+  /* Breadcrumb bar styles live in BaseLayout (global) to keep parity
+     across blog/about/blogpost. */
 
   /* ── Article Layout ── */
   .post-article {
@@ -97,10 +53,11 @@ const authorInfo = authors[author] || { displayName: author, url: '#' };
   }
 
   .post-inner {
-    background: var(--nr-white);
+    background: var(--nr-surface-elevated);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     padding: var(--space-8) var(--space-9);
+    border: 1px solid var(--nr-border);
   }
 
   .post-header {
@@ -114,7 +71,7 @@ const authorInfo = authors[author] || { displayName: author, url: '#' };
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.03em;
-    color: var(--nr-black);
+    color: var(--nr-text-strong);
     margin-bottom: var(--space-4);
   }
 
@@ -123,7 +80,7 @@ const authorInfo = authors[author] || { displayName: author, url: '#' };
     align-items: center;
     gap: var(--space-3);
     font-size: var(--text-caption);
-    color: var(--nr-gray-500);
+    color: var(--nr-text-faint);
   }
 
   .post-meta time {
@@ -143,7 +100,7 @@ const authorInfo = authors[author] || { displayName: author, url: '#' };
   .post-content {
     font-size: var(--text-body);
     line-height: 1.8;
-    color: var(--nr-gray-900);
+    color: var(--nr-text-body);
   }
 
   .post-content :global(h2) {

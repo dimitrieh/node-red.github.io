@@ -43,52 +43,8 @@ if (mainPage) {
 </BaseLayout>
 
 <style>
-  .breadcrumb-bar {
-    background: var(--nr-red);
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    padding: 0 var(--grid-padding);
-  }
-
-  .breadcrumb-list {
-    max-width: var(--grid-max-width);
-    margin: 0 auto;
-    width: 100%;
-    display: flex;
-    list-style: none;
-    gap: 0;
-    font-family: var(--font-sans);
-    font-size: var(--text-body-sm);
-  }
-
-  .breadcrumb-list li {
-    display: flex;
-    align-items: center;
-  }
-
-  .breadcrumb-list li::before {
-    content: '/';
-    color: rgba(255, 255, 255, 0.5);
-    margin: 0 10px;
-  }
-
-  .breadcrumb-list li:first-child::before {
-    content: '';
-    margin: 0;
-  }
-
-  .breadcrumb-list a,
-  .breadcrumb-list span {
-    color: white;
-    text-decoration: none;
-    letter-spacing: -0.01em;
-  }
-
-  .breadcrumb-list a:hover {
-    text-decoration: underline;
-    color: white;
-  }
+  /* Breadcrumb bar styles live in BaseLayout (global) to keep parity
+     across blog/about/blogpost. */
 
   /* ── Layout ── */
   .about-layout {
@@ -114,11 +70,11 @@ if (mainPage) {
   .sidebar-link {
     display: block;
     padding: var(--space-3) var(--space-4);
-    color: var(--nr-gray-700);
+    color: var(--nr-text-muted);
     font-size: var(--text-body-sm);
     font-family: var(--font-sans);
     text-decoration: none;
-    border-left: 3px solid var(--nr-gray-200);
+    border-left: 3px solid var(--nr-border);
     letter-spacing: -0.01em;
     transition:
       color var(--duration-fast) var(--ease-standard),
@@ -128,8 +84,8 @@ if (mainPage) {
 
   .sidebar-link:hover {
     border-left-color: var(--nr-red);
-    color: var(--nr-black);
-    background: rgba(199, 80, 80, 0.04);
+    color: var(--nr-text-strong);
+    background: var(--nr-red-subtle);
     text-decoration: none;
   }
 
@@ -137,16 +93,16 @@ if (mainPage) {
     border-left-color: var(--nr-red);
     color: var(--nr-red);
     font-weight: 600;
-    background: rgba(199, 80, 80, 0.06);
+    background: var(--nr-red-subtle);
   }
 
   /* ── Content ── */
   .about-content {
-    background: var(--nr-white);
+    background: var(--nr-surface-elevated);
     padding: var(--space-7) var(--space-8);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
-    border: 1px solid var(--nr-gray-200);
+    border: 1px solid var(--nr-border);
   }
 
   .about-content :global(h1) {
