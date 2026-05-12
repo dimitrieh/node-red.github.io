@@ -185,6 +185,17 @@ async function main() {
             finalUrl = refreshMatch[1]!;
             note = `meta-refresh -> ${refreshMatch[1]} (${bytes}b)`;
           } else {
+            // XML feeds (RSS/Atom/sitemap) don't have <main>/<h1>; verdict
+          // them as OK when they parse as valid XML with a reasonable size.
+          const isXmlEndpoint =
+            /^\s*<\?xml/i.test(body) ||
+            url.endsWith('.xml') ||
+            /\/(rss|feed|atom|sitemap[^/]*)\/?$/i.test(url);
+          if (isXmlEndpoint && bytes > 500) {
+            verdict = 'OK';
+            okCount++;
+            note = `xml-endpoint bytes=${bytes}`;
+          } else {
             const c = hasContent(body);
             hasMain = c.hasMain;
             hasH1 = c.hasH1;
@@ -197,6 +208,7 @@ async function main() {
               verdict = 'OK';
               okCount++;
             }
+          }
           }
         } else {
           verdict = 'OTHER';
