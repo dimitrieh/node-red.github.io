@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "check": "astro check",
+    "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "verify:urls": "npx tsx scripts/verify-urls.ts",
@@ -15,25 +16,25 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@astrojs/rss": "^4.0.17",
-    "@astrojs/sitemap": "^3.7.1",
-    "@astrojs/starlight": "^0.38.1",
-    "astro": "^6.0.6",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.2",
+    "@astrojs/starlight": "^0.39.2",
+    "astro": "^6.3.1",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.1",
-    "@iconify-json/simple-icons": "^1.2.74",
-    "@playwright/test": "^1.58.2",
-    "@unocss/astro": "^66.6.7",
-    "@unocss/preset-icons": "^66.6.7",
-    "@unocss/preset-wind": "^66.6.7",
-    "unocss": "^66.6.7",
-    "vite": "^8.0.0",
-    "vite-plus": "^0.1.12",
-    "vitest": "^4.1.0"
+    "@axe-core/playwright": "^4.11.3",
+    "@iconify-json/simple-icons": "^1.2.81",
+    "@playwright/test": "^1.59.1",
+    "@unocss/astro": "^66.6.8",
+    "@unocss/preset-icons": "^66.6.8",
+    "@unocss/preset-wind": "^66.6.8",
+    "unocss": "^66.6.8",
+    "vite": "^8.0.11",
+    "vite-plus": "^0.1.20",
+    "vitest": "^4.1.5"
   },
   "overrides": {
-    "vite": "^8.0.0"
+    "vite": "^8.0.11"
   }
 }
