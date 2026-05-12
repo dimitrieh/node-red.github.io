@@ -8,14 +8,19 @@ interface Props {
   author: string;
   date: Date;
   description?: string;
+  image?: string;
 }
 
-const { title, author, date, description } = Astro.props;
+const { title, author, date, description, image } = Astro.props;
 
 const authorInfo = authors[author] || { displayName: author, url: '#' };
 ---
 
-<BaseLayout title={title} {...(description !== undefined ? { description } : {})}>
+<BaseLayout
+  title={title}
+  {...(description !== undefined ? { description } : {})}
+  {...(image !== undefined ? { ogImage: image } : {})}
+>
   <nav class="breadcrumb-bar" aria-label="Breadcrumb">
     <ol class="breadcrumb-list">
       <li><a href="/">Node-RED</a></li>

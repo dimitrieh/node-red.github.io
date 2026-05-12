@@ -24,6 +24,7 @@ const { Content } = await render(post);
   author={post.data.author}
   date={date}
   {...(post.data.description !== undefined ? { description: post.data.description } : {})}
+  {...(post.data.image !== undefined ? { image: post.data.image } : {})}
 >
   <Content />
 </BlogPostLayout>

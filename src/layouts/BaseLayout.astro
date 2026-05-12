@@ -4,10 +4,13 @@ import { mainNav, footerLinks } from '../data/navigation';
 interface Props {
   title: string;
   description?: string;
+  /** Optional path to a per-page social-share image (must start with /). */
+  ogImage?: string;
 }
 
-const { title, description = 'Low-code programming for event-driven applications' } = Astro.props;
+const { title, description = 'Low-code programming for event-driven applications', ogImage } = Astro.props;
 const currentPath = Astro.url.pathname;
+const resolvedOgImage = new URL(ogImage ?? '/node-red-icon.png', Astro.site).toString();
 ---
 
 <!doctype html>
@@ -24,14 +27,14 @@ const currentPath = Astro.url.pathname;
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site).toString()} />
-    <meta property="og:image" content={new URL('/node-red-icon.png', Astro.site).toString()} />
+    <meta property="og:image" content={resolvedOgImage} />
     <meta property="og:site_name" content="Node-RED" />
 
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:site" content="@nodered" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={new URL('/node-red-icon.png', Astro.site).toString()} />
+    <meta name="twitter:image" content={resolvedOgImage} />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
