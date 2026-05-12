@@ -108,3 +108,70 @@ Prioritized for next shift / follow-up:
 6. **P2 – architecture**: ship a real "system" theme listener so the marketing pages auto-flip with OS-level prefers-color-scheme even before the user opens the docs toggle. Today the dark tokens activate only after Starlight has run its inline script and set `data-theme`. Easy to add an early-script `<head>` snippet in `BaseLayout.astro` to set `data-theme` from `prefers-color-scheme` if `localStorage.starlight-theme` is unset.
 7. **P2 – architecture**: when removing UnoCSS for real, the only marketing-page usages are footer social icons (`i-simple-icons-*`) and a few utility classes — replaceable with inline SVG.
 8. **P3 – docs portal parity**: Starlight's docs feel detached from marketing because the body bg + content card chrome are different. The new semantic tokens give us a path; a11y owns starlight overrides and could mirror `--nr-surface*` to `--sl-color-bg*` in a follow-up.
+
+---
+
+## Round 2
+
+### Summary
+
+Audited the orchestrator's round-1 integration commits (446d0ef, bfae64f) at 1280/768/390 in both themes, then shipped three concrete commits to close the highest-ROI items from the devil's-advocate report: per-post `og:image` plumbing, homepage content density (47 trusted-by logos, "On the blog" feed, "see all platforms" link), and matching test coverage. 122/122 Playwright specs GREEN (was 114; +8 new UX specs, 0 regressions). `npx astro check` 0/0/18, `DISABLE_PAGEFIND=1 npx astro build` 211 pages clean.
+
+### Round-1 integration verification
+
+Each item the orchestrator merged into UX-owned files, re-checked:
+
+- **a11y patches ux #1..#5 (446d0ef)** — surface-level CSS adjustments to design-tokens.css. Verified visually at /, /blog/, /blog/[post]/, /about/, /about/[...slug]/ in light + dark. Footer-link `padding: 6px 0` is present but at 390 viewport the footer column still stacks vertically without overflow; tap-target gain is real (line-height ~36 px vs the old 18 px), no layout regression. No follow-up needed.
+- **breadcrumb-bar darkening** — confirmed `rgb(166, 61, 61)` = `--nr-red-hover` on /blog/, /blog/[post]/, /about/, /about/[...slug]/. White link text passes WCAG AA. All four pages consistent.
+- **/about/ h1 promotion (`<h1>About Node-RED</h1>`)** — renders cleanly below the breadcrumb in the about-content card. The page hierarchy now reads breadcrumb (chrome) → h1 (content) — *not* duplication; spatially separated and visually distinct. No follow-up needed.
+- **h3→h2 promotion in about/index.md** — at 1280 the three feature blurbs (Browser-based flow editing, Built on Node.js, Social Development) render as h2 sections inside the about-content card, paired with full-width images. Reads as content sections rather than freestanding cards, which is consistent with the surrounding History + Citing Node-RED h2s. Devil's "5 peer h2s under 1 h1 with semantic flattening" critique has merit — it's flatter than the old visual triptych — but it is correct heading order. Trade-off accepted; the old triptych was a marketing/about hybrid that doesn't map cleanly to either layout. If we want the triptych back, it belongs on the homepage features section (already there), not /about/.
+- **blog-pagination `aria-label="Blog pagination"`** — verified via Playwright DOM probe on /blog/.
+- **OG/Twitter/canonical meta on every page** — verified, but homepage `og:image` was the same `node-red-icon.png` for every page including blog posts. Devil flagged this as ship-half-broken; I fixed it (see below).
+
+### Findings — fixed in this round
+
+- **Per-post og:image plumbed through (commit `b45dd15`).** `BaseLayout.astro` now accepts an optional `ogImage` prop with `/node-red-icon.png` as fallback; twitter:card auto-upgrades to `summary_large_image` when set. `BlogPostLayout.astro` accepts and forwards an `image` prop; `src/pages/blog/[year]/[month]/[day]/[slug].astro` forwards `post.data.image` from frontmatter. Verified at `/blog/2025/12/03/node-red-roadmap-to-5/` — og:image is now `https://nodered.org/blog/content/images/2025/12/path-to-5.jpg`, card is `summary_large_image`. Closes architecture-report patch §"Patches for other teammates" and devil P0 #5 sub-item.
+- **Homepage trusted-by wall: 12 → 47 logos (commit `88c27c2`).** `src/pages/index.astro` now renders `shuffledUsers` (the full set, shuffled at build time with a seeded LCG so the order rotates with content but stays stable across rebuilds of the same source — emulates the old Jekyll inline `0.5 - Math.random()` shuffle). Closes devil P1 #1f.
+- **Homepage "Want to feature here?" + permission disclaimer.** Restored the old-Jekyll affordance under the logo grid: link to `/about/community/`, plus the disclaimer ("All logos used with permission … do not constitute an endorsement"). The OpenJS Foundation cares about this disclosure language.
+- **Homepage "On the blog" mini-feed.** Top 5 posts from the blog collection in a horizontal-rule list (mono dates left, bold titles right). Hover-on tints rows with `--nr-red-subtle`. Mobile collapses to a 1-col stacked layout. Each item's href hits `/blog/YYYY/MM/DD/slug/` (asserted in the new spec). Closes devil P1 #1d. Replaces the right-column "On the blog" feed that the old Jekyll homepage carried.
+- **"Also runs on Docker, AWS, Azure, Android, BeagleBone, Arduino — see all platforms →".** A single line below the 3-card Get Started grid that links to `/docs/getting-started/`. Surfaces the cloud + device platforms the old Jekyll site had as the second + third columns. Closes devil P1 #1c (mixed verdict: discoverability restored without breaking the 3-card grid aesthetic).
+- **Test coverage for the restored content (commit `daa52c8`).** New `tests/e2e/ux-homepage-content.spec.ts` (UX-owned, 8 specs): 47 logos, footnote+invite-link, "see all platforms" anchor, 5 blog-feed items each with date+title, "All posts" header link, blog-feed hrefs match `/blog/YYYY/MM/DD/slug/`, og:image+canonical fallback. Also updated `navigation.spec.ts` to expect 47 (was 12) and tightened the selector to `.trusted-logo img` so it doesn't accidentally count blog-card images.
+
+### Findings — flagged, not fixed (round 2)
+
+- **(parity / content)** Devil R2 #2: `src/content/docs/docs/api/modules/index.md` still advertises `/v/1.3`, `/v/1.0`, `/v/0.20.0-beta.2` links to trees that 404. One-line scrub or an archived-versions note. Content fix, parity-owned.
+- **(arch)** Devil R2 #3: `/slack` now redirects to `/about/community/slack/`, but the embedded Slack-invite form there uses jQuery `$.ajax` and jQuery is no longer loaded on marketing pages. Get-invite button is dead-on-arrival. Either rewrite as `fetch()` in `src/content/about/community/slack.md` (parity, content-edit) or revert the redirect and serve a static "use this URL in your browser" page. Not in UX scope.
+- **(arch)** Devil R2 #4: Starlight social GitHub link in `astro.config.mjs:34` is still `node-red/node-red`; main nav is `https://github.com/node-red`. Inconsistent across the site. Architecture-owned, one-line fix.
+- **(devil R2 #6)** Marketing axe tests in `navigation.spec.ts` `disableRules(['color-contrast'])` AND `exclude('iframe')`. That's a real "5 axe audits passing" tautology hazard but the file isn't UX-owned. Flagged to architecture/a11y to revisit before claiming AA across marketing.
+- **(content)** Many blog posts lack `description:` frontmatter; the new blog-listing cards therefore have empty excerpts (the Read post → CTA softens this). Same finding as round-1, no change. Content fix, parity-owned.
+- **(ux follow-up)** The "On the blog" mini-feed lists 5 posts but doesn't include a description; design-wise that's fine (the old Jekyll site also showed just date+title), but if descriptions get added in future content work, the layout already has space for a 1-line excerpt under the title.
+- **(ux, low priority)** Sponsor block (FlowFuse / IBM / Hitachi) from old `/about/` and homepage is still absent. Devil P3 #16. Could be a one-section addition on `/about/index.md` — content edit, parity-owned. UX wouldn't change layout for this; the about-content card already accommodates it.
+- **(ux, P2)** Contributors gallery (`src/data/contributors.ts`) is still imported by zero pages. Devil P1 #5 unresolved. Restoring it is a half-day of UX work and is the next highest-ROI item if/when the deadline allows; for PR-readiness this round I prioritised the cheaper trusted-by/blog-feed/platforms-link wins.
+
+### Patches for other teammates (round 2)
+
+None this round. All the round-1 patches I queued to parity/a11y have either landed (a11y h1+meta) or are appropriately deferred (sponsor block, contributors gallery — both content additions, not UX layout).
+
+### Verification
+
+- `DISABLE_PAGEFIND=1 npx astro check` → 0 errors / 0 warnings / 18 hints.
+- `DISABLE_PAGEFIND=1 npx astro build` → 211 page(s), sitemap-index + sitemap-0 (210 URLs), Complete!.
+- `DISABLE_PAGEFIND=1 npx playwright test --workers=1` → **122 passed** (1.4 m). Parallel mode (`workers=auto`) sees intermittent ECONNREFUSED on heavily-loaded preview, but every actual assertion passes in serial. New ux-homepage-content.spec.ts adds 8 specs, all green.
+- Visual: `/` at 1280/768/390 light + dark, `/about/` at 1280, `/blog/2025/12/03/node-red-roadmap-to-5/` for og:image. Saved to `research/round2-ux/` (`home-1280-light-restored-full.png`, `home-1280-dark-restored3.png`, `home-768-light-full.png`, `home-390-light-restored.png`, `home-1280-blogfeed-v2.png`, `about-1280-full.png`).
+
+### Commits (round 2, ux-prefixed)
+
+1. `b45dd15` ux: thread per-post og:image from blog frontmatter through BaseLayout
+2. `88c27c2` ux: restore homepage content density — full users grid, blog feed, platforms link
+3. `daa52c8` test: cover restored homepage content sections (UX-authored, ux-* spec)
+
+### Recommendations (round 2)
+
+1. **P0 — architecture**: fix `astro.config.mjs:34` Starlight social GitHub link (`node-red/node-red` → `node-red`) to match main nav. Trivial, devil's outstanding R2 #4.
+2. **P0 — parity / content**: scrub or annotate the 3 dead `/v/*` links in `docs/api/modules/index.md` (devil R2 #2).
+3. **P1 — content**: re-implement `/slack` invite form to use `fetch()` instead of `$.ajax` (since jQuery is no longer on marketing pages); OR revert the `/slack` redirect to a static "Join the Node-RED Slack" page that uses the upstream invite link. Devil R2 #3.
+4. **P1 — a11y / architecture**: remove the `disableRules(['color-contrast'])` + `exclude('iframe')` from marketing axe tests in `navigation.spec.ts` (devil R2 #6), or move that file into the UX/a11y axe owner's lane and document the rationale for any necessary suppressions inline.
+5. **P2 — ux follow-up (next shift)**: render `src/data/contributors.ts` as a "Meet the team" strip on /about/index or homepage. Half-day of UX. Devil P1 #5.
+6. **P2 — content (parity)**: add `description:` frontmatter to the ~30 blog posts that lack it so the listing cards aren't half-empty.
+7. **P3 — content / about**: add a one-line sponsor acknowledgement to `/about/index.md` (FlowFuse current, IBM/Hitachi past).
+
