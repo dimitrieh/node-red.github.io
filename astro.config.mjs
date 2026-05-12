@@ -31,7 +31,7 @@ export default defineConfig({
         src: './src/assets/node-red-icon.png',
       },
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/node-red/node-red' },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/node-red' },
         { icon: 'discourse', label: 'Forum', href: 'https://discourse.nodered.org' },
       ],
       customCss: ['./src/styles/starlight-custom.css'],

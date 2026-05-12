@@ -4,6 +4,11 @@
    =================================================================== */
 
 :root {
+  /* Body-text link colour. The brighter --nr-red is reserved for icons,
+     chrome, and CTA backgrounds; link text on body backgrounds needs AA
+     contrast so we keep a darker per-theme token. */
+  --nr-text-link: #8B2E2E; /* 5.7:1 on #FFFFFF */
+
   /* ── Primary Colors ── */
   --nr-red: #C75050;
   --nr-red-hover: #A63D3D;
@@ -117,6 +122,11 @@
   --nr-text-faint: #8A8A93;
   --nr-border: #2E2E33;
   --nr-border-strong: #3F3F46;
+  /* Body-text link colour: brighter red reads on the dark surface */
+  --nr-text-link: #E87070; /* 4.9:1 on #1a1a1a, ~5.2:1 on #18181B */
+  /* Bump --nr-gray-500 specifically for the dark page bg
+     (was #6B6B6B = 3.5:1 on #111114, fails AA). */
+  --nr-gray-500: #A8A8A8;
   /* Keep accent colours but tone the light wash to a more legible variant */
   --nr-red-light: rgba(199, 80, 80, 0.18);
   --nr-red-subtle: rgba(199, 80, 80, 0.12);

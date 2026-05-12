@@ -69,7 +69,7 @@ const resolvedOgImage = new URL(ogImage ?? '/node-red-icon.png', Astro.site).toS
           ))}
         </nav>
 
-        <button class="mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <button class="mobile-toggle" aria-label="Toggle menu" aria-controls="mobile-nav" aria-expanded="false">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <line x1="3" y1="6" x2="19" y2="6" />
             <line x1="3" y1="11" x2="19" y2="11" />
@@ -78,7 +78,7 @@ const resolvedOgImage = new URL(ogImage ?? '/node-red-icon.png', Astro.site).toS
         </button>
       </div>
 
-      <nav class="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+      <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
         {mainNav.map((item) => (
           <a
             href={item.href}
@@ -221,18 +221,39 @@ const resolvedOgImage = new URL(ogImage ?? '/node-red-icon.png', Astro.site).toS
 
   /* ── Links ── */
   a {
-    color: var(--nr-red);
-    text-decoration: none;
+    color: var(--nr-text-link, var(--nr-red));
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
     transition: color var(--duration-fast) var(--ease-standard);
   }
 
   a:hover {
     color: var(--nr-red-hover);
-    text-decoration: underline;
+    text-decoration-thickness: 2px;
   }
 
   :root[data-theme='dark'] a:hover {
     color: #E87A7A;
+  }
+
+  /* Chrome links (header/footer/nav/cards/buttons/breadcrumbs) suppress the
+     body-text underline rule; they have their own affordances. */
+  header nav a,
+  footer a,
+  .nr-btn,
+  .nr-btn-primary,
+  .nr-btn-secondary,
+  .nr-card a,
+  .breadcrumb-bar a,
+  .header-logo,
+  .footer-logo,
+  .footer-foundation {
+    text-decoration: none;
+  }
+  /* The legal small-print row in footer keeps round-1 ux #2's underline. */
+  .footer-legal a {
+    text-decoration: underline;
   }
 
   /* ── Headings ── */
