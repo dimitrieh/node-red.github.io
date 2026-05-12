@@ -1,0 +1,84 @@
+{
+  "pages": [
+    {
+      "name": "home",
+      "path": "/",
+      "status": 200,
+      "numViolations": 0,
+      "bySeverity": {}
+    },
+    {
+      "name": "docs-api-runtime",
+      "path": "/docs/api/runtime/",
+      "status": 404,
+      "numViolations": 1,
+      "bySeverity": {
+        "serious": 1
+      }
+    },
+    {
+      "name": "blog-latest",
+      "path": "/blog/2024/06/20/version-4-0-released/",
+      "status": 200,
+      "numViolations": 57,
+      "bySeverity": {
+        "serious": 57
+      }
+    },
+    {
+      "name": "about-community",
+      "path": "/about/community/",
+      "status": 200,
+      "numViolations": 30,
+      "bySeverity": {
+        "serious": 29,
+        "moderate": 1
+      }
+    },
+    {
+      "name": "docs-user-guide",
+      "path": "/docs/user-guide/",
+      "status": 200,
+      "numViolations": 27,
+      "bySeverity": {
+        "serious": 26,
+        "moderate": 1
+      }
+    }
+  ],
+  "totalViolations": 115,
+  "severityTotals": {
+    "serious": 113,
+    "moderate": 2
+  },
+  "byRule": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "count": 113,
+      "pages": [
+        "/docs/api/runtime/",
+        "/blog/2024/06/20/version-4-0-released/",
+        "/about/community/",
+        "/docs/user-guide/"
+      ],
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright",
+      "sampleSelector": "kbd:nth-child(1)",
+      "sampleSnippet": "<kbd class=\"astro-v37mnknz\">Ctrl</kbd>"
+    },
+    {
+      "id": "heading-order",
+      "impact": "moderate",
+      "count": 2,
+      "pages": [
+        "/about/community/",
+        "/docs/user-guide/"
+      ],
+      "help": "Heading levels should only increase by one",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/heading-order?application=playwright",
+      "sampleSelector": "#discussion-guidelines",
+      "sampleSnippet": "<h3 id=\"discussion-guidelines\">Discussion Guidelines</h3>"
+    }
+  ]
+}

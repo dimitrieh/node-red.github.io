@@ -42,7 +42,7 @@ const totalPages = Math.ceil(sortedPosts.length / pageSize);
     </div>
 
     {totalPages > 1 && (
-      <nav class="blog-pagination">
+      <nav class="blog-pagination" aria-label="Blog pagination">
         <span class="pagination-info">Page 1 of {totalPages}</span>
         <a href="/blog/page/2/" class="nr-btn nr-btn-primary">Older posts &rarr;</a>
       </nav>

@@ -163,7 +163,9 @@ test('prefers-reduced-motion honours transition-duration override', async ({ bro
   });
   if (probe.found) {
     // Should be ~0.01ms because of our @media (prefers-reduced-motion: reduce) rule.
-    expect(probe.transitionDuration).toMatch(/0\.0?1?m?s|0s/);
+    // Browsers may report this as "0s", "0.01ms", "0.00001s", or "1e-05s" — all
+    // equivalent to "effectively no animation". Anything <= 0.05s is fine.
+    expect(parseFloat(probe.transitionDuration!)).toBeLessThanOrEqual(0.05);
   }
   await context.close();
 });

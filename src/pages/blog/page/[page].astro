@@ -52,7 +52,7 @@ const { posts, currentPage, totalPages } = Astro.props;
       ))}
     </div>
 
-    <nav class="blog-pagination">
+    <nav class="blog-pagination" aria-label="Blog pagination">
       {currentPage > 1 && (
         <a href={currentPage === 2 ? '/blog/' : `/blog/page/${currentPage - 1}/`} class="nr-btn nr-btn-secondary">
           &larr; Newer posts

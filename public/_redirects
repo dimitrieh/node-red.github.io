@@ -48,5 +48,5 @@
 
 # /docs/api/ui/* camelCase URLs are served natively by Starlight; no redirect needed.
 
-# RSS feed moved from /feed.xml to /blog/rss/
-/feed.xml                               /blog/rss/                                 301
+# /feed.xml is now served as RSS XML directly by src/pages/feed.xml.ts;
+# no redirect, so RSS readers do not need to follow meta-refresh.

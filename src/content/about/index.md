@@ -11,7 +11,7 @@ Node-RED is a flow-based programming tool, originally developed by IBM Emerging 
     </div>
     <div class="col-1-2">
         <div class="content blurb" style="padding: 20px 0;">
-            <h3>Browser-based flow editing</h3>
+            <h2>Browser-based flow editing</h2>
             <p>Node-RED provides a browser-based flow editor that makes it easy to wire together flows using the wide range of nodes in the palette. Flows can be then deployed to the runtime in a single-click.</p>
             <p>JavaScript functions can be created within the editor using a rich text editor.</p>
             <p>A built-in library allows you to save useful functions, templates or flows for re-use.</p>
@@ -21,7 +21,7 @@ Node-RED is a flow-based programming tool, originally developed by IBM Emerging 
 <div class="grid" style="min-height: 0;">
     <div class="col-1-2">
         <div class="content blurb" style="padding: 20px 0;">
-            <h3>Built on Node.js</h3>
+            <h2>Built on Node.js</h2>
             <p>The light-weight runtime is built on Node.js, taking full advantage of its event-driven, non-blocking model. This makes it ideal to run at the edge of the network on low-cost hardware such as the Raspberry Pi as well as in the cloud.</p>
             <p>It is easy to extend the range of palette nodes to add new capabilities, with over <a href="https://flows.nodered.org">5000 nodes</a> already shared by the community.</p>
         </div>
@@ -36,7 +36,7 @@ Node-RED is a flow-based programming tool, originally developed by IBM Emerging 
     </div>
     <div class="col-1-2">
         <div class="content blurb" style="padding: 20px 0;">
-            <h3>Social Development</h3>
+            <h2>Social Development</h2>
             <p>The flows created in Node-RED are stored using JSON which can be easily imported and exported for sharing with others.</p>
             <p>An online <a href="https://flows.nodered.org" target="_blank">flow library</a> allows you to share your best flows with the world.</p>
         </div>
@@ -45,7 +45,7 @@ Node-RED is a flow-based programming tool, originally developed by IBM Emerging 
 
 
 
-### History
+## History
 
 Node-RED started life in early 2013 as a side-project by Nick O'Leary and Dave
 Conway-Jones of IBM's Emerging Technology Services group.
@@ -89,7 +89,7 @@ For some more of the history and highlights:
 </div>
 
 
-### Citing Node-RED
+## Citing Node-RED
 
 If you need to cite the project in a paper, please use the following information:
 

@@ -171,6 +171,7 @@ test.describe('Accessibility', () => {
     await page.goto('/');
     const results = await new AxeBuilder({ page })
       .disableRules(['color-contrast']) // Allow minor contrast issues from legacy content
+      .exclude('iframe') // YouTube's player markup is outside our control
       .analyze();
     expect(results.violations).toEqual([]);
   });
@@ -179,6 +180,7 @@ test.describe('Accessibility', () => {
     await page.goto('/blog/');
     const results = await new AxeBuilder({ page })
       .disableRules(['color-contrast'])
+      .exclude('iframe')
       .analyze();
     expect(results.violations).toEqual([]);
   });
@@ -187,6 +189,7 @@ test.describe('Accessibility', () => {
     await page.goto('/blog/2024/06/20/version-4-0-released/');
     const results = await new AxeBuilder({ page })
       .disableRules(['color-contrast'])
+      .exclude('iframe')
       .analyze();
     expect(results.violations).toEqual([]);
   });
@@ -195,6 +198,7 @@ test.describe('Accessibility', () => {
     await page.goto('/about/');
     const results = await new AxeBuilder({ page })
       .disableRules(['color-contrast'])
+      .exclude('iframe')
       .analyze();
     expect(results.violations).toEqual([]);
   });
@@ -275,11 +279,13 @@ test.describe('Page Integrity', () => {
     expect(content).toContain('Node-RED Blog');
   });
 
-  test('legacy /feed.xml redirects to /blog/rss/', async ({ page }) => {
-    const response = await page.goto('/feed.xml');
-    expect(response?.status()).toBe(200);
-    const content = await page.content();
-    expect(content).toMatch(/\/blog\/rss\/?/);
+  test('legacy /feed.xml serves RSS XML for existing subscribers', async ({ request }) => {
+    const response = await request.get('/feed.xml');
+    expect(response.status()).toBe(200);
+    const body = await response.text();
+    expect(body).toMatch(/^<\?xml version="1\.0"/);
+    expect(body).toContain('<rss');
+    expect(body).toContain('Node-RED Blog');
   });
 
   test('API UI widget pages preserve camelCase URLs', async ({ page }) => {

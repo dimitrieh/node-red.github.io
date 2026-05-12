@@ -109,7 +109,7 @@ export default defineConfig({
   ],
   redirects: {
     // Top-level legacy aliases (Jekyll redirect_from)
-    '/slack': 'https://nodered.org/slack',
+    '/slack': '/about/community/slack/',
     '/slack/': '/about/community/slack/',
     '/community/': '/about/community/',
     '/conduct/': '/about/conduct/',
@@ -149,7 +149,8 @@ export default defineConfig({
     // /docs/api/ui/* camelCase URLs are preserved natively by Starlight
     // (e.g. /docs/api/ui/autoComplete/). No redirect needed — keeping a
     // lowercase->camelCase entry would shadow the real page with a stub.
-    // RSS feed moved from /feed.xml to /blog/rss/
-    '/feed.xml': '/blog/rss/',
+    // Note: /feed.xml is now served directly as RSS XML by
+    // src/pages/feed.xml.ts (same data as /blog/rss/) so RSS readers
+    // don't have to follow a meta-refresh redirect.
   },
 });

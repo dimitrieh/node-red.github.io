@@ -52,8 +52,9 @@ const REDIRECTS: RedirectCase[] = [
   { from: '/docs/getting-started/installation', to: '/docs/getting-started/local/' },
   { from: '/docs/getting-started/running', to: '/docs/getting-started/local/' },
   { from: '/docs/getting-started/upgrading', to: '/docs/getting-started/local/' },
-  // Feed
-  { from: '/feed.xml', to: '/blog/rss/' },
+  // Note: /feed.xml is now served directly as RSS XML by src/pages/feed.xml.ts
+  // (not a redirect), so RSS readers don't need to follow meta-refresh.
+  // Coverage for that endpoint lives in navigation.spec.ts.
 ];
 
 test.describe('parity: legacy redirects resolve to a 200 page', () => {
@@ -112,8 +113,6 @@ test.describe('parity: legacy redirects all listed in public/_redirects', () => 
     const { readFileSync } = await import('node:fs');
     const txt = readFileSync('public/_redirects', 'utf-8');
     for (const { from } of REDIRECTS) {
-      // Skip the absolute-target /slack -> https://nodered.org/slack edge case.
-      if (from === '/slack' || from === '/feed.xml') continue;
       expect(txt, `public/_redirects must list ${from}`).toContain(from);
     }
   });
