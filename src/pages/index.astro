@@ -1,6 +1,24 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { users } from '../data/users';
+import { getCollection } from 'astro:content';
+import { parseBlogPosts, sortBlogPosts, formatBlogDate, blogPostUrl } from '../utils/blog';
+
+// Latest blog posts for the homepage "On the blog" feed.
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const latestPosts = sortBlogPosts(parseBlogPosts(allPosts)).slice(0, 5);
+
+// "Who's using Node-RED" — render the full set (matches old Jekyll
+// behaviour where every entry in users.yml was rendered). The old site
+// also shuffled on page load via inline jQuery; we shuffle once at
+// build time using a seeded LCG so the grid stays stable across
+// rebuilds from the same source.
+let s = users.length;
+const lcg = () => {
+  s = (s * 1664525 + 1013904223) >>> 0;
+  return s / 0x100000000;
+};
+const shuffledUsers = [...users].sort(() => lcg() - 0.5);
 ---
 
 <BaseLayout title="Home">
@@ -137,6 +155,10 @@ import { users } from '../data/users';
           </svg>
         </a>
       </div>
+      <p class="getstarted-more nr-col-full">
+        Also runs on Docker, AWS, Azure, Android, BeagleBone, Arduino and more —
+        <a href="/docs/getting-started/">see all platforms &rarr;</a>
+      </p>
     </div>
   </section>
 
@@ -147,12 +169,45 @@ import { users } from '../data/users';
         <span class="nr-label-marker">/</span> Trusted by
       </div>
       <div class="trusted-grid nr-col-full">
-        {users.slice(0, 12).map((user) => (
+        {shuffledUsers.map((user) => (
           <a href={user.url} target="_blank" rel="noopener" class="trusted-logo">
             <img src={`/users/${user.logo}`} alt={user.name} loading="lazy" />
           </a>
         ))}
       </div>
+      <p class="trusted-footnote nr-col-full">
+        <a href="/about/community/">Want to feature here? Let us know!</a>
+        <span class="trusted-disclaimer">
+          All logos used with permission. These links do not constitute an
+          endorsement or approval by the Node-RED project of any of the products,
+          services or opinions of the companies listed.
+        </span>
+      </p>
+    </div>
+  </section>
+
+  <!-- On the blog (latest posts) — restored from the old Jekyll
+       homepage where it shared a row with the Community section. -->
+  <section class="section-blog">
+    <div class="nr-grid">
+      <div class="nr-label nr-col-full blog-feed-label">
+        <span class="blog-feed-label-text">
+          <span class="nr-label-marker">/</span> On the blog
+        </span>
+        <a href="/blog/" class="blog-feed-more">All posts &rarr;</a>
+      </div>
+      <ul class="blog-feed-list nr-col-full">
+        {latestPosts.map((post) => (
+          <li class="blog-feed-item">
+            <a href={blogPostUrl(post)} class="blog-feed-link">
+              <time datetime={post.date.toISOString()} class="blog-feed-date">
+                {formatBlogDate(post.date)}
+              </time>
+              <span class="blog-feed-title">{post.data.title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   </section>
 
@@ -432,6 +487,22 @@ import { users } from '../data/users';
   }
 
   /* ===================================================================
+     GET STARTED — footnote linking to the full platforms index
+     =================================================================== */
+  .getstarted-more {
+    text-align: center;
+    font-size: var(--text-body-sm);
+    color: var(--nr-text-muted);
+    margin-top: var(--space-5);
+  }
+
+  .getstarted-more a {
+    font-weight: 600;
+    color: var(--nr-red);
+    white-space: nowrap;
+  }
+
+  /* ===================================================================
      TRUSTED BY SECTION
      =================================================================== */
   .section-trusted {
@@ -443,6 +514,101 @@ import { users } from '../data/users';
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: var(--space-4);
+  }
+
+  .trusted-footnote {
+    margin-top: var(--space-6);
+    text-align: center;
+    font-size: var(--text-caption);
+    color: var(--nr-text-faint);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .trusted-footnote a {
+    font-size: var(--text-body-sm);
+    color: var(--nr-red);
+    font-weight: 600;
+  }
+
+  .trusted-disclaimer {
+    max-width: 540px;
+    line-height: 1.45;
+  }
+
+  /* ===================================================================
+     ON THE BLOG (latest posts feed)
+     =================================================================== */
+  .section-blog {
+    padding: var(--space-9) 0;
+    background: var(--nr-surface);
+    border-top: 1px solid var(--nr-border);
+  }
+
+  .blog-feed-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .blog-feed-more {
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--nr-red);
+    text-transform: none;
+    letter-spacing: -0.01em;
+  }
+
+  .blog-feed-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--nr-border);
+  }
+
+  .blog-feed-item {
+    border-bottom: 1px solid var(--nr-border);
+  }
+
+  .blog-feed-link {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: baseline;
+    gap: var(--space-5);
+    padding: var(--space-4) var(--space-2);
+    text-decoration: none;
+    color: inherit;
+    transition: background var(--duration-fast) var(--ease-standard);
+  }
+
+  .blog-feed-link:hover {
+    background: var(--nr-red-subtle);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .blog-feed-date {
+    font-family: var(--font-mono);
+    font-size: var(--text-overline);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nr-text-faint);
+  }
+
+  .blog-feed-title {
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--nr-text-strong);
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+  }
+
+  .blog-feed-link:hover .blog-feed-title {
+    color: var(--nr-red);
   }
 
   .trusted-logo {
@@ -649,8 +815,20 @@ import { users } from '../data/users';
     .section-features,
     .section-getstarted,
     .section-trusted,
+    .section-blog,
     .section-community {
       padding: var(--space-7) 0;
+    }
+
+    .blog-feed-label {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    .blog-feed-link {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: var(--space-3) 0;
     }
 
     .platform-card {
