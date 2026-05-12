@@ -12,6 +12,7 @@
     "verify:urls": "npx tsx scripts/verify-urls.ts",
     "verify:images": "npx tsx scripts/verify-images.ts",
     "verify:all": "npm run build && npm run verify:urls && npm run verify:images",
+    "sync:upstream": "npx tsx scripts/sync-upstream.ts",
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint --fix . && prettier --write .",
     "test": "vitest",
