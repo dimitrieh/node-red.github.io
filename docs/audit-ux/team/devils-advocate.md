@@ -359,9 +359,10 @@ After that it's a genuine improvement. Reverting is **not** recommended — the 
 ### P0 — blocks honest "complete" claim
 
 1. **Fix the 137 `/docs/api/modules/v/*` 404s.** Either copy the static HTML into `public/docs/api/modules/v/` or remove the dead links from `src/content/docs/docs/api/modules/index.md`. (Parity)
-2. **Update PROGRESS.md.** Phase 1 claims about UnoCSS removal are false; "zero errors" is false; "212 pages" is stale (217). Honest status > marketing status. (Anyone owning PROGRESS.md.)
+2. **Update PROGRESS.md.** Phase 1 claims about UnoCSS removal are false; "zero errors" was false (now fixed by arch); "212 pages" should be 211 per the canonical sitemap count. Honest status > marketing status. (Anyone owning PROGRESS.md.)
 3. **Add the missing redirects** for `/docs/platforms/aws`, `/docs/platforms/azure`, `/docs/platforms/android`, `/docs/hardware/arduino`. (Parity)
 4. **Fix Starlight GitHub link** in `astro.config.mjs` line 26 from `node-red/node-red` to `node-red` to match the rest of the site. (Architecture)
+5. **Apply architecture's OG/Twitter/canonical meta patch to `BaseLayout.astro`** (architecture-report.md §"Patches for other teammates"). Old Jekyll site emitted full Twitter card + OG meta on blog posts; new site emits only `<title>` and `<meta name="description">`. Social-share / SEO regression on every blog post. Thread `post.data.image` from BlogPostLayout into `og:image` at the same time so blog posts don't all share the generic icon. (UX)
 
 ### P1 — visible UX regressions
 
@@ -398,26 +399,53 @@ After that it's a genuine improvement. Reverting is **not** recommended — the 
 
 By the end of my budget (~75 min) **none of the other 4 reports had been committed** as `docs/audit-ux/team/<role>-report.md`. Only the architecture teammate has shipped a commit (`152c046 arch: fix all 40 astro check TS errors`). I observed in-flight uncommitted edits in the working tree from what appears to be the UX teammate, summarised below for the orchestrator's benefit.
 
-### 6a. UX teammate (no report yet) — observed in working tree
+### 6a. UX teammate (no report yet, but 5 commits landed)
 
-Modified (uncommitted) at end of my shift:
+UX has shipped code but no `ux-report.md` yet. Commits:
+- `cc70fec ux: add dark-mode design tokens + semantic surface aliases`
+- `5644bf8 ux: improve mobile menu UX + extract breadcrumb to global`
+- `4523099 ux: thread semantic tokens through about + blog post layouts`
+- `1e5e78a ux: enrich blog listing cards with overline date + read CTA`
+- `f1b18ef ux: thread semantic tokens through homepage + tablet 2-col layouts`
 
-- `src/layouts/BaseLayout.astro` — adds a `setOpen(bool)` helper for the mobile-toggle, wires `Escape`-to-close, closes on link click, closes on resize past 1024px. **Real a11y improvement** (addresses my finding 3i partially — though `aria-controls` is still missing). Also adds `data-theme='dark'` CSS hooks.
-- `src/styles/design-tokens.css` — introduces semantic surface tokens (`--nr-surface`, `--nr-text-strong`, `--nr-text-body`, `--nr-border`, etc.) and a full `:root[data-theme='dark']` dark-mode palette. **Scope creep**: dark mode for marketing pages was not in PROGRESS scope; DESIGN_PLAN mentions dark mode only for the Starlight docs portal.
-- `src/styles/starlight-custom.css` — extensive dark-mode coordination + (presumably) related Starlight overrides.
-- `src/pages/blog/index.astro`, `src/pages/about/index.astro`, `src/pages/about/[...slug].astro`, `src/layouts/BlogPostLayout.astro` — breadcrumb CSS extracted out of each file (DRY refactor — good).
-- `src/pages/index.astro` — small dark-mode adjustments (hero-eyebrow color, hero background token).
+**What's good**
+- Mobile menu Escape-to-close, click-link-to-close, close-on-resize-past-1024px — real interaction wins. Addresses my finding 3i partially (still missing `aria-controls`).
+- Breadcrumb CSS extracted from per-page styles to BaseLayout — solid DRY refactor.
+- Blog listing "enrichment" — addressing one of my P1 items (the old site had richer blog cards; now the new one has overline date + read CTA).
+- Tablet 2-col layouts — sensible responsive tightening.
 
-**My critique of UX in-flight work:**
-1. **No homepage content restoration** as of report time — contributors block, npm version, blog feed, Stack Overflow, full users grid, sponsors — all still missing. My P1 recommendations not yet addressed.
-2. **Dark mode is a substantial scope addition** that the migration's "complete" claim now has to defend. Dark mode requires verifying every component, every illustration, every photograph for contrast and presence. If shipping in v1, expect "phase 6" follow-ups. If not shipping, the work is sunk for now.
-3. **Mobile menu improvements are net positive** — close on link click and Escape are both wins. Still missing `aria-controls`.
-4. **The `/about/` h1 regression I flagged** is in UX's lane (`src/pages/about/index.astro` is owned by UX per protocol) but not addressed in the observed diff.
+**What's concerning**
+- **Dark mode is scope creep.** PROGRESS Phase 5 marked the site "complete". DESIGN_PLAN mentions dark mode only for the docs portal, not marketing pages. Adding `:root[data-theme='dark']` to the marketing pages now extends the verification surface materially — every illustration in `nr-image-{1,2,3}.png` is a screenshot of a light-themed editor, every Trusted-By logo was uploaded for light backgrounds, every existing blog post screenshot likewise. None of those will look right on the dark theme without per-asset work (background plates, drop shadows, etc.). Either: (a) make peace with "marketing pages forced light, docs honour the toggle" (Starlight provides this), or (b) commit to the verification work as Phase 6.
+- **No homepage content restoration** in any of the 5 UX commits. My P1 items (contributors block, npm version badge, blog feed, full users grid, Stack Overflow card, sponsors) are all still untouched.
+- **The `/about/` `<h1>` regression** I flagged is in UX's lane and not addressed.
+- **The 12-of-47 users slice** (1f) is in UX's lane (`src/pages/index.astro` is UX-owned) — also not addressed.
 
-### 6b. Architecture teammate (no report yet, one commit landed)
+**Patches from architecture queued for UX** — the OG/Twitter/canonical meta-tag patch in architecture-report.md's "Patches for other teammates" section is large and important. UX should apply it as their first thing in the next shift, and thread `post.data.image` from `BlogPostLayout` into BaseLayout's `og:image` so blog posts don't all share the generic icon (see my critique under 6b).
 
-- `152c046 arch: fix all 40 astro check TS errors`. **Verified clean:** post-commit `npx astro check` reports 0 errors, 0 warnings, 18 hints. Honest fix.
-- Open items in my P0/P2 lists still owed by architecture: UnoCSS situation, Starlight GitHub link inconsistency, `feed.xml` redirect strategy, Pagefind upstream tracking.
+### 6b. Architecture teammate — REPORT LANDED (`architecture-report.md`, 4 commits + report)
+
+Commits since first cross-check:
+- `152c046 arch: fix all 40 astro check TS errors` (already noted)
+- `69a538b arch: env-gate pagefind so ARM64-16KB sandboxes can complete astro build`
+- `481b4a2 arch: add robots.txt referencing sitemap-index.xml`
+- `543b66d arch: skip pagefind integration assertions when DISABLE_PAGEFIND=1`
+- `799dd3d arch: post architecture report + log final shift entries`
+
+**What the architecture report does well**
+- Independently corroborates my UnoCSS finding. Same conclusion: PROGRESS.md Phase 1 claim is false; UnoCSS is in use; recommends documenting reality not removing.
+- Surfaces a finding **I missed**: the new `BaseLayout.astro` emits only `<title>` and `<meta name="description">`. The old Jekyll `_includes/header.html` emitted **full Twitter card + Open Graph meta** (`twitter:card`, `og:type`, `og:url`, `og:title`, `og:description`, `og:image`, plus canonical via `og:url`) on blog posts. Real SEO / social-share regression. Their patch is well-formed. **Elevating this to my P0 list (item 4a below).**
+- Also flags **no `<link rel="canonical">`** on Starlight pages by default. Real SEO gap; queued for UX.
+- The `DISABLE_PAGEFIND=1` env-gate (`69a538b`) is clean: 30 s local build, production CI unaffected. Better than vendoring a custom Pagefind binary. Addresses my P2 #13.
+- `public/robots.txt` (`481b4a2`) — small SEO win; master had none so it's not a regression-fix but it's free upside.
+
+**What I'd push back on**
+- The verification block reports "211 page(s) built" while my earlier scan showed 217 HTML files in `dist/` and PROGRESS says 212. The architecture report's count is likely the most accurate (it ran after the UX refactor stabilised). The team should pick **one source-of-truth count** — probably the sitemap `<loc>` count (210) + 404 = 211. Update PROGRESS accordingly.
+- The OG/Twitter patch hard-codes `og:image` to `/node-red-icon.png` for every page. Every blog post will get the same generic image in Twitter/LinkedIn/Slack unfurls. Their recommendation §4 acknowledges this. **I'd elevate "Per-post OG image"** from a follow-up to "do at the same time as the meta-tags patch" — the blog post collection already has an `image` frontmatter field per `src/content.config.ts:13`; thread it through. Otherwise the SEO fix ships half-broken.
+- The arch report does **not** address the **GitHub-link inconsistency** I flagged (Starlight Header `node-red/node-red` vs BaseLayout `node-red`). That's a one-line fix in `astro.config.mjs` which is architecture-owned. Open item for the next shift.
+- The arch report **does not flag the 137 `/docs/api/modules/v/*` 404s** — my single biggest finding. Architecture can defer that to parity, but worth a callout in their report. Not a critique of the work, just an absence.
+- Recommendation #6 ("Consider running Pagefind in a CI-only step") slightly contradicts the env-gate: if Pagefind only ever runs in CI, you don't need the env var. Pick one: env-gate (more flexible, developer-can-opt-in) or CI-only (more deterministic).
+
+**Net read on the architecture shift:** strong. Two of my P2 items closed (`astro check`; Pagefind workaround). One major finding I missed surfaced (OG/Twitter meta). One open item (GitHub-link inconsistency). Good shift.
 
 ### 6c. A11y teammate (no report yet, no observed changes)
 
