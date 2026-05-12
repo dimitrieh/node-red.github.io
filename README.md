@@ -1,28 +1,49 @@
-node-red.github.io
-==================
+# Starlight Starter Kit: Basics
 
-[Node-RED Site](http://nodered.org)
+[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
 
-### Contributing / Fixes
+```
+npm create astro@latest -- --template starlight
+```
 
-For simple typos and single line fixes please just raise an issue pointing out
-our mistakes. For larger changes, please discuss them on the [forum](https://discourse.nodered.org) or [Slack team](http://nodered.org/slack/) #docs channel.
+> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
 
-If you need to raise a pull request please read our
-[contribution guidelines](https://github.com/node-red/node-red/blob/master/CONTRIBUTING.md)
-before doing so.
+## 🚀 Project Structure
 
-### Previewing the Site
-This site is a Github Pages site that uses [Jekyll](https://github.com/jekyll/jekyll) for static site generation.  To preview and test the site, first, make sure [Jekyll is installed](https://jekyllrb.com/docs/installation/).
+Inside of your Astro + Starlight project, you'll see the following folders and files:
 
-Fork the repository so you can make changes, commit them to your own repository and make pull requests for review.  Then clone the repository if you haven't already:
+```
+.
+├── public/
+├── src/
+│   ├── assets/
+│   ├── content/
+│   │   └── docs/
+│   └── content.config.ts
+├── astro.config.mjs
+├── package.json
+└── tsconfig.json
+```
 
-    git clone https://github.com/{your-github}/node-red.github.io
+Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
 
-First time you run jeykll you need to do bundle install 1st for the dependencies,
+Images can be added to `src/assets/` and embedded in Markdown with a relative link.
 
-    cd node-red.github.io
-    bundle install
-    bundle exec jekyll serve -w
+Static assets, like favicons, can be placed in the `public/` directory.
 
-Once the site is built and running you can preview it at [`http://127.0.0.1:4000/`](http://127.0.0.1:4000/).
+## 🧞 Commands
+
+All commands are run from the root of the project, from a terminal:
+
+| Command                   | Action                                           |
+| :------------------------ | :----------------------------------------------- |
+| `npm install`             | Installs dependencies                            |
+| `npm run dev`             | Starts local dev server at `localhost:4321`      |
+| `npm run build`           | Build your production site to `./dist/`          |
+| `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `npm run astro -- --help` | Get help using the Astro CLI                     |
+
+## 👀 Want to learn more?
+
+Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).

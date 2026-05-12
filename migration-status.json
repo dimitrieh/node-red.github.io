@@ -1,0 +1,27 @@
+{
+  "lastRun": "2026-05-11T15:04:08.382Z",
+  "summary": {
+    "totalPages": 201,
+    "pagesComplete": 218,
+    "pagesFailed": 0,
+    "percentComplete": 108.5
+  },
+  "docs": {
+    "category": "docs",
+    "total": 138,
+    "found": 147,
+    "missing": []
+  },
+  "blog": {
+    "category": "blog",
+    "total": 52,
+    "found": 59,
+    "missing": []
+  },
+  "about": {
+    "category": "about",
+    "total": 11,
+    "found": 12,
+    "missing": []
+  }
+}

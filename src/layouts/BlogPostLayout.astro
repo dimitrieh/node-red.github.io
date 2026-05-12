@@ -1,0 +1,209 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { authors } from '../data/authors';
+import { formatBlogDate } from '../utils/blog';
+
+interface Props {
+  title: string;
+  author: string;
+  date: Date;
+  description?: string;
+}
+
+const { title, author, date, description } = Astro.props;
+
+const authorInfo = authors[author] || { displayName: author, url: '#' };
+---
+
+<BaseLayout title={title} description={description}>
+  <nav class="breadcrumb-bar" aria-label="Breadcrumb">
+    <ol class="breadcrumb-list">
+      <li><a href="/">Node-RED</a></li>
+      <li><a href="/blog/">Blog</a></li>
+    </ol>
+  </nav>
+
+  <article class="post-article">
+    <div class="post-inner">
+      <header class="post-header">
+        <h1 class="post-title">{title}</h1>
+        <div class="post-meta">
+          <time datetime={date.toISOString()}>{formatBlogDate(date)}</time>
+          <span aria-hidden="true">&middot;</span>
+          <a href={authorInfo.url} target="_blank" rel="noopener">{authorInfo.displayName}</a>
+        </div>
+      </header>
+
+      <div class="post-content">
+        <slot />
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .breadcrumb-bar {
+    background: var(--nr-red);
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--grid-padding);
+  }
+
+  .breadcrumb-list {
+    max-width: var(--grid-max-width);
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    list-style: none;
+    gap: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm);
+  }
+
+  .breadcrumb-list li {
+    display: flex;
+    align-items: center;
+  }
+
+  .breadcrumb-list li::before {
+    content: '/';
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 10px;
+  }
+
+  .breadcrumb-list li:first-child::before {
+    content: '';
+    margin: 0;
+  }
+
+  .breadcrumb-list a,
+  .breadcrumb-list span {
+    color: white;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+
+  .breadcrumb-list a:hover {
+    text-decoration: underline;
+    color: white;
+  }
+
+  /* ── Article Layout ── */
+  .post-article {
+    max-width: 800px;
+    margin: var(--space-6) auto;
+    padding: 0 var(--grid-padding);
+  }
+
+  .post-inner {
+    background: var(--nr-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-8) var(--space-9);
+  }
+
+  .post-header {
+    margin-bottom: var(--space-7);
+    padding-bottom: var(--space-5);
+    border-bottom: 3px solid var(--nr-red);
+  }
+
+  .post-title {
+    font-size: var(--text-h1);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    color: var(--nr-black);
+    margin-bottom: var(--space-4);
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-caption);
+    color: var(--nr-gray-500);
+  }
+
+  .post-meta time {
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+  }
+
+  .post-meta a {
+    color: var(--nr-red);
+  }
+
+  .post-meta a:hover {
+    text-decoration: underline;
+  }
+
+  /* ── Post Content ── */
+  .post-content {
+    font-size: var(--text-body);
+    line-height: 1.8;
+    color: var(--nr-gray-900);
+  }
+
+  .post-content :global(h2) {
+    font-size: var(--text-h2);
+    margin: var(--space-7) 0 var(--space-4);
+    letter-spacing: -0.02em;
+  }
+
+  .post-content :global(h3) {
+    font-size: var(--text-h3);
+    margin: var(--space-6) 0 var(--space-3);
+    letter-spacing: -0.015em;
+  }
+
+  .post-content :global(p) {
+    margin: var(--space-4) 0;
+  }
+
+  .post-content :global(ul),
+  .post-content :global(ol) {
+    margin: var(--space-4) 0;
+    padding-left: 28px;
+  }
+
+  .post-content :global(li) {
+    margin: var(--space-2) 0;
+  }
+
+  .post-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+    margin: var(--space-5) 0;
+  }
+
+  .post-content :global(blockquote) {
+    border-left: 4px solid var(--nr-red);
+    margin: var(--space-5) 0;
+    padding: var(--space-3) var(--space-5);
+    background: var(--nr-gray-50);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    color: var(--nr-gray-700);
+  }
+
+  .post-content :global(pre) {
+    margin: var(--space-5) 0;
+  }
+
+  @media (max-width: 767px) {
+    .post-article {
+      margin: var(--space-4) auto;
+    }
+
+    .post-inner {
+      padding: var(--space-5) var(--space-5);
+      border-radius: var(--radius-md);
+    }
+
+    .post-title {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+    }
+  }
+</style>

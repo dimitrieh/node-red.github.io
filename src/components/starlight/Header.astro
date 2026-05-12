@@ -1,0 +1,87 @@
+---
+import type { Props } from '@astrojs/starlight/props';
+import Search from '@astrojs/starlight/components/Search.astro';
+import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+import { mainNav } from '../../data/navigation';
+
+const { hasSidebar, locale } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<a href="#_top" class="absolute top-[-100%] left-4 bg-nr-red text-white px-4 py-2 rounded-b-lg z-[1000] font-semibold no-underline focus:top-0">Skip to main content</a>
+
+<div class="bg-nr-bg-dark border-b-3 border-nr-red">
+  <div class="max-w-[1200px] mx-auto flex items-center justify-between px-5 h-[60px]">
+    <div class="shrink-0">
+      <a href="/" class="flex items-center gap-3 no-underline">
+        <img src="/node-red-icon.png" alt="" width="40" height="40" class="w-10 h-10" />
+        <span class="font-heading font-bold text-[20px] text-nr-text-light">Node-RED</span>
+      </a>
+    </div>
+
+    <nav class="flex gap-0 lt-lg:hidden" aria-label="Main navigation">
+      {mainNav.map((item) => (
+        <a
+          href={item.href}
+          class:list={[
+            'font-heading text-[16px] text-[#C0C0C0] no-underline py-5 px-[15px] border-b-3 border-transparent mb-[-3px] transition-all duration-200 hover:text-nr-text-light hover:border-b-nr-red hover:no-underline',
+            { 'text-nr-text-light! border-b-nr-red!': item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }
+          ]}
+          {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          {...(!item.external && (item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href)) ? { 'aria-current': 'page' } : {})}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="flex items-center gap-4">
+      <Search />
+      <ThemeSelect />
+      <button class="hidden lt-lg:block bg-transparent border-none text-[#C0C0C0] cursor-pointer p-2 hover:text-nr-text-light nr-mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav class="hidden flex-col bg-nr-bg-dark px-5 pb-5 mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+    {mainNav.map((item) => (
+      <a
+        href={item.href}
+        class:list={[
+          'font-heading text-[16px] text-[#C0C0C0] no-underline py-3 border-b border-[#333] transition-all duration-200 hover:text-nr-text-light hover:no-underline',
+          { 'text-nr-text-light!': item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href) && !item.external }
+        ]}
+        {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      >
+        {item.label}
+      </a>
+    ))}
+  </nav>
+</div>
+
+<style>
+  .mobile-nav[aria-hidden="false"] {
+    display: flex;
+  }
+
+  :global(site-search) {
+    --sl-search-result-highlight-bg: #C75050;
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector('.nr-mobile-toggle');
+  const mobileNav = document.querySelector('.mobile-nav');
+
+  toggle?.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    mobileNav?.setAttribute('aria-hidden', String(expanded));
+  });
+</script>

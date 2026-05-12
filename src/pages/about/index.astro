@@ -1,0 +1,239 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+
+const aboutPages = await getCollection('about');
+const mainPage = aboutPages.find((page) => page.id === 'index.md' || page.id === 'index');
+
+let Content = null;
+if (mainPage) {
+  const rendered = await render(mainPage);
+  Content = rendered.Content;
+}
+---
+
+<BaseLayout title="About">
+  <nav class="breadcrumb-bar" aria-label="Breadcrumb">
+    <ol class="breadcrumb-list">
+      <li><a href="/">Node-RED</a></li>
+      <li><span aria-current="page">About</span></li>
+    </ol>
+  </nav>
+
+  <div class="about-layout">
+    <aside class="about-sidebar">
+      <nav aria-label="About section">
+        <ul class="sidebar-nav">
+          <li><a href="/about/" class="sidebar-link is-active" aria-current="page">About Node-RED</a></li>
+          <li><a href="/about/community/" class="sidebar-link">Community</a></li>
+          <li><a href="/about/contribute/" class="sidebar-link">Contribute</a></li>
+          <li><a href="/about/governance/" class="sidebar-link">Governance</a></li>
+          <li><a href="/about/license/" class="sidebar-link">License</a></li>
+          <li><a href="/about/releases/" class="sidebar-link">Releases</a></li>
+          <li><a href="/about/conduct/" class="sidebar-link">Code of Conduct</a></li>
+          <li><a href="/about/resources/" class="sidebar-link">Resources</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <div class="about-content">
+      {Content ? <Content /> : <p>Content not found</p>}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .breadcrumb-bar {
+    background: var(--nr-red);
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--grid-padding);
+  }
+
+  .breadcrumb-list {
+    max-width: var(--grid-max-width);
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    list-style: none;
+    gap: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm);
+  }
+
+  .breadcrumb-list li {
+    display: flex;
+    align-items: center;
+  }
+
+  .breadcrumb-list li::before {
+    content: '/';
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 10px;
+  }
+
+  .breadcrumb-list li:first-child::before {
+    content: '';
+    margin: 0;
+  }
+
+  .breadcrumb-list a,
+  .breadcrumb-list span {
+    color: white;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+
+  .breadcrumb-list a:hover {
+    text-decoration: underline;
+    color: white;
+  }
+
+  /* ── Layout ── */
+  .about-layout {
+    max-width: var(--grid-max-width);
+    margin: 0 auto;
+    padding: var(--space-6) var(--grid-padding) var(--space-8);
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: var(--space-7);
+  }
+
+  /* ── Sidebar ── */
+  .about-sidebar {
+    position: sticky;
+    top: 80px;
+    align-self: start;
+  }
+
+  .sidebar-nav {
+    list-style: none;
+  }
+
+  .sidebar-link {
+    display: block;
+    padding: var(--space-3) var(--space-4);
+    color: var(--nr-gray-700);
+    font-size: var(--text-body-sm);
+    font-family: var(--font-sans);
+    text-decoration: none;
+    border-left: 3px solid var(--nr-gray-200);
+    letter-spacing: -0.01em;
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard),
+      background var(--duration-fast) var(--ease-standard);
+  }
+
+  .sidebar-link:hover {
+    border-left-color: var(--nr-red);
+    color: var(--nr-black);
+    background: rgba(199, 80, 80, 0.04);
+    text-decoration: none;
+  }
+
+  .sidebar-link.is-active {
+    border-left-color: var(--nr-red);
+    color: var(--nr-red);
+    font-weight: 600;
+    background: rgba(199, 80, 80, 0.06);
+  }
+
+  /* ── Content ── */
+  .about-content {
+    background: var(--nr-white);
+    padding: var(--space-7) var(--space-8);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--nr-gray-200);
+  }
+
+  .about-content :global(h1) {
+    font-size: var(--text-h1);
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: 3px solid var(--nr-red);
+    letter-spacing: -0.025em;
+  }
+
+  .about-content :global(h2) {
+    font-size: var(--text-h2);
+    margin: var(--space-6) 0 var(--space-4);
+    letter-spacing: -0.02em;
+  }
+
+  .about-content :global(h3) {
+    font-size: var(--text-h3);
+    margin: var(--space-5) 0 var(--space-3);
+    letter-spacing: -0.015em;
+  }
+
+  .about-content :global(p) {
+    margin: var(--space-4) 0;
+    line-height: 1.7;
+  }
+
+  .about-content :global(ul),
+  .about-content :global(ol) {
+    margin: var(--space-4) 0;
+    padding-left: 28px;
+  }
+
+  .about-content :global(li) {
+    margin: var(--space-2) 0;
+  }
+
+  .about-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
+
+  .about-content :global(.grid) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+    margin: var(--space-5) 0;
+    align-items: center;
+  }
+
+  .about-content :global(.col-1-2) {
+    min-width: 0;
+  }
+
+  .about-content :global(.doc-callout) {
+    background: var(--nr-red-light);
+    border-left: 4px solid var(--nr-red);
+    padding: var(--space-4) var(--space-5);
+    margin: var(--space-5) 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    color: var(--nr-gray-700);
+  }
+
+  .about-content :global(iframe) {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+    margin: var(--space-5) 0;
+  }
+
+  @media (max-width: 767px) {
+    .about-layout {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+
+    .about-sidebar {
+      position: static;
+      order: 2;
+    }
+
+    .about-content {
+      padding: var(--space-5);
+    }
+
+    .about-content :global(.grid) {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
