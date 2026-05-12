@@ -285,6 +285,16 @@ Line 44 fix is: `item.href === '/' ? currentPath === '/' : currentPath.startsWit
 
 Already covered in 1f. Just flagging for the parity teammate to consider: this isn't a 404, it's missing content that's present in the data file.
 
+### 3l-pre. `/about/` page has NO `<h1>` — WCAG and SEO regression
+
+- `src/pages/about/index.astro` renders the `BaseLayout` with `title="About"` (sets `<title>` only) and then injects the rendered markdown via `<Content />`.
+- The markdown `src/content/about/index.md` starts directly with body text. Its only heading levels are h3 (`### History`, `### Citing Node-RED`).
+- Result: the `/about/` page has **no h1, no h2, just h3s and below**. This is a heading-order violation (axe-core may not flag it because it focuses on skipped levels within the page, but a manual screen-reader walkthrough would catch this immediately — "About" would just be a `<title>` element, not a landmark heading).
+- URL audit confirmed: `/about/` row has `has_h1=false`. PROGRESS.md Phase 4 claim "Fixed heading order" is **partial** at best — only the homepage and features section were fixed.
+- The old Jekyll site (`_layouts/about-single.html`) wrapped about content in a `<h1>{{ page.title }}</h1>` automatically. The new layout does not.
+
+a11y or UX teammate. Trivial fix: insert `<h1>{page.data.title || 'About'}</h1>` near the top of `src/pages/about/index.astro` content block — to mirror what `src/pages/about/[...slug].astro:79` already does for every other about route. Update: verified — sub-pages (`/about/community/` etc.) DO render `<h1>`. Only `/about/` is missing it. So the gap is narrower than initially feared, but still a real h1 absence on the about landing page.
+
 ### 3l. Plausible analytics dropped
 
 - Master footer line: `<script defer data-domain="nodered.org" src="https://plausible.io/js/plausible.js"></script>`
