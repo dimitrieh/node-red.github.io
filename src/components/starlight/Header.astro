@@ -74,6 +74,26 @@ const currentPath = Astro.url.pathname;
   :global(site-search) {
     --sl-search-result-highlight-bg: #C75050;
   }
+
+  /* The Starlight ThemeSelect lives on top of our dark header (#1E1E1E).
+     Its built-in colour scheme picks --sl-color-gray-2 for the visible label,
+     which in our light-mode palette is #404040 — 1.6:1 against the dark
+     header (axe: serious). Force light readable colours, matching the rest
+     of the dark navbar. Same colour scheme applies in dark mode. */
+  :global(starlight-theme-select) {
+    color: #E5E5E5;
+  }
+  :global(starlight-theme-select select) {
+    color: #E5E5E5;
+    background-color: transparent;
+  }
+  :global(starlight-theme-select select:focus-visible) {
+    outline: 3px solid var(--nr-red, #C75050);
+    outline-offset: 2px;
+  }
+  :global(starlight-theme-select svg) {
+    color: #C0C0C0;
+  }
 </style>
 
 <script>
