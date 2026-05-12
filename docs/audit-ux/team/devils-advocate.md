@@ -347,7 +347,7 @@ The migration is **net positive but premature to call complete**. The "Phase 5: 
 1. Restore homepage content density (contributors, blog feed, full users grid, version badge).
 2. Add the missing 5 redirects.
 3. Either restore or formally archive the 137 API reference files.
-4. Fix the 8 `astro check` errors and the GitHub-link inconsistency.
+4. Fix the GitHub-link inconsistency between BaseLayout (org) and Starlight Header (repo). (astro check errors already fixed by arch in 152c046.)
 5. Verify survey charts actually render.
 
 After that it's a genuine improvement. Reverting is **not** recommended — the upside on docs IA and accessibility alone justifies it.
