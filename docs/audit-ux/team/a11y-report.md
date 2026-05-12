@@ -222,3 +222,171 @@ Prioritised follow-ups for the orchestrator / next session:
 5. **(P2) Address `<kbd>` style** — either override Starlight's default kbd selector in `starlight-custom.css` or file upstream. Currently 1-2 instances per docs page, low impact.
 6. **(P2) Verify Starlight search modal a11y** once Pagefind works (different ARM-aware build, e.g. `--target x64` Lambda image). The site-search button is in my scope but the dialog is Starlight-internal.
 7. **(P3) Run `axe-core` in CI against the production preview** — the existing `a11y.spec.ts` collects but doesn't fail; promote it (or my new spec) to assertion mode so regressions are caught before merge.
+
+## Round 2
+
+### Summary
+
+Round-1 patches integrated cleanly by the orchestrator (commits 446d0ef + bfae64f) — verified by re-running the new asserting suite and a manual axe sweep across all key pages in both themes. Fixed two more a11y-owned regressions this round and promoted `a11y.spec.ts` to asserting mode with a documented KNOWN_OPEN allowlist so the JSON report doubles as a regression guard for PR review. `npm run test:e2e -- a11y` = 25/25 GREEN; full `npm run test:e2e` = 122/122 GREEN. Bonus checks (focus-not-obscured, focus appearance, mobile aria-expanded, OG/Twitter duplicates) all green. The only remaining serious axe violations on the branch are 113 `color-contrast` + 7 `link-in-text-block` nodes — all rooted in `BaseLayout.astro:223-227`'s global `a { color: var(--nr-red) }` rule and `--nr-gray-500` not being adjusted per theme. Both files are UX-owned and the patches are listed below.
+
+### Method
+
+- Re-ran `DISABLE_PAGEFIND=1 npm run test:e2e -- a11y-themes` (14/14 baseline confirmed) before any changes.
+- `npx astro build` (clean), restarted preview on `:4324`, re-injected axe-core 4.10.0 via CDN in Playwright MCP, swept `/`, `/docs/`, `/docs/getting-started/`, `/blog/`, `/blog/[post]`, `/about/`, `/about/community/` in both `data-theme=light` and `data-theme=dark`.
+- Verified the round-1 integration: queried rendered HTML for `<title>`, `og:title`, `twitter:title`, `description`, `canonical` — each appears exactly once per page on `/`, `/about/`, `/blog/`, `/blog/[post]`, `/docs/`. No duplicates.
+- WCAG 2.4.11 (Focus Not Obscured) — verified `html { scroll-padding-top: 88px }` on Starlight docs pages (header 60px), and that Tab navigation on sticky-header marketing pages lands focused elements ~439px below the viewport top (well clear of the 67px sticky header). Browser scroll-into-view on `position: sticky` headers does the right thing automatically.
+- WCAG 2.4.13 (Focus Appearance) — focused the primary `.nr-btn-primary` CTA: outline is `#C75050` on the button's own `#C75050` background = invisible visually, but `outline-offset: 2px` renders the outline on the surrounding page bg (`#FAFAFA`) where it gives ~4.5:1. Passes. **Caveat:** if a red CTA is ever placed on a red surface (e.g. inside the breadcrumb bar), the outline would vanish — flag as a design-rule note rather than a current defect.
+- Skip-link → main focus: Tab → "Skip to main content" → Enter → `document.activeElement` becomes `<main id="main-content">`. Round-1 ux #5 patch works as intended.
+- Mobile nav `aria-expanded`: viewport 375px → toggle button, default `aria-expanded="false"`; click → `aria-expanded="true"`. Missing `aria-controls` (not strict-AA but flagged).
+- WCAG 2.5.7 (Dragging Movements) — there is no drag-required UI on any audited page (no maps, no sliders, no kanban). Trivially satisfied.
+
+### Findings — fixed in this round
+
+- **Starlight content links contrast + link-in-text-block** — `.sl-markdown-content a { color: var(--nr-red) }` in `starlight-custom.css:244-253` was rendering 4.47:1 (light) and 3.66:1 (dark) — both fail AA. Swapped to `var(--sl-color-text-accent)` (resolves to `#8B2E2E` light = 5.7:1, `#E87070` dark = 4.9:1) and added always-on 1px underline with 2px offset so the WCAG 1.4.1 `link-in-text-block` rule passes regardless of the adjacent gray's link/text contrast. Suppressed underline on heading anchors and `.button`-style links. Affects every `/docs/**` page that has body links. Fix: `src/styles/starlight-custom.css:243-275`. Commit `7f2a691`.
+- **Starlight site-search kbd hint (light mode contrast)** — Starlight's default kbd palette `#A3A3A3` on `#E5E5E5` = 2:1 (serious fail). The kbd lives inside `site-search button` which already has a dark-header treatment, so I forced kbd to `rgba(255,255,255,0.12)` background + `#E5E5E5` text + `rgba(255,255,255,0.2)` border (~10:1 in both themes). Fix: `src/styles/starlight-custom.css:441-451`. Commit `7f2a691`.
+- **`tests/e2e/a11y.spec.ts` promoted to asserting mode** — Previously it only wrote the JSON report. Now it (a) forces a single-worker run so the shared `collected[]` is populated, (b) asserts 0 critical-impact violations, (c) only allows rule ids in an explicit `KNOWN_OPEN` list with per-rule node caps. A new rule (e.g. missing label, duplicate id) outside the list will fail the spec immediately, so PR review picks up regressions automatically. Also added an `iframe` exclude to match the navigation suite (YouTube embed's `aria-prohibited-attr` is not ours to fix). Commit `c3fcdb8`.
+
+### Findings — flagged, not fixed in this round (out of file scope, with ready-to-apply patches)
+
+- **`BaseLayout.astro:223-227` global `a { color: var(--nr-red) }`** — Single root cause of ~113 color-contrast + 7 link-in-text-block violations across `/`, `/blog/`, `/blog/[post]`, `/about/`, `/about/community/`. The fix mirrors what I just applied to `.sl-markdown-content a`: switch to a theme-aware accent token and always-on underline on body links. See Patches: ux #7.
+- **`--nr-gray-500` not adjusted per theme** — In `src/styles/design-tokens.css` the token is `#6B6B6B` (AA on white) but the dark-mode block sets it to `#6B6B6B` too, which is only 3.5:1 on the `#111114` dark page bg. 5+ `.nr-label` nodes on `/` dark mode flag. See Patches: ux #8.
+- **`/about/community/` heading order** — `<h3 id="discussion-guidelines">` jumps from h1 (skips h2). Same on `/docs/user-guide/`. Content fix in `src/content/about/community.md` and the user-guide content. See Patches: parity #2.
+- **Primary CTA focus outline against red surfaces** — Today the layout never places a red CTA on a red surface so this is theoretical, but if it ever does (e.g. inside the breadcrumb bar), the `#C75050` outline becomes invisible against `#A63D3D`. Design-rule note: keep red CTAs on neutral surfaces only.
+- **Mobile nav button missing `aria-controls`** — Not strict-AA but improves screen-reader announcement. UX-owned (`Header.astro` mobile toggle). See Patches: ux #9.
+
+### Patches for other teammates
+
+#### ux #7 — Apply theme-aware accent color + always-on underline to global `a`
+
+`src/layouts/BaseLayout.astro` (`a { … }` near line 223):
+
+```diff
+   /* ── Links ── */
+   a {
+-    color: var(--nr-red);
+-    text-decoration: none;
++    color: var(--nr-text-link, var(--nr-red));
++    text-decoration: underline;
++    text-decoration-thickness: 1px;
++    text-underline-offset: 2px;
+     transition: color var(--duration-fast) var(--ease-standard);
+   }
+
+   a:hover {
+     color: var(--nr-red-hover);
+-    text-decoration: underline;
++    text-decoration-thickness: 2px;
+   }
+```
+
+And in `src/styles/design-tokens.css` add a per-theme `--nr-text-link`:
+
+```diff
+   :root {
++    /* Body-text link colour. Brighter --nr-red is used for icons and chrome;
++       link text needs AA contrast against the page bg. */
++    --nr-text-link: #8B2E2E; /* 5.7:1 on white */
+   }
++
++  :root[data-theme='dark'] {
++    --nr-text-link: #E87070; /* 4.9:1 on #1a1a1a */
++    --nr-gray-500: #A8A8A8;  /* AA on #111114 dark bg (was #6B6B6B = 3.5:1) */
++  }
+```
+
+Buttons (`.nr-btn-*`, hero CTAs) and badges that intentionally use the `--nr-red` background colour are unaffected because they don't inherit text colour from this rule.
+
+Also add underline-suppression for header/footer chrome links and any `.button`-style elements that should not be underlined:
+
+```diff
+   header nav a,
+   footer a,
+   .nr-btn,
+   .nr-btn-primary,
+   .nr-card a,
+   .breadcrumb-bar a {
+     text-decoration: none;
+   }
+```
+
+(The footer's small print already declares its own `text-decoration: underline` in round-1 ux #2 — leave as-is.)
+
+#### ux #8 — Per-theme `--nr-gray-500`
+
+Covered by ux #7's design-tokens.css diff above; flagged separately because UX may prefer to apply it without the `a {}` rule change.
+
+#### ux #9 — Mobile nav aria-controls
+
+`src/components/Header.astro` (mobile toggle button):
+
+```diff
+   <button
+-    class="mobile-toggle"
++    class="mobile-toggle"
++    aria-controls="mobile-nav"
+     aria-expanded={isOpen}
+     aria-label="Toggle menu"
+   >
+```
+
+And on the mobile nav itself:
+
+```diff
+-  <nav class="mobile-nav" …>
++  <nav id="mobile-nav" class="mobile-nav" …>
+```
+
+#### parity #2 — Heading order
+
+`src/content/about/community.md` (or equivalent — wherever "Discussion Guidelines" lives): promote `### Discussion Guidelines` to `## Discussion Guidelines`. Same for `/docs/user-guide/` content that skips levels.
+
+### Verification
+
+```bash
+# Build clean
+DISABLE_PAGEFIND=1 npx astro build  # 211 pages, 17s, exit 0
+npx astro check                      # 0 errors, 0 warnings
+
+# A11y subset
+DISABLE_PAGEFIND=1 npm run test:e2e -- a11y                # 25/25 passed (47s)
+#   - a11y-themes.spec.ts: 14/14 passed
+#   - a11y.spec.ts (round-2 asserting): 11/11 passed
+
+# Navigation axe checks (these are the assertion-style ones in navigation.spec.ts)
+DISABLE_PAGEFIND=1 npm run test:e2e -- navigation.spec.ts -g "axe checks"  # 5/5 passed
+
+# Full e2e
+DISABLE_PAGEFIND=1 npm run test:e2e                        # 122/122 passed (46s)
+
+# Final axe sweep summary (via Playwright MCP, axe-core 4.10.0, iframe-excluded):
+#   /                                light: 2  | dark: 5   (all UX-owned)
+#   /docs/                           light: 0  | dark: 5   (UX a-link in starlight callouts)
+#   /docs/getting-started/           light: 0  | dark: 0   ✓ FULLY CLEAN
+#   /blog/                           light: 11 | dark: 19  (UX blog-card-cta, time)
+#   /blog/[post]                     light: 57 | dark: 40  (UX BlogPostLayout a-color)
+#   /about/                          light: 12 | dark: 13  (UX a-color)
+#   /about/community/                light: 29 | dark: 17  (UX a-color)
+
+# Skip-link → main focus
+Tab → "Skip to main content" → Enter
+→ document.activeElement.id === "main-content"  ✓
+
+# Mobile aria-expanded
+viewport 375x800, toggle button click:
+  aria-expanded "false" -> "true"  ✓
+  aria-controls: null  (not strict-AA; flagged ux #9)
+
+# OG/Twitter meta de-duplication
+For each of /, /about/, /blog/, /blog/[post]:
+  exactly 1 <title>, 1 <meta name="description">, 1 <link rel="canonical">,
+  1 <meta property="og:title">, 1 <meta name="twitter:title">  ✓ no duplicates
+```
+
+### Recommendations (P0 -> P3)
+
+1. **(P0)** UX teammate applies ux #7 + ux #8 — turns ~120 remaining serious axe violations into 0. The single global-`a` colour change closes the long tail of blog-post and about-page failures in one shot. The `a11y.spec.ts` KNOWN_OPEN cap is intentionally generous (300 nodes) so the suite stays green until those patches land; once applied, tighten the cap to `0` or remove the `color-contrast` entry entirely.
+2. **(P1)** UX teammate applies ux #9 — `aria-controls` on the mobile toggle. Small win, no risk.
+3. **(P1)** Parity / content owner applies parity #2 — heading-order on `/about/community/` and `/docs/user-guide/`. These are the only `moderate` impact violations left in the suite.
+4. **(P2)** Once the cap in `a11y.spec.ts` KNOWN_OPEN drops to 0, delete the entry and let the spec fail on any new color-contrast regression unconditionally.
+5. **(P2)** When Pagefind is fixed on the CI runner, run the Starlight search modal through Playwright MCP / axe-core to confirm dialog focus management and labelling.
+6. **(P3)** Add a design-system note documenting that primary red CTAs must be placed on neutral surfaces — the focus outline relies on `outline-offset` against a non-red bg.
