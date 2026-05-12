@@ -4,8 +4,8 @@ import { test, expect, request as pwRequest } from '@playwright/test';
  * Validates every legacy URL redirect declared in astro.config.mjs.
  * Each entry: { from: legacy path, to: expected final URL (after one hop) }.
  *
- * Generated from grep redirect_from across master:**/*.md plus the
- * UI camelCase preservation set. Keep in sync with astro.config.mjs `redirects:`
+ * Generated from grep redirect_from across master *.md files plus the
+ * UI camelCase preservation set. Keep in sync with astro.config.mjs redirects
  * and public/_redirects.
  */
 

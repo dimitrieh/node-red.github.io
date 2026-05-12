@@ -182,7 +182,7 @@ async function main() {
           if (refreshMatch) {
             verdict = 'REDIRECTED';
             redirected++;
-            finalUrl = refreshMatch[1];
+            finalUrl = refreshMatch[1]!;
             note = `meta-refresh -> ${refreshMatch[1]} (${bytes}b)`;
           } else {
             const c = hasContent(body);

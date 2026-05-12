@@ -18,6 +18,21 @@ const currentPath = Astro.url.pathname;
     <meta name="description" content={description} />
     <title>{title} - Node-RED</title>
     <link rel="icon" href="/favicon.ico" />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).toString()} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site).toString()} />
+    <meta property="og:image" content={new URL('/node-red-icon.png', Astro.site).toString()} />
+    <meta property="og:site_name" content="Node-RED" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@nodered" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL('/node-red-icon.png', Astro.site).toString()} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -76,7 +91,7 @@ const currentPath = Astro.url.pathname;
       </nav>
     </header>
 
-    <main id="main-content">
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
 
@@ -280,7 +295,7 @@ const currentPath = Astro.url.pathname;
         — extracted from per-page styles for consistency and dark-mode
         support. */
   .breadcrumb-bar {
-    background: var(--nr-red);
+    background: var(--nr-red-hover);
     min-height: 48px;
     display: flex;
     align-items: center;
@@ -556,7 +571,7 @@ const currentPath = Astro.url.pathname;
   }
 
   .footer-link-group li {
-    margin: var(--space-2) 0;
+    margin: 0;
   }
 
   .footer-link-group a {
@@ -564,6 +579,9 @@ const currentPath = Astro.url.pathname;
     font-size: var(--text-body-sm);
     text-decoration: none;
     transition: color var(--duration-fast);
+    display: inline-block;
+    padding: 6px 0;
+    line-height: 1.5;
   }
 
   .footer-link-group a:hover {
@@ -597,12 +615,12 @@ const currentPath = Astro.url.pathname;
   }
 
   .footer-legal a {
-    color: var(--nr-red);
+    color: #E87070;
     text-decoration: underline;
   }
 
   .footer-legal a:hover {
-    color: #E87070;
+    color: #F58A8A;
   }
 
   .footer-social {

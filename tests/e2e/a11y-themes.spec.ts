@@ -207,13 +207,13 @@ test('docs sidebar links pass 4.5:1 contrast in both themes', async ({ page }) =
 function parseColor(s: string): [number, number, number] {
   const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
   if (!m) return [0, 0, 0];
-  return [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])];
+  return [parseInt(m[1]!), parseInt(m[2]!), parseInt(m[3]!)];
 }
 function luminance([r, g, b]: [number, number, number]): number {
   const norm = [r, g, b].map((v) => {
     const c = v / 255;
     return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  });
+  }) as [number, number, number];
   return 0.2126 * norm[0] + 0.7152 * norm[1] + 0.0722 * norm[2];
 }
 function contrastRatio(fg: string, bg: string): number {
