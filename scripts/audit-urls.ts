@@ -176,17 +176,27 @@ async function main() {
         } else if (status >= 200 && status < 300) {
           const body = await res.text();
           bytes = body.length;
-          const c = hasContent(body);
-          hasMain = c.hasMain;
-          hasH1 = c.hasH1;
-          hasArticle = c.hasArticle;
-          if (!(hasMain || hasArticle) || !hasH1 || bytes < 1500) {
-            verdict = 'EMPTY';
-            empty++;
-            note = `bytes=${bytes} main=${hasMain} h1=${hasH1} article=${hasArticle}`;
+          // Detect Astro static-build redirect stubs (meta-refresh tag);
+          // they return 200 with a tiny body. Count as REDIRECTED, not EMPTY.
+          const refreshMatch = /<meta[^>]+http-equiv="refresh"[^>]*url=([^"'\s>]+)/i.exec(body);
+          if (refreshMatch) {
+            verdict = 'REDIRECTED';
+            redirected++;
+            finalUrl = refreshMatch[1];
+            note = `meta-refresh -> ${refreshMatch[1]} (${bytes}b)`;
           } else {
-            verdict = 'OK';
-            okCount++;
+            const c = hasContent(body);
+            hasMain = c.hasMain;
+            hasH1 = c.hasH1;
+            hasArticle = c.hasArticle;
+            if (!(hasMain || hasArticle) || !hasH1 || bytes < 1500) {
+              verdict = 'EMPTY';
+              empty++;
+              note = `bytes=${bytes} main=${hasMain} h1=${hasH1} article=${hasArticle}`;
+            } else {
+              verdict = 'OK';
+              okCount++;
+            }
           }
         } else {
           verdict = 'OTHER';
