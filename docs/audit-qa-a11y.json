@@ -4,6 +4,15 @@
       "name": "home",
       "path": "/",
       "status": 200,
+      "numViolations": 2,
+      "bySeverity": {
+        "serious": 2
+      }
+    },
+    {
+      "name": "docs",
+      "path": "/docs/",
+      "status": 200,
       "numViolations": 0,
       "bySeverity": {}
     },
@@ -11,9 +20,16 @@
       "name": "docs-api-runtime",
       "path": "/docs/api/runtime/",
       "status": 404,
-      "numViolations": 1,
+      "numViolations": 0,
+      "bySeverity": {}
+    },
+    {
+      "name": "blog",
+      "path": "/blog/",
+      "status": 200,
+      "numViolations": 11,
       "bySeverity": {
-        "serious": 1
+        "serious": 11
       }
     },
     {
@@ -23,6 +39,15 @@
       "numViolations": 57,
       "bySeverity": {
         "serious": 57
+      }
+    },
+    {
+      "name": "about",
+      "path": "/about/",
+      "status": 200,
+      "numViolations": 12,
+      "bySeverity": {
+        "serious": 12
       }
     },
     {
@@ -36,14 +61,30 @@
       }
     },
     {
+      "name": "docs-getting-started",
+      "path": "/docs/getting-started/",
+      "status": 200,
+      "numViolations": 1,
+      "bySeverity": {
+        "serious": 1
+      }
+    },
+    {
       "name": "docs-user-guide",
       "path": "/docs/user-guide/",
       "status": 200,
-      "numViolations": 27,
+      "numViolations": 2,
       "bySeverity": {
-        "serious": 26,
+        "serious": 1,
         "moderate": 1
       }
+    },
+    {
+      "name": "not-found",
+      "path": "/this-page-does-not-exist-xyz/",
+      "status": 404,
+      "numViolations": 0,
+      "bySeverity": {}
     }
   ],
   "totalViolations": 115,
@@ -57,15 +98,18 @@
       "impact": "serious",
       "count": 113,
       "pages": [
-        "/docs/api/runtime/",
+        "/",
+        "/blog/",
         "/blog/2024/06/20/version-4-0-released/",
+        "/about/",
         "/about/community/",
+        "/docs/getting-started/",
         "/docs/user-guide/"
       ],
       "help": "Elements must meet minimum color contrast ratio thresholds",
       "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright",
-      "sampleSelector": "kbd:nth-child(1)",
-      "sampleSnippet": "<kbd class=\"astro-v37mnknz\">Ctrl</kbd>"
+      "sampleSelector": ".getstarted-more > a[href$=\"getting-started/\"]",
+      "sampleSnippet": "<a href=\"/docs/getting-started/\" class=\"astro-j7pv25f6\">see all platforms →</a>"
     },
     {
       "id": "heading-order",
