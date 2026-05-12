@@ -3,7 +3,7 @@
 # Format: source target status
 
 # Top-level legacy aliases (Jekyll redirect_from)
-/slack                                  https://nodered.org/slack             301
+/slack                                  /about/community/slack/               301
 /slack/                                 /about/community/slack/               301
 /community/                             /about/community/                     301
 /conduct/                               /about/conduct/                       301
