@@ -11,7 +11,7 @@ The Astro 6 + Starlight migration is a real upgrade in some respects (cleaner do
 3. PROGRESS.md Phase 1 claim "Removed unused dependencies: lit, …, unocss, @unocss/astro, @unocss/preset-wind, @unocss/preset-icons" is **false**. `package.json` still depends on unocss, `@unocss/astro`, `@unocss/preset-wind`, `@unocss/preset-icons`, `@unocss/eslint-config`. `astro.config.mjs` still imports `UnoCSS` and lists `UnoCSS()` as an integration. `uno.config.ts` is still present (57 lines). Footer uses `.i-simple-icons-*` UnoCSS icon classes, so removing UnoCSS would visibly break the footer social icons.
 4. PROGRESS.md Phase 1 claim "Created `src/data/navigation.ts`" is verified — but `src/data/contributors.ts` exists in the new tree and is **not imported by any page**. Dead data.
 5. `npx astro build` exit code is non-zero on this sandbox arch (Pagefind/jemalloc 16 KB page-size crash). That is environmental — Jekyll didn't have Pagefind either, so it's not a regression vs. master, but it does mean the "zero errors" claim is misleading even granting the caveat: Pagefind error is a real error, just one that prod CI happens not to hit.
-6. `astro check` reports **8 errors and 18 hints**, not the "40 errors" the protocol mentions, but PROGRESS.md still says "zero errors". Both numbers are wrong; the truth is in between.
+6. `astro check` initially reported **8 errors, 18 hints** at the start of this audit (PROGRESS.md said "zero errors"; the protocol said "40"). The architecture teammate fixed these in commit `152c046` during this audit window — `astro check` now reports **0 errors, 0 warnings, 18 hints**. So this particular gap is closed in-flight. Crediting architecture teammate.
 
 Recommendation summary at section 5. None of this calls for reverting the migration — but several items should land before declaring "complete".
 
@@ -173,7 +173,7 @@ Marking each: **Verified** / **Partial** / **Stale** / **Wrong**.
 | Claim | Status | Evidence |
 |---|---|---|
 | Build: 212 pages, zero errors | **Stale** | Current `dist/` has **217 HTML files** (`find dist -name "*.html" | wc -l`). Page count drifted upward (post-Phase-5 additions). |
-| Zero errors | **Wrong** | `npx astro check` reports **8 errors, 18 hints** in `playwright.config.ts`, `vitest.config.ts`, `scripts/audit-*.ts`, `scripts/verify-*.ts`, `src/components/starlight/Header.astro`. Pagefind also crashes during build (environmental, see section 1j). |
+| Zero errors | **Wrong → Fixed in-flight (152c046)** | At audit start, `npx astro check` reported 8 errors + 18 hints. Architecture teammate fixed these mid-audit (commit `152c046`). Post-fix: 0 errors, 0 warnings, 18 hints. Pagefind crash remains (environmental, see section 1j). |
 | 47/47 E2E passing | Not re-verified | I did not run Playwright here. Trust the architecture teammate, but the spec count is real: see `tests/e2e/*.spec.ts`. |
 
 ### Content Parity Phase 4: image/link integrity tests
@@ -365,7 +365,7 @@ After that it's a genuine improvement. Reverting is **not** recommended — the 
 ### P2 — quality
 
 11. **Resolve the UnoCSS situation.** Either fully remove (and replace the `.i-simple-icons-*` footer icons with inline SVG), or update PROGRESS.md to acknowledge it stays. (Architecture)
-12. **Fix the 8 `astro check` errors** so `npm run build` actually works. Most are simple "string|undefined" assertions in audit scripts and one unused `_Props` import. (Architecture)
+12. ~~**Fix the 8 `astro check` errors**~~ — **DONE in 152c046** by architecture teammate. `npm run build` now passes check.
 13. **Track Pagefind/jemalloc upstream** for 16KB-page support; document the workaround for local dev. (Architecture)
 14. **Ensure `feed.xml` continues to serve RSS,** not an HTML meta-refresh page. Likely needs a `public/feed.xml` that serves real RSS or a server-side 301. (Architecture/Parity)
 15. **Add `rel="me"`** to footer Mastodon link — actually already there (line 123). False alarm; just noting for completeness.
