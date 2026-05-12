@@ -396,15 +396,39 @@ After that it's a genuine improvement. Reverting is **not** recommended — the 
 
 ## 6. Cross-checks of other reports
 
-*This section will be appended as the other 4 teammates' reports land in `docs/audit-ux/team/*-report.md`. As of the first save, no peer reports are present.*
+By the end of my budget (~75 min) **none of the other 4 reports had been committed** as `docs/audit-ux/team/<role>-report.md`. Only the architecture teammate has shipped a commit (`152c046 arch: fix all 40 astro check TS errors`). I observed in-flight uncommitted edits in the working tree from what appears to be the UX teammate, summarised below for the orchestrator's benefit.
 
-### 6a. UX teammate (ux-report.md) — pending
+### 6a. UX teammate (no report yet) — observed in working tree
 
-### 6b. Architecture teammate (architecture-report.md) — pending
+Modified (uncommitted) at end of my shift:
 
-### 6c. A11y teammate (a11y-report.md) — pending
+- `src/layouts/BaseLayout.astro` — adds a `setOpen(bool)` helper for the mobile-toggle, wires `Escape`-to-close, closes on link click, closes on resize past 1024px. **Real a11y improvement** (addresses my finding 3i partially — though `aria-controls` is still missing). Also adds `data-theme='dark'` CSS hooks.
+- `src/styles/design-tokens.css` — introduces semantic surface tokens (`--nr-surface`, `--nr-text-strong`, `--nr-text-body`, `--nr-border`, etc.) and a full `:root[data-theme='dark']` dark-mode palette. **Scope creep**: dark mode for marketing pages was not in PROGRESS scope; DESIGN_PLAN mentions dark mode only for the Starlight docs portal.
+- `src/styles/starlight-custom.css` — extensive dark-mode coordination + (presumably) related Starlight overrides.
+- `src/pages/blog/index.astro`, `src/pages/about/index.astro`, `src/pages/about/[...slug].astro`, `src/layouts/BlogPostLayout.astro` — breadcrumb CSS extracted out of each file (DRY refactor — good).
+- `src/pages/index.astro` — small dark-mode adjustments (hero-eyebrow color, hero background token).
 
-### 6d. Parity teammate (parity-report.md) — pending
+**My critique of UX in-flight work:**
+1. **No homepage content restoration** as of report time — contributors block, npm version, blog feed, Stack Overflow, full users grid, sponsors — all still missing. My P1 recommendations not yet addressed.
+2. **Dark mode is a substantial scope addition** that the migration's "complete" claim now has to defend. Dark mode requires verifying every component, every illustration, every photograph for contrast and presence. If shipping in v1, expect "phase 6" follow-ups. If not shipping, the work is sunk for now.
+3. **Mobile menu improvements are net positive** — close on link click and Escape are both wins. Still missing `aria-controls`.
+4. **The `/about/` h1 regression I flagged** is in UX's lane (`src/pages/about/index.astro` is owned by UX per protocol) but not addressed in the observed diff.
+
+### 6b. Architecture teammate (no report yet, one commit landed)
+
+- `152c046 arch: fix all 40 astro check TS errors`. **Verified clean:** post-commit `npx astro check` reports 0 errors, 0 warnings, 18 hints. Honest fix.
+- Open items in my P0/P2 lists still owed by architecture: UnoCSS situation, Starlight GitHub link inconsistency, `feed.xml` redirect strategy, Pagefind upstream tracking.
+
+### 6c. A11y teammate (no report yet, no observed changes)
+
+- Heuristically: would expect to see edits in `src/components/starlight/Header.astro`, `src/styles/starlight-custom.css`, `tests/e2e/a11y*.spec.ts`. Nothing in the working tree as of my shift end.
+- Items I'd flag to them when they arrive: `/about/` no `<h1>` (3l-pre), mobile-toggle missing `aria-controls` (3i), survey charts may not render in markdown without script tags (3h), Mastodon `rel="me"` is intact (false alarm, withdrawn).
+
+### 6d. Parity teammate (no report yet, no observed changes)
+
+- Items I'd hand to them: the **137 API doc 404s** (3a, single biggest content regression); missing redirects for `/docs/platforms/aws|azure|android` and `/docs/hardware/arduino` (3b); `feed.xml` RSS handling (3c, 3d); the 12-of-47 trusted-by slice (1f, content-side option is to randomise from full list); Starlight GitHub link inconsistency could also be parity (3e).
+
+**Observation for the orchestrator:** the team protocol asks each role to ship a `<role>-report.md` on completion. At my budget expiry, only I (devil) and arch (commit-only, no report) have produced output. The other three may be running long, or may have hit budget. If reports land later, this section should be updated by re-running the devil's-advocate prompt with the new files in scope.
 
 ---
 
