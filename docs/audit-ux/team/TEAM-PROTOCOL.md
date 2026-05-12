@@ -38,9 +38,23 @@ You may **read** the entire codebase. You may only **edit** files listed in your
 - Do not amend commits.
 - Do not include "Generated with Claude" or "Co-Authored-By: Claude" — the PreToolUse hook blocks these.
 
+## Environment quirk: Pagefind on this sandbox
+
+This ARM64 sandbox has a 16KB system page size. Pagefind's bundled Rust binary uses jemalloc compiled for 4KB pages and crashes during the search-index step with:
+
+```
+<jemalloc>: Unsupported system page size
+memory allocation of 16 bytes failed
+[build] Waiting for integration "@astrojs/starlight", hook "astro:build:done"...
+```
+
+This is environmental, not a bug in this repo. Pages are generated successfully before the crash — `dist/` contains 216 index.html files. Treat "completed page generation" as a green build for your purposes. The architecture teammate may investigate upstream workarounds (e.g. PAGEFIND_BINARY env override, vendoring a different binary) but should NOT block on fully solving it.
+
+Implication: `npx astro preview --host 0.0.0.0 --port <yourport>` works — preview reads existing dist/. Site search will be broken (no pagefind index) — this is expected; flag it as an "out-of-sandbox" CI concern, not as a code defect to fix here.
+
 ## Build & test commands
 
-- Fast build (no check): `npx astro build` — should produce ~212 pages, exit 0.
+- Fast build (no check): `npx astro build` — should produce ~216 pages and emit "[build] ✓ Completed". Will then crash at Pagefind. Pages are still in dist/. Treat as green.
 - Strict build: `npm run build` — currently has 40 TS errors. Architecture owns fixing these.
 - Unit tests: `npm test -- --run`
 - E2E tests: `npm run test:e2e` (Playwright spins up its own preview server on port 4321).
