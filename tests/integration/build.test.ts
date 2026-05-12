@@ -60,4 +60,13 @@ describe('Build Output', () => {
   it('should have 404 page', () => {
     expect(existsSync(join(DIST_DIR, '404.html'))).toBe(true);
   });
+
+  it('should have Pagefind search index', () => {
+    expect(existsSync(join(DIST_DIR, 'pagefind', 'pagefind.js'))).toBe(true);
+  });
+
+  it('should have Pagefind UI assets', () => {
+    expect(existsSync(join(DIST_DIR, 'pagefind', 'pagefind-ui.js'))).toBe(true);
+    expect(existsSync(join(DIST_DIR, 'pagefind', 'pagefind-ui.css'))).toBe(true);
+  });
 });
