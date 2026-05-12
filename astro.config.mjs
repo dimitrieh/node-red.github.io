@@ -5,6 +5,12 @@ import UnoCSS from '@unocss/astro';
 
 import sitemap from '@astrojs/sitemap';
 
+// Pagefind bundles jemalloc compiled for 4 KB pages; ARM64 hosts with 16 KB
+// pages (e.g. the sandbox we develop in) crash with "Unsupported system page
+// size". Set DISABLE_PAGEFIND=1 to skip search-index generation locally.
+// Production CI on 4 KB hosts leaves this unset and gets full Pagefind.
+const disablePagefind = process.env.DISABLE_PAGEFIND === '1';
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://nodered.org',
@@ -20,6 +26,7 @@ export default defineConfig({
     UnoCSS(),
     starlight({
       title: 'Node-RED',
+      ...(disablePagefind ? { pagefind: false } : {}),
       logo: {
         src: './src/assets/node-red-icon.png',
       },
