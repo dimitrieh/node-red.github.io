@@ -142,10 +142,33 @@ const currentPath = Astro.url.pathname;
       const toggle = document.querySelector('.mobile-toggle');
       const mobileNav = document.querySelector('.mobile-nav');
 
+      const setOpen = (open: boolean) => {
+        toggle?.setAttribute('aria-expanded', String(open));
+        mobileNav?.setAttribute('aria-hidden', String(!open));
+      };
+
       toggle?.addEventListener('click', () => {
         const expanded = toggle.getAttribute('aria-expanded') === 'true';
-        toggle.setAttribute('aria-expanded', String(!expanded));
-        mobileNav?.setAttribute('aria-hidden', String(expanded));
+        setOpen(!expanded);
+      });
+
+      // Close menu when a nav link is activated (so users can navigate)
+      mobileNav?.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => setOpen(false));
+      });
+
+      // Close on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+          setOpen(false);
+          (toggle as HTMLElement)?.focus();
+        }
+      });
+
+      // Close on resize past the mobile breakpoint to avoid lingering open state
+      const mql = window.matchMedia('(min-width: 1024px)');
+      mql.addEventListener?.('change', (e) => {
+        if (e.matches) setOpen(false);
       });
     </script>
   </body>
@@ -166,13 +189,16 @@ const currentPath = Astro.url.pathname;
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: 1.7;
-    color: var(--nr-gray-900);
-    background: var(--nr-white);
+    color: var(--nr-text-body);
+    background: var(--nr-surface);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
   }
 
   /* ── Links ── */
@@ -187,11 +213,15 @@ const currentPath = Astro.url.pathname;
     text-decoration: underline;
   }
 
+  :root[data-theme='dark'] a:hover {
+    color: #E87A7A;
+  }
+
   /* ── Headings ── */
   h1, h2, h3, h4, h5 {
     font-family: var(--font-sans);
     font-weight: 600;
-    color: var(--nr-black);
+    color: var(--nr-text-strong);
     letter-spacing: -0.02em;
     line-height: 1.2;
   }
@@ -244,6 +274,57 @@ const currentPath = Astro.url.pathname;
   /* ── Mobile nav toggle ── */
   .mobile-nav[aria-hidden="false"] {
     display: flex;
+  }
+
+  /* ── Shared breadcrumb bar (used by /blog, /about, /blog/[post])
+        — extracted from per-page styles for consistency and dark-mode
+        support. */
+  .breadcrumb-bar {
+    background: var(--nr-red);
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--grid-padding);
+  }
+
+  .breadcrumb-list {
+    max-width: var(--grid-max-width);
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    list-style: none;
+    gap: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm);
+    flex-wrap: wrap;
+  }
+
+  .breadcrumb-list li {
+    display: flex;
+    align-items: center;
+  }
+
+  .breadcrumb-list li::before {
+    content: '/';
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0 10px;
+  }
+
+  .breadcrumb-list li:first-child::before {
+    content: '';
+    margin: 0;
+  }
+
+  .breadcrumb-list a,
+  .breadcrumb-list span {
+    color: #fff;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+
+  .breadcrumb-list a:hover {
+    text-decoration: underline;
+    color: #fff;
   }
 </style>
 
@@ -347,15 +428,22 @@ const currentPath = Astro.url.pathname;
   .mobile-toggle {
     display: none;
     background: none;
-    border: none;
-    color: #A3A3A3;
+    border: 1px solid #3a3a3a;
+    border-radius: var(--radius-sm);
+    color: #E5E5E5;
     cursor: pointer;
-    padding: var(--space-2);
-    transition: color var(--duration-fast);
+    padding: 6px 8px;
+    transition:
+      color var(--duration-fast),
+      border-color var(--duration-fast),
+      background var(--duration-fast);
   }
 
-  .mobile-toggle:hover {
+  .mobile-toggle:hover,
+  .mobile-toggle[aria-expanded="true"] {
     color: var(--nr-white);
+    border-color: var(--nr-red);
+    background: rgba(199, 80, 80, 0.15);
   }
 
   .mobile-nav {
