@@ -486,15 +486,28 @@ import { users } from '../data/users';
     filter: grayscale(0);
   }
 
+  :root[data-theme='dark'] .trusted-logo {
+    /* Use a slightly lighter tile so light logos still have a visible
+       container and dark logos pop on the surface. */
+    background: #2A2A30;
+    border-color: #3F3F46;
+  }
+
+  :root[data-theme='dark'] .trusted-logo:hover {
+    background: #353540;
+    border-color: var(--nr-border-strong);
+  }
+
   :root[data-theme='dark'] .trusted-logo img {
-    opacity: 0.75;
-    /* Many of these logos are dark on transparent — lighten them in dark mode */
-    filter: grayscale(0.4) brightness(0) invert(1);
+    opacity: 0.85;
+    /* Don't invert — many logos are full-colour or already light. Just
+       reduce saturation slightly to keep the grid restrained. */
+    filter: grayscale(0.2);
   }
 
   :root[data-theme='dark'] .trusted-logo:hover img {
     opacity: 1;
-    filter: grayscale(0) brightness(0) invert(1);
+    filter: grayscale(0);
   }
 
   /* ===================================================================
