@@ -242,3 +242,186 @@ Prioritised:
    the main `astro build` makes the dev loop faster.
 7. **Track the Zod migration.** When Starlight's content-collection schema
    moves to Standard Schema / Zod 4, plan the migration of `src/content.config.ts`.
+
+---
+
+## Round 2
+
+### Summary
+
+The orchestrator's round-1 integration commits (446d0ef + bfae64f) held up
+under re-audit. `npx astro check` is still 0/0/18, `DISABLE_PAGEFIND=1
+npx astro build` still emits 211 pages + a valid `sitemap-index.xml`, the
+new `src/pages/feed.xml.ts` produces well-formed RSS 2.0, and the
+OG/Twitter/canonical meta from the round-1 patch render on every marketing
+page I sampled. The biggest round-2 finding was PROGRESS.md still being
+byte-for-byte the pre-migration claim wall ("Phase 5 COMPLETE, 212 pages,
+47 tests, UnoCSS removed") — devil's-advocate flagged this as the single
+highest-leverage credibility win, and I fixed it. README.md was still the
+Starlight starter-kit template; replaced with project docs. Sandbox build
+ergonomics improved via `build:sandbox` / `test:sandbox` / `test:e2e:sandbox`
+script aliases. Lighthouse CI is still unexercised — the sandbox's headless
+Chromium gives `NO_FCP` errors so I couldn't capture real scores.
+
+### Method
+
+- `npx astro check` and `DISABLE_PAGEFIND=1 npx astro build` baselined twice
+  (before and after parallel commits from UX, parity, devil).
+- `grep -c "<loc>" dist/sitemap-0.xml` = 210 (correct: 211 pages minus 404).
+- `head -c 300 dist/sitemap-index.xml` and `dist/sitemap-0.xml` — both
+  well-formed XML against the `sitemaps.org/schemas/sitemap/0.9` namespace.
+- `head -c 300 dist/feed.xml` — well-formed `<rss version="2.0"><channel>`
+  with `<title>`, `<description>`, `<link>`, then `<item>...</item>` blocks.
+  Validates against the RSS 2.0 informal spec (channel, item, title, link,
+  description, pubDate, guid).
+- `grep -E "og:|twitter:|rel=\"canonical\"" dist/{index,about/index,
+  blog/index,blog/2025/12/03/.../index}.html` — meta present on all marketing
+  pages. Blog posts also get `twitter:card=summary_large_image` and a
+  per-post `og:image` (e.g. path-to-5.jpg).
+- `cat dist/robots.txt` — `User-agent: *` + `Sitemap: https://nodered.org/sitemap-index.xml`.
+- `npm audit` — 9 vulnerabilities (4 low, 5 moderate), all in dev-only deps
+  (`@lhci/cli` -> `inquirer` -> `tmp`/`external-editor`; `@astrojs/check` ->
+  `@astrojs/language-server` -> `volar-service-yaml` -> `yaml-language-server`
+  -> `yaml`). None affect runtime / production bundles. Auto-fix would
+  downgrade `@astrojs/check` and `@lhci/cli` to old majors — not worth it.
+- Tried `npx lhci collect` against `npx astro preview --port 4323` using
+  Playwright's bundled Chromium (`/home/agent/.cache/ms-playwright/chromium-1223/
+  chrome-linux/chrome`) — Lighthouse failed with `NO_FCP "The page did not
+  paint any content"`. This is a headless-in-container limitation, not a
+  code issue; `lighthouserc.json` is unchanged and should work in real CI.
+- `DISABLE_PAGEFIND=1 npm test -- --run` -> 12 passed / 2 skipped (Pagefind
+  assertions skipped under the env-gate).
+- `DISABLE_PAGEFIND=1 npm run test:e2e` -> 122 passed (UX added 7 new
+  homepage-content + social-share specs in round 2).
+
+### Findings — fixed in this branch
+
+- **`arch: refresh PROGRESS.md and README; add sandbox build/test aliases`
+  (fbd1475)** — three small but high-leverage cleanups:
+  - PROGRESS.md rewritten end-to-end. The old file claimed Phase 1 had
+    removed UnoCSS (false), claimed the build produced 212 pages (it's 211,
+    and earlier rounds varied as redirects changed), and claimed 47 E2E
+    tests (it's now 122). New file has a "Current build state" snapshot
+    block, an at-a-glance stack table, a historical migration-phase record
+    that documents what each phase actually did, and a clean
+    Pagefind-sandbox caveat section.
+  - README.md replaced with project docs: prerequisites, setup, dev, build
+    (incl. the `build:sandbox` workaround for ARM64 16 KB-page hosts),
+    test, audit/parity scripts, sync-upstream notes, full directory layout,
+    deployment notes. Was previously the Starlight starter-kit
+    "🧑‍🚀 Seasoned astronaut?" template.
+  - `package.json` adds `build:sandbox`, `test:sandbox`, `test:e2e:sandbox`
+    aliases (set `DISABLE_PAGEFIND=1` inline). Existing scripts unchanged,
+    so production CI keeps using the unsuffixed ones and gets Pagefind.
+  - `.gitignore` picks up `playwright-report/`, `coverage/`, `.lighthouseci/`,
+    `.tsbuildinfo` so tool outputs can't leak into commits.
+
+### Findings — flagged, not fixed
+
+- **Lighthouse CI unverified in-sandbox.** `npx lhci collect` fails with
+  `NO_FCP` against Playwright's bundled Chromium (likely no GPU/X server).
+  `/usr/bin/chromium-browser` requires snap, which doesn't run in this
+  container. The `lighthouserc.json` thresholds (perf >=0.8 warn, a11y >=0.9
+  error, BP/SEO >=0.9 warn) are reasonable and should run fine in real CI
+  on Linux x64. **Reviewer action**: confirm Lighthouse runs cleanly in
+  GitHub Actions before merge.
+
+- **`npm audit` shows 9 dev-only vulnerabilities.** All transitive through
+  `@lhci/cli` (low: tmp/external-editor/inquirer) and `@astrojs/check`
+  (moderate: yaml stack-overflow via volar-service-yaml). None touch
+  production code or the deployed bundles. Auto-fix would force semver-major
+  regressions on both top-level deps. **Decision**: ignore until upstream
+  publishes patched majors. Document in `npm audit --production` clean state.
+
+- **The "Verified ... 114/114 GREEN" claim in the round-2 kickoff log entry
+  was already drifting** when this shift began. Re-running `npm run test:e2e`
+  off `bfae64f` (before UX round-2 restored the 47-logo gallery) produced
+  113/1-failing — the failing test was `should have users section with
+  logos` asserting `toHaveCount(12)` against 47 rendered images. UX has
+  since landed `88c27c2 ux: restore homepage content density` which
+  updated the test alongside the gallery; current count is 122 passing.
+  The orchestrator's quoted number was therefore measured against a
+  state that no longer exists, but the suite is greener now anyway.
+
+- **One axe-on-/docs/ flake observed.** A single run reported a
+  `docs page should pass axe checks` failure; the immediate retry passed.
+  Probably a Pagefind-disabled render-timing edge case in Starlight. Not
+  reliably reproducible. **Reviewer action**: if CI flakes here, retry
+  with `--retries=2`; if it persists, profile what axe is finding.
+
+- **`research/round2-ux/` is untracked at the worktree root.** Looks like
+  audit screenshots dropped by parallel agents. Not gitignored and not
+  committed. **Decision**: leave alone (not arch-owned); UX or orchestrator
+  can decide whether to commit it as audit evidence or drop it.
+
+### Patches for other teammates
+
+None this round. All round-1 patches have been integrated by the
+orchestrator (commits 446d0ef + bfae64f), and the round-2 work was
+self-contained in arch-owned files (PROGRESS.md, README.md, package.json,
+.gitignore).
+
+### Verification
+
+```
+$ git log --oneline -1
+fbd1475 arch: refresh PROGRESS.md and README; add sandbox build/test aliases
+
+$ npx astro check
+Result (48 files):
+- 0 errors
+- 0 warnings
+- 18 hints
+
+$ DISABLE_PAGEFIND=1 npx astro build
+[build] 211 page(s) built in 18.08s
+[@astrojs/sitemap] sitemap-index.xml created at dist
+[build] Complete!
+
+$ grep -c "<loc>" dist/sitemap-0.xml
+210
+
+$ head -c 80 dist/sitemap-index.xml
+<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps
+
+$ head -c 80 dist/feed.xml
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Node
+
+$ cat dist/robots.txt
+User-agent: *
+Allow: /
+Sitemap: https://nodered.org/sitemap-index.xml
+
+$ grep -E "rel=\"canonical\"|og:type" dist/index.html | head -1
+... <link rel="canonical" href="https://nodered.org/"> ... <meta property="og:type" content="website"> ...
+
+$ npm audit --production
+found 0 vulnerabilities
+
+$ DISABLE_PAGEFIND=1 npm test -- --run
+Test Files  2 passed (2)
+     Tests  12 passed | 2 skipped (14)
+
+$ DISABLE_PAGEFIND=1 npm run test:e2e
+122 passed (52.2s)
+```
+
+### Recommendations
+
+1. **Run Lighthouse CI on real x64 Linux runners** before merge to validate
+   the thresholds in `lighthouserc.json`. The sandbox can't drive it.
+2. **Decide on UnoCSS for good.** Round-1 left the kept-or-removed choice
+   open; round-2 documented "kept" in PROGRESS.md but the long-term plan
+   should still convert the 3 consumers (Header.astro, FooterContent.astro,
+   BaseLayout.astro) to plain CSS / inline SVG so the dev-dep weight can be
+   dropped.
+3. **Track `@astrojs/check` upstream** — once a non-vulnerable yaml/yaml-
+   language-server release lands, bump and clear the 4 moderate audit
+   findings.
+4. **Move Pagefind out of `astro build`** into a CI-only step. Even after
+   upstream fixes 16 KB-page support, decoupling index generation makes the
+   dev loop noticeably faster and avoids the env-gate becoming a permanent
+   workaround.
+5. **Consider a CHANGELOG.md** if this is going to be a long-lived PR
+   history. PROGRESS.md captures phase-level outcomes; a CHANGELOG would
+   capture per-PR detail.
