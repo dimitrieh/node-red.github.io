@@ -15,7 +15,7 @@ const { title, author, date, description } = Astro.props;
 const authorInfo = authors[author] || { displayName: author, url: '#' };
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} {...(description !== undefined ? { description } : {})}>
   <nav class="breadcrumb-bar" aria-label="Breadcrumb">
     <ol class="breadcrumb-list">
       <li><a href="/">Node-RED</a></li>

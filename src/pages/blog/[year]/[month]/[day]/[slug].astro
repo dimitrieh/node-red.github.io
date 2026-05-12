@@ -23,7 +23,7 @@ const { Content } = await render(post);
   title={post.data.title}
   author={post.data.author}
   date={date}
-  description={post.data.description}
+  {...(post.data.description !== undefined ? { description: post.data.description } : {})}
 >
   <Content />
 </BlogPostLayout>

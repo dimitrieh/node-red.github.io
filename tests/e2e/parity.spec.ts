@@ -31,6 +31,7 @@ test('URL parity against pre-refactor Jekyll source', async () => {
       const idx = i++;
       if (idx >= urls.length) return;
       const url = urls[idx];
+      if (!url) continue;
       const resp = await ctx.get(url);
       if (resp.status() === 404) {
         if (!knownRetired(url)) broken.push(url);

@@ -65,8 +65,8 @@ function getUpstreamContent(path: string): string | null {
 
 function main(): void {
   const sinceArg = process.argv.indexOf('--since');
-  const since = sinceArg !== -1 && process.argv[sinceArg + 1]
-    ? process.argv[sinceArg + 1]
+  const since: string = (sinceArg !== -1 && process.argv[sinceArg + 1])
+    ? (process.argv[sinceArg + 1] as string)
     : FORK_BASE;
 
   ensureRemote();

@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'fs';
+import { writeFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const DIST_DIR = './dist';

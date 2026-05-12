@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'fs';
-import { join, dirname, relative, basename } from 'path';
+import { join, dirname } from 'path';
 
 const SOURCE_DIR = '/home/sprite/node-red-astro/docs';
 const DEST_DIR = '/home/sprite/node-red-website/src/content/docs';
@@ -55,10 +55,12 @@ const sectionOrders: Record<string, Record<string, number>> = {
   },
 };
 
-function getOrder(section: string, file: string): number | undefined {
+function getOrder(section: string | undefined, file: string): number | undefined {
+  if (!section) return undefined;
   const name = file.replace('.md', '').replace('/index', '');
-  if (sectionOrders[section]?.[name] !== undefined) {
-    return sectionOrders[section][name];
+  const order = sectionOrders[section]?.[name];
+  if (order !== undefined) {
+    return order;
   }
   return undefined;
 }
@@ -71,20 +73,20 @@ function transformFrontmatter(content: string, relativePath: string): string {
     return content;
   }
 
-  const frontmatter = frontmatterMatch[1];
+  const frontmatter = frontmatterMatch[1] ?? '';
   const body = content.slice(frontmatterMatch[0].length);
 
   // Parse existing frontmatter
   const titleMatch = frontmatter.match(/title:\s*["']?(.+?)["']?\s*$/m);
-  const title = titleMatch ? titleMatch[1].trim() : 'Untitled';
+  const title = titleMatch?.[1] ? titleMatch[1].trim() : 'Untitled';
 
   const descMatch = frontmatter.match(/description:\s*["']?(.+?)["']?\s*$/m);
-  const description = descMatch ? descMatch[1].trim() : '';
+  const description = descMatch?.[1] ? descMatch[1].trim() : '';
 
   // Determine section for ordering
   const pathParts = relativePath.split('/');
   const section = pathParts[0];
-  const fileName = pathParts[pathParts.length - 1];
+  const fileName = pathParts[pathParts.length - 1] ?? '';
   const order = getOrder(section, fileName);
 
   // Build new frontmatter

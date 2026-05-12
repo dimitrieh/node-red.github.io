@@ -1,11 +1,12 @@
 ---
 import type { Props } from '@astrojs/starlight/props';
 import Search from '@astrojs/starlight/components/Search.astro';
-import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
 import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
 import { mainNav } from '../../data/navigation';
 
-const { hasSidebar, locale } = Astro.props;
+// Props are unused in this override; reference the imported type to keep the
+// component contract with Starlight and silence unused-import warnings.
+export type StarlightHeaderProps = Props;
 const currentPath = Astro.url.pathname;
 ---
 

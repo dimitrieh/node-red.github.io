@@ -14,7 +14,9 @@ const OUT = resolve(process.cwd(), 'docs/audit-qa-images.json');
 
 function extractImgs(html: string): string[] {
   const re = /<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi;
-  return [...html.matchAll(re)].map((m) => m[1]);
+  return [...html.matchAll(re)]
+    .map((m) => m[1])
+    .filter((s): s is string => typeof s === 'string');
 }
 
 async function head(url: string): Promise<{ status: number; note: string }> {
@@ -36,7 +38,10 @@ async function main() {
     .filter((l) => l.startsWith('/blog/') && l !== '/blog/' && l !== '/blog/rss/');
   const sample: string[] = [];
   const step = Math.max(1, Math.floor(all.length / 10));
-  for (let i = 0; sample.length < 10 && i < all.length; i += step) sample.push(all[i]);
+  for (let i = 0; sample.length < 10 && i < all.length; i += step) {
+    const item = all[i];
+    if (item !== undefined) sample.push(item);
+  }
 
   const perPage: Array<{
     url: string;

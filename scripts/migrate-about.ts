@@ -12,18 +12,18 @@ function transformAboutFrontmatter(content: string, relativePath: string): strin
     return content;
   }
 
-  const frontmatter = frontmatterMatch[1];
+  const frontmatter = frontmatterMatch[1] ?? '';
   const body = content.slice(frontmatterMatch[0].length);
 
   // Parse existing frontmatter
   const titleMatch = frontmatter.match(/title:\s*["']?(.+?)["']?\s*$/m);
-  const title = titleMatch ? titleMatch[1].trim().replace(/^["']|["']$/g, '') : 'Untitled';
+  const title = titleMatch?.[1] ? titleMatch[1].trim().replace(/^["']|["']$/g, '') : 'Untitled';
 
   const descMatch = frontmatter.match(/description:\s*["']?(.+?)["']?\s*$/m);
-  const description = descMatch ? descMatch[1].trim() : '';
+  const description = descMatch?.[1] ? descMatch[1].trim() : '';
 
   const layoutMatch = frontmatter.match(/layout:\s*["']?(.+?)["']?\s*$/m);
-  const layout = layoutMatch ? layoutMatch[1].trim() : '';
+  const layout = layoutMatch?.[1] ? layoutMatch[1].trim() : '';
 
   // Build new frontmatter
   let newFrontmatter = `---\ntitle: "${title.replace(/"/g, '\\"')}"`;

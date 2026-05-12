@@ -96,8 +96,8 @@ test('write a11y report', async () => {
         sampleSnippet: v.htmlSnippet,
       };
     }
-    byRule[v.id].count++;
-    byRule[v.id].pages.add(v.page);
+    byRule[v.id]!.count++;
+    byRule[v.id]!.pages.add(v.page);
   }
   const summary = Object.entries(byRule)
     .map(([id, info]) => ({

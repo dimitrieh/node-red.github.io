@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'fs';
-import { join, basename } from 'path';
+import { join } from 'path';
 
 const SOURCE_DIR = '/home/sprite/node-red-astro/_posts';
 const DEST_DIR = '/home/sprite/node-red-website/src/content/blog';
@@ -12,21 +12,21 @@ function transformBlogFrontmatter(content: string, filename: string): string {
     return content;
   }
 
-  const frontmatter = frontmatterMatch[1];
+  const frontmatter = frontmatterMatch[1] ?? '';
   const body = content.slice(frontmatterMatch[0].length);
 
   // Parse existing frontmatter
   const titleMatch = frontmatter.match(/title:\s*["']?(.+?)["']?\s*$/m);
-  const title = titleMatch ? titleMatch[1].trim().replace(/^["']|["']$/g, '') : 'Untitled';
+  const title = titleMatch?.[1] ? titleMatch[1].trim().replace(/^["']|["']$/g, '') : 'Untitled';
 
   const authorMatch = frontmatter.match(/author:\s*["']?(.+?)["']?\s*$/m);
-  const author = authorMatch ? authorMatch[1].trim() : 'nick';
+  const author = authorMatch?.[1] ? authorMatch[1].trim() : 'nick';
 
   const descMatch = frontmatter.match(/description:\s*["']?(.+?)["']?\s*$/m);
-  const description = descMatch ? descMatch[1].trim() : '';
+  const description = descMatch?.[1] ? descMatch[1].trim() : '';
 
   const imageMatch = frontmatter.match(/image:\s*["']?(.+?)["']?\s*$/m);
-  const image = imageMatch ? imageMatch[1].trim() : '';
+  const image = imageMatch?.[1] ? imageMatch[1].trim() : '';
 
   // Build new frontmatter
   let newFrontmatter = `---\ntitle: "${title.replace(/"/g, '\\"')}"`;

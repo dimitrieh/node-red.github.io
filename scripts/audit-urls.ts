@@ -127,7 +127,8 @@ async function main() {
       const i = idx++;
       if (i >= urls.length) break;
       const url = urls[i];
-      const source = urlMap.get(url)!;
+      if (url === undefined) continue;
+      const source = urlMap.get(url) ?? url;
       const full = `${BASE}${url}`;
       try {
         const res = await fetchWithTimeout(full);
