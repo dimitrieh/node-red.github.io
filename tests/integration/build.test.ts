@@ -61,11 +61,16 @@ describe('Build Output', () => {
     expect(existsSync(join(DIST_DIR, '404.html'))).toBe(true);
   });
 
-  it('should have Pagefind search index', () => {
+  // Pagefind is skipped when DISABLE_PAGEFIND=1 (e.g. ARM64 sandboxes with
+  // 16KB pages where Pagefind's bundled jemalloc crashes). Production CI
+  // builds with Pagefind enabled, so we only assert in that mode.
+  const pagefindEnabled = process.env.DISABLE_PAGEFIND !== '1';
+
+  it.skipIf(!pagefindEnabled)('should have Pagefind search index', () => {
     expect(existsSync(join(DIST_DIR, 'pagefind', 'pagefind.js'))).toBe(true);
   });
 
-  it('should have Pagefind UI assets', () => {
+  it.skipIf(!pagefindEnabled)('should have Pagefind UI assets', () => {
     expect(existsSync(join(DIST_DIR, 'pagefind', 'pagefind-ui.js'))).toBe(true);
     expect(existsSync(join(DIST_DIR, 'pagefind', 'pagefind-ui.css'))).toBe(true);
   });
