@@ -7,6 +7,7 @@
     "start": "astro dev",
     "check": "astro check",
     "build": "astro check && astro build",
+    "build:sandbox": "DISABLE_PAGEFIND=1 astro check && DISABLE_PAGEFIND=1 astro build",
     "preview": "astro preview",
     "astro": "astro",
     "verify:urls": "npx tsx scripts/verify-urls.ts",
@@ -16,7 +17,9 @@
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint --fix . && prettier --write .",
     "test": "vitest",
+    "test:sandbox": "DISABLE_PAGEFIND=1 vitest",
     "test:e2e": "playwright test",
+    "test:e2e:sandbox": "DISABLE_PAGEFIND=1 playwright test",
     "lighthouse": "lhci autorun"
   },
   "dependencies": {

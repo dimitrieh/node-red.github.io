@@ -1,102 +1,137 @@
 # Node-RED Website Modernization Progress
 
-## Status: All 5 Phases Complete
+This file tracks the Jekyll -> Astro 6 + Starlight migration. For the
+architecture/parity/a11y/UX audit notes that produced the current state, see
+`docs/audit-ux/team/`.
 
-### Test Results
-- **Build:** 212 pages, zero errors
-- **Unit/Integration (Vitest):** 12/12 passing
-- **E2E (Playwright):** 47/47 passing
+## Current build state
 
----
+- `npx astro check`: 0 errors / 0 warnings / 18 hints (Zod 3 / Starlight
+  `Props` deprecation warnings — non-blocking).
+- `DISABLE_PAGEFIND=1 npx astro build`: 211 page(s), `sitemap-index.xml` +
+  `sitemap-0.xml` (210 URLs) emitted, ~15s.
+- `DISABLE_PAGEFIND=1 npm test -- --run`: 12 passed / 2 skipped (the 2 skipped
+  are Pagefind integration assertions, gated on the same env var).
+- `DISABLE_PAGEFIND=1 npm run test:e2e`: ~113/114 passing. One flake known —
+  `tests/e2e/navigation.spec.ts:146` asserts `toHaveCount(12)` user logos but
+  the homepage now renders the full set of 47 entries (matches old Jekyll).
+  Test is UX-owned and needs to be updated to match restored content.
 
-## Phase 1: Architecture Cleanup - COMPLETE
+## Stack at a glance
 
-- Removed unused dependencies: `lit`, `@semantic-ui/astro-lit`, `unocss`, `@unocss/astro`, `@unocss/preset-wind`, `@unocss/preset-icons`
-- Removed UnoCSS integration from `astro.config.mjs` and deleted `uno.config.ts`
-- Created `src/utils/blog.ts` — shared blog utilities (parseBlogDate, parseBlogPosts, sortBlogPosts, formatBlogDate, blogPostUrl)
-- Updated all blog pages and feed.xml to use shared utilities
-- Created `src/data/navigation.ts` — shared navigation data (mainNav, footerLinks, aboutSidebar)
-- Updated BaseLayout, Header, Footer to use shared navigation data
-- Added `name` field to all 47 entries in `src/data/users.ts` for alt text
+| Concern | Choice |
+| --- | --- |
+| Static site generator | Astro 6.3 |
+| Docs portal | Starlight 0.39 |
+| Styling | UnoCSS 66 (preset-wind, preset-icons) + vanilla CSS in `src/styles/**` |
+| Search | Pagefind (bundled with Starlight) |
+| Type checking | `astro/tsconfigs/strictest` (incl. `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`) |
+| Linting | ESLint 10 + typescript-eslint + eslint-plugin-astro + Prettier |
+| Unit/integration tests | Vitest 4 (config: `vitest.config.ts`) |
+| E2E tests | Playwright 1.59 + axe-core (config: `playwright.config.ts`) |
+| Lighthouse CI | `@lhci/cli` (config: `lighthouserc.json`) |
+| Hosting | GitHub Pages (`CNAME` -> nodered.org), `public/_redirects` mirror for Netlify/Cloudflare hosts |
 
-## Phase 2: Bug Fixes - COMPLETE
+## Migration phases (historical record)
 
-- Fixed about index duplicate route (glob loader strips `.md` from IDs)
-- Added `developing-flows` sidebar section to `astro.config.mjs`
-- Added CSS for Jekyll grid classes (`.grid`, `.col-1-2`, `.doc-callout`) in about pages
-- Fixed "Content not found" on about index page
+### Phase 1 - Architecture
+- Astro 6 + Starlight 0.39 stack chosen; Vite 7 pinned via `overrides`.
+- Strictest TypeScript baseline adopted from `astro/tsconfigs/strictest`.
+- Shared utilities extracted: `src/utils/blog.ts` (parseBlogDate, parseBlogPosts,
+  sortBlogPosts, formatBlogDate, blogPostUrl) and `src/data/navigation.ts`
+  (mainNav, footerLinks, aboutSidebar).
+- One-off migration scripts in `scripts/migrate-*.ts` — kept on disk for
+  reproducibility, not wired to npm scripts. Run with `npx tsx scripts/migrate-blog.ts`
+  if you ever need to re-import Jekyll posts.
+- UnoCSS is retained, not removed: header/footer/base-layout components still
+  use `bg-nr-*`, `text-nr-*`, `lt-lg:`, `i-simple-icons-*` and `w-5 h-5` utility
+  classes. (Earlier drafts of this file claimed UnoCSS had been removed; that
+  was inaccurate — `astro.config.mjs` still wires `UnoCSS()` into the
+  integrations array and `uno.config.ts` is still on disk.)
 
-## Phase 3: Design Modernization - COMPLETE
+### Phase 2 - Routing & redirects
+- Sitemap via `@astrojs/sitemap` (`sitemap-index.xml` + paginated `sitemap-0.xml`).
+- `public/robots.txt` references the sitemap-index.
+- Legacy Jekyll `redirect_from` aliases are restored — see
+  `astro.config.mjs#redirects` and `public/_redirects` (kept in sync; drift is
+  asserted by `tests/e2e/parity-redirects.spec.ts`).
+- `/feed.xml` is served directly as RSS 2.0 XML by `src/pages/feed.xml.ts`
+  (not a redirect), so RSS clients that don't follow meta-refresh keep working.
+- `/blog/rss/` is the new canonical RSS path and emits the same payload.
 
-- Updated color palette: `--nr-red: #C75050`, `--nr-bg-dark: #1E1E1E`, `--nr-text: #2D2D2D`
-- Typography: 17px base, 1.7 line-height, 600-weight headings
-- Modern hero with gradient background and dual CTA buttons
-- Card components with 8-12px border-radius and hover transitions
-- Dark IDE-style code blocks
-- Multi-column footer with Project, Community, Resources sections
+### Phase 3 - Content & design
+- Marketing pages (`/`, `/about/**`, `/blog/**`) use `src/layouts/BaseLayout.astro`.
+- Docs (`/docs/**`) use Starlight with branded overrides in
+  `src/components/starlight/` (Header, Footer, PageFrame).
+- Dark mode tokens defined in `src/styles/design-tokens.css`; Starlight chrome
+  tokens in `src/styles/starlight-custom.css`.
+- BaseLayout emits OG / Twitter / canonical meta on every marketing page
+  (round-1 architecture finding; integrated in commit 446d0ef).
+- Per-post OG image override threads through `BlogPostLayout.astro` so blog
+  posts get `summary_large_image` Twitter cards with their own preview image.
 
-## Phase 4: WCAG 2.2 AA Compliance - COMPLETE
+### Phase 4 - Accessibility (WCAG 2.2 AA)
+- Skip link, focus rings, `aria-current="page"` on active nav, semantic
+  breadcrumbs, axe-core audit on `/`, `/blog/`, blog post, `/about/`, `/docs/`.
+- Light/dark contrast for Starlight chrome (sidebar, ThemeSelect, breadcrumbs,
+  FooterContent) verified at AA against both palettes.
+- `prefers-reduced-motion` honoured in Starlight overrides.
+- Heading order normalised on `/about/` (h1 -> h2 -> h2 ...).
 
-- Skip link added to all layouts (BaseLayout + Starlight Header)
-- Global `:focus-visible` with 3px solid #C75050 outline
-- `aria-current="page"` on active nav links
-- Semantic breadcrumbs with `<nav aria-label="Breadcrumb"><ol>`
-- `aria-label` on all navigation landmarks
-- `aria-hidden="true"` on decorative SVGs
-- `prefers-reduced-motion: reduce` media query
-- Fixed duplicate `<main>` landmarks (about pages: `<main>` → `<div>`)
-- Fixed duplicate `<header>` landmarks (Starlight Header: `<header>` → `<div>`)
-- Fixed heading order (features: `<h3>` → `<h2>`, footer: `<h4>` → `<p>`)
-- Fixed redundant alt text on logo images (alt="" when text label adjacent)
-- Added alt text to about page images and iframe title
-- Added underline to footer and blog meta links for link-in-text-block compliance
-- All 5 axe-core audits passing (home, blog listing, blog post, about, docs)
+### Phase 5 - Testing
+- Vitest 4 integration suite: `tests/integration/build.test.ts` (12 assertions
+  about generated `dist/` output, 2 skipped under `DISABLE_PAGEFIND=1`).
+- Playwright 1.59 e2e suite: 114 tests across navigation, blog, docs, about,
+  homepage, a11y (axe-core), responsive, page integrity, image integrity,
+  link integrity, parity redirects, and themed contrast.
+- Image/URL parity audit scripts: `npm run verify:urls`, `npm run verify:images`.
 
-## Phase 5: Comprehensive Playwright Testing - COMPLETE
+## Sandbox environment caveat: Pagefind on ARM64 16 KB pages
 
-40 E2E tests across 8 test suites:
-- Navigation (7 tests): page loads, nav links, active states, breadcrumbs
-- Blog (5 tests): listing, individual post, pagination, post metadata
-- Documentation (4 tests): landing page, sidebar, search, nested pages
-- About (4 tests): page load, sidebar, sub-pages, no "Content not found"
-- Homepage (5 tests): hero with dual CTA, features, user logos, community cards, footer
-- Accessibility (8 tests): axe-core audits on 5 page types, skip link, main landmark, logo alt text
-- Responsive (4 tests): mobile menu, desktop nav hidden, hero on mobile, blog on tablet
-- Page Integrity (4 tests): 404 page, RSS feed, resources page, all main pages load without errors
-- Image Integrity (3 tests): homepage, about pages, blog listing — all images resolve
-- Link Integrity (3 tests): homepage, about page, footer — all internal links resolve
+Pagefind 1.5.2 bundles a Rust binary built against jemalloc with 4 KB-page
+assumptions. ARM64 hosts with 16 KB page size (Apple Silicon developer
+sandboxes, some Linux ARM64 distros) crash with:
 
----
+```
+<jemalloc>: Unsupported system page size
+memory allocation of 16 bytes failed
+```
 
-## Content Parity Audit (vs nodered.org)
+Pages still generate before the crash, but the build exits non-zero and the
+search index is missing. Workaround: set `DISABLE_PAGEFIND=1`, which short-
+circuits Starlight's `pagefind: false` and skips the search-index step
+(implemented in `astro.config.mjs`). Production CI on 4 KB-page runners (the
+default for GitHub Actions Linux x64) leaves the env var unset and gets the
+full Pagefind index. Track upstream:
+https://github.com/CloudCannon/pagefind
 
-### Phase 1: Fix Broken Homepage Images - COMPLETE
-Fixed 6 broken image references on homepage:
-- Feature images: `nr-image-browser.png` → `nr-image-1.png`, `nr-image-func.png` → `nr-image-2.png`, `nr-image-social.png` → `nr-image-3.png`
-- Get-started images: SVG references → existing PNG platform icons (`platform-local.png`, `platform-local-docker.png`, `platform-device-pi.png`)
+## Build / test commands
 
-### Phase 2: Fix URL Discrepancies - COMPLETE
-- Changed GitHub link from `https://github.com/node-red/node-red` to `https://github.com/node-red` (header nav, footer, homepage)
-- Added missing legal footer links: Terms of Use, Privacy Policy, Bylaws, Cookie Policy
-- Added social media icons: Mastodon, Twitter/X, GitHub, Discourse
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Astro dev server (HMR) on `localhost:4321` |
+| `npm run build` | Type-check + production build (Pagefind enabled) |
+| `npm run build:sandbox` | Production build with `DISABLE_PAGEFIND=1` (for ARM64 16 KB-page hosts) |
+| `npm run preview` | Serve `dist/` locally on `localhost:4321` |
+| `npm run check` | `astro check` only (TypeScript + content schema) |
+| `npm test` | Vitest unit/integration tests |
+| `npm run test:e2e` | Playwright e2e tests (spins up its own preview server) |
+| `npm run lint` | ESLint + Prettier (check only) |
+| `npm run lint:fix` | ESLint + Prettier (write fixes) |
+| `npm run verify:urls` | URL parity audit vs nodered.org (`docs/audit-qa-urls.csv`) |
+| `npm run verify:images` | Image parity audit (`docs/audit-qa-images.json`) |
+| `npm run sync:upstream` | Pull doc-content changes from upstream `node-red/node-red` |
+| `npm run lighthouse` | Lighthouse CI (config: `lighthouserc.json`) |
 
-### Phase 3: Create Missing Content Pages - COMPLETE
-- Created `/about/resources/` page with logo assets and quick reference links
-- Added "Resources" to about sidebar navigation
+## Known follow-ups
 
-### Phase 4: Automated Image/Link Integrity Tests - COMPLETE
-- Added 3 image integrity tests (homepage, about pages, blog listing)
-- Added 3 link integrity tests (homepage, about page, footer)
-- Added resources page load test
-- Fixed resources page image paths (`/about/resources/media/` → `/about/media/`)
-- Total: 47 E2E tests passing
-
-### Phase 5: Blog & Content Parity - COMPLETE
-- Blog page size (9 posts/page) already matches nodered.org — no change needed
-- Scanned all 52 blog posts: 158/160 image references valid
-- 2 broken blog images (`import-dupes.gif`, `git-workflow.png` in 2020-10-15 post) are also 404 on live nodered.org — pre-existing issue, not migration bug
-- All about content validated — no remaining broken references
-
-### Known Issues (also present on live nodered.org)
-- `/blog/content/images/2020/10/import-dupes.gif` — 404 on both sites
-- `/blog/content/images/2020/10/git-workflow.png` — 404 on both sites
+- Replace UnoCSS with vanilla CSS / inline SVGs in the 3 components that still
+  use it, or commit to keeping it long-term (and drop the misleading
+  "removed" claim in older docs).
+- Sync `tests/e2e/navigation.spec.ts:149` with the restored 47-entry user
+  gallery (assertion currently expects 12).
+- Migrate `src/content.config.ts` off Zod 3 when Starlight adopts Standard Schema.
+- Drop or replace `@astrojs/starlight/props` (`Props` type is deprecated in
+  favour of `getRouteData`).
+- Add a per-blog-post OG image fallback chain (currently falls back to the
+  Node-RED icon if a post has no `image:` frontmatter).

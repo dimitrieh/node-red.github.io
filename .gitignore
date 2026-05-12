@@ -24,3 +24,7 @@ pnpm-debug.log*
 .claude/
 .playwright-mcp/
 test-results/
+playwright-report/
+coverage/
+.lighthouseci/
+.tsbuildinfo
