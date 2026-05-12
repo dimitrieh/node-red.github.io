@@ -476,3 +476,89 @@ Commits since first cross-check:
 - Visual comparison: `docs/audit-ux/home-1440-OLD-full.png` vs `docs/audit-ux/home-1440-full.png` and the research baseline screenshots.
 
 No code or content edited. Only this file (`docs/audit-ux/team/devils-advocate.md`) and one append to `docs/audit-ux/team/TEAM-LOG.md`.
+
+---
+
+## Round 2 — PR-readiness critique
+
+**Mandate:** the user wants this branch "clean as a whistle for PR review". I re-audited the two integration commits (`446d0ef`, `bfae64f`) plus the current HEAD (`237f576`) and stress-tested the result against a hostile senior reviewer. I am the only teammate so far who has produced a Round 2 appendix; if the other four land theirs before the orchestrator writes SUMMARY.md, they may close some of the issues below.
+
+### 1. PR-merge-block steelman
+
+If a senior maintainer who hates large rewrites opened this PR, here is what they would say. Strongest first.
+
+1. **"Don't claim done when PROGRESS.md is still a lie."** PROGRESS.md is byte-for-byte unchanged since Phase 5 was first written. It still claims:
+   - "Build: 212 pages, zero errors" (actually 211 per the orchestrator's own integration commit)
+   - "E2E (Playwright): 47/47 passing" (actually 114/114 now)
+   - "Removed unused dependencies: ... unocss, @unocss/astro, @unocss/preset-wind, @unocss/preset-icons" (still in `package.json`, line 4 of `astro.config.mjs` imports `UnoCSS`, line 26 calls `UnoCSS()`, `uno.config.ts` still on disk).
+   - "Removed UnoCSS integration from `astro.config.mjs` and deleted `uno.config.ts`" (categorically false).
+   - "All 5 axe-core audits passing (home, blog listing, blog post, about, docs)" — technically true *after* the round-1 fixes, but the **iframe-exclude + color-contrast disable** in `tests/e2e/navigation.spec.ts` (lines 117, 132, 145, 159) means a real contrast regression on UX-owned chrome would not be caught by these "passing" tests. The a11y teammate's separate `a11y-themes.spec.ts` IS strict, but PROGRESS doesn't credit it.
+
+   A reviewer who reads PROGRESS.md first and then opens the diff will lose trust in everything else. **This is the single highest-leverage merge blocker:** a 30-line PROGRESS rewrite reframes the entire PR.
+
+2. **"The biggest content regression is still in the tree, undocumented."** `src/content/docs/docs/api/modules/index.md` STILL renders three bullet links to `v/1.3`, `v/1.0`, `v/0.20.0`. All three directories are gone from the new content tree. The user-facing module-APIs landing page is therefore a list of three dead links. None of the round-1 fixes or the orchestrator integration commits touched this file. A casual reviewer clicking through `/docs/api/modules/` lands on a page that 404s within one click. **At minimum the dead links should be removed or replaced with "archived" text** — that's a 1-line edit. The parity teammate proposed retiring the 137 files; that retirement is incomplete without scrubbing the inbound link.
+
+3. **"You shipped OG meta but it's half-broken in the cases that matter most."** The orchestrator threaded the architecture teammate's OG/Twitter patch into `BaseLayout.astro:23-34`. But the `og:image` is hard-coded to `/node-red-icon.png`, which is a **480×480 PNG** (confirmed by reading the IHDR chunk). Every blog post — the single most-shared content type — will unfurl with the same generic icon. Twitter's `summary` card variant accepts as small as 144×144 so the image *renders*, but LinkedIn rejects images <200×200 for some layouts and Slack's "summary" preview tile expects ≥600×600. More importantly, the round-1 architecture report explicitly flagged "Per-post OG image" as a parallel patch ("the blog post collection already has an `image` frontmatter field per `src/content.config.ts:13`; thread it through"). It wasn't threaded. `BlogPostLayout.astro` has Props `{ title, author, date, description }` — no `image`. Result: the SEO fix that landed is fine for the homepage and the about pages; on blog posts (the high-share surface) it's the half-fix the round-1 architecture report warned about.
+
+4. **"Two known-but-untested integration risks live on this branch."** First, **the slack-invite form is dead.** The orchestrator changed `/slack` from an external host-level redirect to the internal `/about/community/slack/` page. That page (`src/content/about/community/slack/index.md`) contains a `<script>$('#go').click(...)$.ajax(...)` block that depends on jQuery. jQuery is **not** loaded by `BaseLayout.astro` or the marketing layouts (only the docs `autoComplete`/`typedInput` API pages and the two survey pages load jQuery via embedded `<script src>` tags). The form's submit button will throw `$ is not defined` and the user sees nothing happen. The old Jekyll site loaded jQuery globally in `_includes/header.html` line 8, so the same markdown worked there. On the new site this is a silent regression — clicking "Get invite" does nothing. Worse: it looks like the form works but the request never goes. The TEAM-LOG presents `/slack` as fixed; functionally it's worse than before.
+
+   Second, **`@astrojs/sitemap` interacts badly with the Pagefind crash on ARM64.** The parity report flagged this in round 1 ("sitemap is not emitted in this sandbox build"). The architecture teammate verified the *production* path works (`sitemap-0.xml` with 210 URLs). But if the host CI ever runs on ARM64 (GitHub Actions has ARM runners now, Cloudflare Pages uses ARM, Apple Silicon CI on self-hosted) it will silently ship no sitemap. Round 1 said "if production CI ever runs in the same environment..." Round 2 should say: GitHub Pages CI runners are still x86_64, so this is currently safe, but it's a latent foot-gun. A pre-deploy check that asserts `dist/sitemap-index.xml` exists would mitigate.
+
+5. **"30+ commits, no squash, no PR description, you're asking me to review a stream of consciousness."** `git log master..HEAD` shows 52 commits. They are organised by `role:` prefix and are individually readable, but they are also intertwined: `arch: …`, `ux: …`, `devil: …`, `parity: …`, `a11y: …`, `integrate: …`, `docs: …` are interleaved. A senior reviewer expects either (a) a clean linear narrative or (b) a squash with a long-form description. Neither is here. **For the actual PR:** strongly recommend squashing into ~6 logical commits — one per role plus the two orchestrator integration commits — or at minimum writing a PR description that maps the role-prefixed history onto a reviewable narrative ("commits ea52972..152c046: tooling; 5424521..a052065: audit; cc70fec..ddc5f8d: UX; ..."). Without that, "review this PR" turns into "read 52 commit messages".
+
+### 2. Round-2 cross-critique
+
+No other teammate has appended a `## Round 2` section to their report at the time of this writing (verified via `grep -l "## Round 2"` on `docs/audit-ux/team/*-report.md`). The orchestrator's round-2 kickoff was logged at 20:08Z; I am writing at ~20:20Z. If teammates land later I cannot retroactively critique them here — that would require a round-3.
+
+What I *can* do is critique the round-1 reports through the lens of what the orchestrator integrated and what was left orphan:
+
+- **UX** (round 1): Solid scope-discipline on what they *did* — dark-mode tokens, mobile menu UX, breadcrumb DRY, tablet layouts. But they did not touch *any* of the content-density P1 items I flagged (contributors strip, npm badge, blog feed, full 47-logo grid, Stack Overflow card, sponsors). The orchestrator's `446d0ef` did not add them either. **Net: 0/6 P1 UX items closed.** UX should own these in round 2 and the answer "we'll do it later" is the answer a reviewer will get for the homepage feeling thin vs the old site.
+
+- **Architecture** (round 1): The OG meta patch and Pagefind env-gate are both clean. The Starlight GitHub link inconsistency I flagged in round 1 (`astro.config.mjs:34` still says `node-red/node-red` vs main nav at `github.com/node-red`) **is still unfixed**. That's a 1-character delete in arch-owned code; no excuse for it to survive round 2. Arch round 2 should resolve and also decide on UnoCSS (keep + document, or remove + replace the 3 callsites).
+
+- **A11y** (round 1): The 4 contrast fixes are excellent, the new `a11y-themes.spec.ts` is the right shape (asserts on violations, unlike the report-only `a11y.spec.ts`). Two concerns: (a) `bfae64f` added an iframe-exclude AND a `disableRules(['color-contrast'])` to the marketing axe tests — the latter is a quiet downgrade that would mask future regressions. Should be removed once the UX-side contrast is in. (b) The orchestrator integrated all 5 a11y patches (ux #1..#5) but ux #6 (the `<h1>About Node-RED>` add) created a semantic problem (see §3 below). The a11y teammate's heading-promotion proposal was the right *axe* fix but the wrong *information-architecture* fix.
+
+- **Parity** (round 1): The 28 restored redirects + the parity-redirects.spec.ts drift guard are the strongest single piece of round-1 work. The remaining open issue — the 137 dead JSDoc links surfaced by `src/content/docs/docs/api/modules/index.md` — is theirs (it's a `src/content/` edit, parity's lane). They flagged it but didn't fix it. Round 2 should close it: either delete the three bullets or replace with "Versioned API references for older releases have been archived; see [github.com/node-red/node-red releases](https://github.com/node-red/node-red/releases)".
+
+### 3. "Looks fine, isn't" — what a casual review would miss
+
+a. **The new heading hierarchy on `/about/` is semantically backwards.** `446d0ef` added an `<h1>About Node-RED</h1>` to `src/pages/about/index.astro` AND `bfae64f` promoted three `<h3>`s to `<h2>`s in `src/content/about/index.md` to satisfy heading-order. The result, as rendered: H1 "About Node-RED" → H2 "Browser-based flow editing" → H2 "Built on Node.js" → H2 "Social Development" → H2 "History" → H2 "Citing Node-RED". A screen-reader user lists five equally-weighted top-level subsections — but conceptually the first three are an *intro feature triptych* (rendered in a 2-col grid with hero images) and the last two are *body sections*. The visual styling will also now render those three feature headings at the same `--text-h2` size as History and Citing, which they were not designed for (the old Jekyll site rendered them as h2 *without* an h1 above them, and the new design treats h2 as section-level chrome). axe is happy; the page-meaning shift is real. **The more honest fix is to wrap the intro grid in an `<section aria-label="Key features"><h2>Key features</h2>…</section>` with `<h3>` inside, restoring the visual+semantic hierarchy.** That's a content edit, parity-owned.
+
+b. **The `/slack` redirect target now points to a broken-form page.** Detailed in §1.4 above. To a reviewer skimming `astro.config.mjs` line 112, the new redirect target looks correct ("oh good, /slack now goes to an internal page about Slack"). It takes opening `src/content/about/community/slack/index.md` to discover the `$.ajax` form is dead-on-arrival. Either (a) re-target `/slack` back to an external Slack-invite URL (the *old* Jekyll site relied on a host-level rewrite to `https://nodered.us.to/slack` or similar — `git show master:about/community/slack/index.md` references AWS Lambda `gnh34zyze1.execute-api.eu-west-2.amazonaws.com`; reachable from a vanilla HTML form with no jQuery), or (b) rewrite the form-handler script to use vanilla `fetch()`, or (c) load jQuery globally on marketing pages, which is what the survey pages already do. Option (b) is cleanest.
+
+c. **The OG `og:image` size silently downgrades the share preview.** Covered in §1.3 — 480×480 is fine for Twitter `summary` cards but the rest of the social ecosystem expects ≥600×600 or ideally 1200×630. This was a flag from architecture-report.md §"Recommendations" #4 that the orchestrator did not action.
+
+d. **The marketing axe tests disable `color-contrast`.** Lines 117, 132, 145, 159 of `tests/e2e/navigation.spec.ts` carry `.disableRules(['color-contrast'])` with a "// Allow minor contrast issues from legacy content" comment. The a11y teammate's new `tests/e2e/a11y-themes.spec.ts` is strict on contrast for the chrome they own (sidebar, breadcrumb, ThemeSelect, FooterContent), but the marketing axe assertions in navigation.spec.ts will accept *any* contrast failure on the homepage, blog cards, about cards. This is a regression-shaped hole: someone could ship `color: #ccc` on `#fff` and CI would stay green. The right fix is to remove the disable now that ux #1..#4 are in.
+
+e. **The `npx astro check` "0 errors / 0 warnings / 18 hints" claim is built on `Zod` and `Props` deprecation hints.** These are not real errors but they ARE actionable signals. A reviewer who looks at the hints sees: (a) `astro:content`'s `z` re-export will move with Astro 7 / Starlight ~0.41; (b) Starlight's `Props` import contract is moving to `getRouteData`. Neither breaks today but both will be revisited within a quarter. The architecture teammate did flag this in round-1 report; PROGRESS.md doesn't.
+
+f. **Pagefind env-gate is safe in prod CI but the integration test skip is asymmetric.** `tests/integration/build.test.ts` skips two assertions when `DISABLE_PAGEFIND=1` (commit `543b66d`). The production CI builds *without* `DISABLE_PAGEFIND` and runs all assertions — good. But if someone wires up an ARM64 self-hosted runner and unconditionally exports `DISABLE_PAGEFIND=1` in their shell profile, the build silently won't index. A `[ -z "$CI" ] || [ -n "$CI_FORCE_PAGEFIND" ]` style guard at CI time would help. Low priority.
+
+g. **The 12-of-47 trusted-by slice is unchanged.** `src/pages/index.astro:150` is still `{users.slice(0, 12).map(...)}`. None of the 8 round-1 UX commits or the 2 orchestrator commits touched it. This is the single most visible content-density gap on the homepage and it's been sitting open through both rounds. A reviewer comparing screenshots will catch it in 10 seconds.
+
+h. **The contributors gallery removal is undocumented.** `src/data/contributors.ts` exists in the tree (verified in round-1), is imported by zero files, and the old Jekyll homepage rendered the "Meet the team" avatar grid from this same data. A reviewer reading the diff will notice the data file with no consumer and ask "what is this for?". Either delete the data file with a "removed contributors gallery — see GitHub graph instead" note, or restore the gallery and use it. Currently it reads as half-deleted UI.
+
+i. **The retired `/docs/api/modules/v/*` 137 files are an intentional choice with no UI evidence.** The orchestrator's integration message says "intentional retirement". That's a defensible position but the user-facing evidence is exactly opposite — `src/content/docs/docs/api/modules/index.md` advertises them as live. Either commit to the retirement (scrub the link, add archive note) or commit to restoring them (`public/docs/api/modules/v/*`). The current half-state is the worst of both.
+
+### 4. Verdict
+
+**Recommendation: merge-with-conditions.**
+
+The migration is real upside on docs, search, a11y, theming, and tooling. The round-1 + integration work moved it from "claim-truth misalignment with 30+ flagged regressions" to "claim-truth misalignment with ~10 P0/P1 items still open and 114/114 Playwright green". That's substantial progress in ~90 minutes of orchestrator integration. But "clean as a whistle for PR review" is a higher bar than "tests pass": a hostile reviewer will find at least three of the issues in §1 within 10 minutes.
+
+**Minimum bar to remove the conditional and recommend straight merge:**
+
+1. Rewrite PROGRESS.md to match current reality (single largest credibility win, ~30 lines). Or delete it entirely with a note pointing at the team reports.
+2. Scrub or archive-note the 3 dead bullets in `src/content/docs/docs/api/modules/index.md`.
+3. Either fix the `/slack` form (vanilla `fetch()` or external redirect) OR revert the redirect target to an external Slack-invite URL.
+4. Fix the Starlight GitHub link inconsistency in `astro.config.mjs:34` (`node-red/node-red` → `node-red`).
+5. Thread `post.data.image` through `BlogPostLayout` → `BaseLayout` → `og:image` so blog posts get per-post share previews. Update the fallback `og:image` to a 1200×630 social-banner PNG (can be derived once from the existing 480×480 icon + branding strip).
+6. Restore the full 47-logo trusted-by grid (1-line slice removal).
+7. Remove the `color-contrast` disable from the four `navigation.spec.ts` axe assertions and rerun the suite.
+8. Rewrap `/about/`'s intro triptych as an `<section><h2>Key features</h2>…</section>` with `<h3>`s inside so the H2 level isn't visually + semantically diluted to five peer sections.
+
+**Estimated cost:** ~3-4 hours across UX, parity, architecture. Below the round-1 budget; this team can absorb it in one more pass.
+
+**If shipped as-is** with the conditions deferred: the regression on the slack-invite form is the only one I would call user-visible-broken on day one of cutover. The other items are visible-degraded-not-broken. So the PR is mergeable in an "incremental improvement" review framing, but not in a "complete migration" framing — and PROGRESS.md frames it as the latter, which is the disconnect.
+
+The migration deserves to ship. It also deserves an honest PR description and a 4-hour cleanup pass before it does.
