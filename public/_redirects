@@ -1,0 +1,52 @@
+# Netlify-style _redirects (also honored by Cloudflare Pages, Render, Vercel-via-config).
+# Kept in sync with the `redirects:` block in astro.config.mjs by scripts/verify-urls.ts.
+# Format: source target status
+
+# Top-level legacy aliases (Jekyll redirect_from)
+/slack                                  https://nodered.org/slack             301
+/slack/                                 /about/community/slack/               301
+/community/                             /about/community/                     301
+/conduct/                               /about/conduct/                       301
+/2019survey                             /about/community/survey/2019/         301
+/2023survey                             /about/community/survey/2023/         301
+
+# Legacy docs/hardware/* (now /docs/getting-started/*)
+/docs/hardware/raspberrypi              /docs/getting-started/raspberrypi/    301
+/docs/hardware/beagleboneblack          /docs/getting-started/beaglebone/     301
+/docs/hardware/arduino                  /docs/faq/interacting-with-arduino/   301
+
+# Legacy docs/platforms/* (now /docs/getting-started/*)
+/docs/platforms/docker                  /docs/getting-started/docker/         301
+/docs/platforms/docker-custom           /docs/getting-started/docker-custom/  301
+/docs/platforms/android                 /docs/getting-started/android/        301
+/docs/platforms/aws                     /docs/getting-started/aws/            301
+/docs/platforms/azure                   /docs/getting-started/azure/          301
+/docs/platforms/bluemix                 /docs/getting-started/ibmcloud/       301
+/docs/platforms/flowforge               /docs/getting-started/flowfuse/       301
+/docs/platforms/windows                 /docs/getting-started/windows/        301
+/docs/getting-started/flowforge         /docs/getting-started/flowfuse/       301
+
+# Legacy docs flat URLs (now nested under user-guide/runtime)
+/docs/configuration                     /docs/user-guide/runtime/configuration/    301
+/docs/embedding                         /docs/user-guide/runtime/embedding/        301
+/docs/security                          /docs/user-guide/runtime/securing-node-red/ 301
+/docs/writing-functions                 /docs/user-guide/writing-functions/        301
+/docs/node-red-admin                    /docs/user-guide/node-red-admin/           301
+/docs/user-guide/configuration          /docs/user-guide/runtime/configuration/    301
+/docs/user-guide/embedding              /docs/user-guide/runtime/embedding/        301
+/docs/user-guide/logging                /docs/user-guide/runtime/logging/          301
+
+# Tutorials moved out of getting-started/
+/docs/getting-started/first-flow        /docs/tutorials/first-flow/                301
+/docs/getting-started/second-flow       /docs/tutorials/second-flow/               301
+/docs/getting-started/adding-nodes      /docs/user-guide/runtime/adding-nodes/     301
+
+# Three install pages collapsed into one
+/docs/getting-started/installation      /docs/getting-started/local/               301
+/docs/getting-started/running           /docs/getting-started/local/               301
+/docs/getting-started/upgrading         /docs/getting-started/local/               301
+
+# /docs/api/ui/* camelCase URLs are served natively by Starlight; no redirect needed.
+
+# RSS feed moved from /feed.xml to /blog/rss/
+/feed.xml                               /blog/rss/                                 301

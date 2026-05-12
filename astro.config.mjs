@@ -108,15 +108,48 @@ export default defineConfig({
     sitemap(),
   ],
   redirects: {
+    // Top-level legacy aliases (Jekyll redirect_from)
     '/slack': 'https://nodered.org/slack',
-    '/docs/hardware/raspberrypi': '/docs/getting-started/raspberrypi',
-    '/docs/hardware/beagleboneblack': '/docs/getting-started/beaglebone',
-    '/docs/platforms/docker': '/docs/getting-started/docker',
-    '/docs/api/ui/autocomplete': '/docs/api/ui/autoComplete',
-    '/docs/api/ui/editablelist': '/docs/api/ui/editableList',
-    '/docs/api/ui/searchbox': '/docs/api/ui/searchBox',
-    '/docs/api/ui/treelist': '/docs/api/ui/treeList',
-    '/docs/api/ui/typedinput': '/docs/api/ui/typedInput',
+    '/slack/': '/about/community/slack/',
+    '/community/': '/about/community/',
+    '/conduct/': '/about/conduct/',
+    '/2019survey': '/about/community/survey/2019/',
+    '/2023survey': '/about/community/survey/2023/',
+    // Legacy docs/hardware/* (now /docs/getting-started/*)
+    '/docs/hardware/raspberrypi': '/docs/getting-started/raspberrypi/',
+    '/docs/hardware/beagleboneblack': '/docs/getting-started/beaglebone/',
+    '/docs/hardware/arduino': '/docs/faq/interacting-with-arduino/',
+    // Legacy docs/platforms/* (now /docs/getting-started/*)
+    '/docs/platforms/docker': '/docs/getting-started/docker/',
+    '/docs/platforms/docker-custom': '/docs/getting-started/docker-custom/',
+    '/docs/platforms/android': '/docs/getting-started/android/',
+    '/docs/platforms/aws': '/docs/getting-started/aws/',
+    '/docs/platforms/azure': '/docs/getting-started/azure/',
+    '/docs/platforms/bluemix': '/docs/getting-started/ibmcloud/',
+    '/docs/platforms/flowforge': '/docs/getting-started/flowfuse/',
+    '/docs/platforms/windows': '/docs/getting-started/windows/',
+    '/docs/getting-started/flowforge': '/docs/getting-started/flowfuse/',
+    // Legacy docs flat URLs (now nested under user-guide/runtime)
+    '/docs/configuration': '/docs/user-guide/runtime/configuration/',
+    '/docs/embedding': '/docs/user-guide/runtime/embedding/',
+    '/docs/security': '/docs/user-guide/runtime/securing-node-red/',
+    '/docs/writing-functions': '/docs/user-guide/writing-functions/',
+    '/docs/node-red-admin': '/docs/user-guide/node-red-admin/',
+    '/docs/user-guide/configuration': '/docs/user-guide/runtime/configuration/',
+    '/docs/user-guide/embedding': '/docs/user-guide/runtime/embedding/',
+    '/docs/user-guide/logging': '/docs/user-guide/runtime/logging/',
+    // Tutorials moved from getting-started/
+    '/docs/getting-started/first-flow': '/docs/tutorials/first-flow/',
+    '/docs/getting-started/second-flow': '/docs/tutorials/second-flow/',
+    '/docs/getting-started/adding-nodes': '/docs/user-guide/runtime/adding-nodes/',
+    // Three install pages collapsed into one
+    '/docs/getting-started/installation': '/docs/getting-started/local/',
+    '/docs/getting-started/running': '/docs/getting-started/local/',
+    '/docs/getting-started/upgrading': '/docs/getting-started/local/',
+    // /docs/api/ui/* camelCase URLs are preserved natively by Starlight
+    // (e.g. /docs/api/ui/autoComplete/). No redirect needed — keeping a
+    // lowercase->camelCase entry would shadow the real page with a stub.
+    // RSS feed moved from /feed.xml to /blog/rss/
     '/feed.xml': '/blog/rss/',
   },
 });
