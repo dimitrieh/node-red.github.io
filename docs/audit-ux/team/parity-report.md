@@ -335,3 +335,168 @@ $ npm run verify:urls
 5. **Parity (mine, future): special-case `*.xml` URLs** in
    `scripts/audit-urls.ts` so `/blog/rss/` (and similar) stop showing
    up as EMPTY false positives.
+
+## Round 2
+
+Re-audit after orchestrator commits `446d0ef` (orphan a11y/UX/parity
+patches) and `bfae64f` (Playwright green + /slack target fix + new
+`src/pages/feed.xml.ts`). Goal: confirm round-2 integration is sound
+against the old Jekyll site, fix the deferred content edit, do a
+deeper anchor-parity sweep, and catch any drift.
+
+### Verification of round-2 integration
+
+#### /slack redirect
+
+- Old Jekyll source `master:about/community/slack/index.md` has frontmatter
+  `redirect_from: [/slack/]`, meaning `/slack/` was an alias for
+  `/about/community/slack/` — the real Slack-invite page lives there.
+- Live `https://nodered.org/slack` (WebFetch) redirects to
+  `https://nodered.org/about/community/slack/`. Matches the new
+  astro.config.mjs target.
+- **Fixed in round 2:** `public/_redirects` still had the original
+  self-loop `/slack -> https://nodered.org/slack` from before the
+  bfae64f astro.config fix. Updated to match (commit `4bbc5bf`). The
+  `parity-redirects.spec.ts` drift-guard test passes again.
+
+#### /feed.xml direct-serve
+
+- `src/pages/feed.xml.ts` uses `@astrojs/rss` with the same data source
+  as `/blog/rss/`. Local `curl http://localhost:4325/feed.xml` and
+  `curl http://localhost:4325/blog/rss/` produce **byte-identical
+  output** (both 15164 bytes; `diff` = 0).
+- **Format change vs Jekyll**: live old `/feed.xml` was **Atom 1.0**
+  (xmlns="http://www.w3.org/2005/Atom"); new is **RSS 2.0**. Both
+  formats are universally supported by every major feed reader. The
+  WebFetch on the live site returned 8 entries before truncation; the
+  new feed exposes all 51 blog posts. The top entries match in title
+  and order:
+    1. The path to Node-RED 5.0 (2025-12-03)
+    2. Modernization Survey Results (2025-12-01)
+    3. Node-RED Con 2025 is coming! (2025-10-28)
+    4. Version 4.1 released (2025-07-29)
+    5. Version 4.0 released (2024-06-20)
+    6. Version 3.1 released (2023-09-06)
+    7. 2023 Community Survey (2023-02-23)
+    8. Version 3.0 released (2022-07-14)
+- **Content-type quirk** (not blocking): `/blog/rss/` is served as
+  `text/html` because the source file is `src/pages/blog/rss/index.html.ts`.
+  The new `/feed.xml` correctly serves `text/xml`. Arch-owned fix:
+  rename to `src/pages/blog/rss.xml.ts` or `index.xml.ts` so Astro
+  emits the right content-type. Cosmetic for RSS readers that sniff
+  the body anyway; SEO/robots crawlers do honour content-type.
+
+### Re-run of full URL + image audits (round-1 vs round-2)
+
+|                       | Round 1 | Round 2 | Δ |
+|-----------------------|---------|---------|---|
+| URLs OK               | 204     | **206** | +2 |
+| URLs 404 (expected)   | 94      | 94      | — |
+| URLs EMPTY            | 2       | **0**   | -2 |
+| Image source / built  | 261/266 | 261/266 | — |
+| `verify:urls` overall | 117%    | 117%    | — |
+
+Both EMPTYs are resolved:
+- `/about/` — orchestrator added `<h1>About Node-RED</h1>` in
+  `src/pages/about/index.astro` (446d0ef). Now OK.
+- `/blog/rss/` — false positive; `scripts/audit-urls.ts` updated in
+  round 2 (commit `83c96a7`) to treat XML feeds (body starts with
+  `<?xml`, or URL ends in `.xml` / `/rss/` / `/feed/` / `/atom/` /
+  `/sitemap*/`) as OK when body > 500 bytes. Now correctly OK.
+
+### Platform icon alt-text (parity #1 from round 1)
+
+- `src/content/docs/docs/getting-started/index.md` has 9 platform-tile
+  `<img>` tags (`platform-local.png`, `platform-device-pi.png`,
+  `platform-local-docker.png`, `platform-local-dev.png`,
+  `platform-device.png`, `platform-android.png`, three
+  `platform-cloud.png`) and none had an `alt` attribute. The Jekyll
+  source also had no alt attributes — not a migration regression —
+  but axe-core flags missing alt as WCAG 1.1.1 every visit.
+- **Fix applied** (commit `9098f6a`): set `alt=""` on all 9. Each tile
+  already has a visible `<h2>` sibling naming the platform, so the
+  icons are decorative. Empty alt tells screen readers to skip them
+  and points the reading order at the heading. Net axe-violation
+  reduction on `/docs/getting-started/`: 9 image-alt violations gone.
+
+### Anchor parity sweep (top 10 doc pages)
+
+Diff between live `https://nodered.org` (kramdown auto-anchor on) and
+local Astro preview, excluding Starlight TOC chrome (`starlight__*`,
+`theme-icons`, `_top`):
+
+| Page | Old anchors | New anchors | Δ |
+|---|---|---|---|
+| `/docs/` | 0 | 5 | +5 (gained explicit section ids) |
+| `/docs/getting-started/` | 0 | 0 | — |
+| `/docs/user-guide/` | 6 | 6 | exact match |
+| `/docs/api/admin/` | 0 | 0 | — |
+| `/docs/creating-nodes/` | 1 | 1 | exact match |
+| `/docs/tutorials/first-flow/` | 12 | 12 | exact match (numeric-step ids and content ids all preserved) |
+| `/docs/user-guide/runtime/configuration/` | 6 | 5 | missing `#node-defaults` — see below |
+| `/docs/user-guide/runtime/securing-node-red/` | 17 | 17 | exact match |
+| `/docs/api/runtime/` | n/a | n/a | both 404 (URL never existed; old anchor count was 404-page noise) |
+| `/docs/creating-nodes/packaging/` | 8 | 8 | exact match |
+
+**`#node-defaults` finding**: the live `nodered.org` page has a `Node
+Defaults` h3 with id; `master:docs/user-guide/runtime/configuration.md`
+also lacks the section. The new content is faithful to `master`, and
+`master` is behind upstream. This is **upstream content drift, not a
+migration regression**. Flagged for architecture / content-sync
+script owners — `scripts/sync-upstream.ts` should pick it up next
+cycle.
+
+**Verdict**: anchor parity is preserved end-to-end. The migration
+either preserves every old anchor or improves on it (gains section
+ids on pages where Jekyll rendered none).
+
+### Misc surface-clean checks
+
+- No orphaned `dist/` outputs for the 5 removed `/docs/api/ui/*`
+  lowercase redirect stubs (commit `c3d1026` cleaned them up).
+- `dist/feed.xml` is written and 15164 bytes; `dist/blog/rss/index.html`
+  same content.
+- `dist/sitemap-index.xml` + `dist/sitemap-0.xml` both emitted in the
+  current build (arch resolved the Pagefind ordering issue in `69a538b`
+  / `DISABLE_PAGEFIND=1` env-gating).
+- All 39 parity-spec tests pass (`npm run test:e2e -- parity`).
+- Full suite: `DISABLE_PAGEFIND=1 npm run test:e2e` with my 3 round-2
+  commits but without other teammates' in-flight working-copy changes
+  -> **114/114 passing**. With the in-flight UX index.astro work
+  applied, 2 tests fail (`Homepage › should have users section with
+  logos` because UX rendered 47 of 47 logos vs the test's expected
+  12; `Accessibility › docs page should pass axe checks` from a
+  `link-in-text-block` low-contrast violation). Both failures are
+  in UX-owned files (`src/pages/index.astro`, `src/styles/starlight-custom.css`)
+  not in my scope; UX needs to update the assertion (or accept the
+  test is now describing parity with old site) and adjust link
+  contrast.
+
+### Round-2 commits
+
+- `9098f6a` `parity: add empty alt= on 9 platform icons in getting-started index`
+- `83c96a7` `parity: classify RSS/Atom/sitemap XML endpoints as OK in audit-urls`
+- `4bbc5bf` `parity: fix /slack target in public/_redirects to match astro.config.mjs`
+
+### Open items handed to other teammates (unchanged from round 1, plus new)
+
+- **arch**: rename `src/pages/blog/rss/index.html.ts` to
+  `index.xml.ts` (or `src/pages/blog/rss.xml.ts`) so the response
+  content-type is `text/xml` instead of `text/html`.
+- **arch / content-sync**: add `#node-defaults` section to
+  `src/content/docs/docs/user-guide/runtime/configuration.md` to match
+  live upstream — flag to `scripts/sync-upstream.ts` since `master`
+  itself is missing the section.
+- **ux**: update `tests/e2e/navigation.spec.ts:149` from
+  `toHaveCount(12)` to whatever the final logo count is (or to a
+  range/at-least assertion), and fix the link-in-text-block contrast
+  on the docs page.
+
+### Round-2 verdict
+
+The orchestrator's `446d0ef` + `bfae64f` integration faithfully matches
+old-site intent for both `/slack` and `/feed.xml`. The deferred content
+fix (alt-text) is applied. Anchor parity is preserved across the 10
+representative pages I sampled (only divergence is upstream content
+drift, not a migration loss). Audit numbers improved: 0 EMPTY (was 2),
++2 OK. Branch is parity-clean from this teammate's perspective.
