@@ -1,0 +1,49 @@
+---
+/**
+ * The single mount point for the live editor-widget demos in the docs.
+ *
+ * Render this once on a page and it registers <nr-typed-input> and
+ * <nr-auto-complete> and brings in their styles plus the demo frame. The
+ * elements themselves are then written as plain HTML, which is what makes them
+ * usable from a Starlight markdown page: markdown can contain custom element
+ * tags, but it cannot import an Astro component.
+ *
+ * WHY A COMPONENT AND NOT A FILE IN public/. The three pages that need this used
+ * to pull their widgets from public/js/ with hand-written <script src> tags. That
+ * is the arrangement being removed: unbundled, unhashed, unversioned, and
+ * invisible to the build, which is how the site ended up serving a copy of
+ * typedInput.js several hundred lines behind the editor without anything
+ * noticing. Going through a component means Astro bundles and fingerprints both
+ * modules, only the pages that render it pay for them, and a broken import is a
+ * build failure rather than a 404 at runtime.
+ *
+ * WHY A CUSTOM ELEMENT AND NOT A FRAMEWORK ISLAND. The site ships no client
+ * framework and no client router: navigations are native cross-document view
+ * transitions (see src/styles/view-transition-head.js). A custom element needs no
+ * hydration directive, initialises from customElements.define on script
+ * evaluation, and comes up again on its own in every arriving document, because
+ * every arriving document is a real document.
+ *
+ * HOW A MARKDOWN PAGE GETS IT. Markdown cannot render this, so a Starlight
+ * override has to. Gate it on the route in src/components/starlight/PageFrame.astro
+ * so only the widget pages load it:
+ *
+ *   const WIDGET_PAGES = new Set([
+ *     '/docs/api/ui/typedInput/',
+ *     '/docs/api/ui/autoComplete/',
+ *     '/docs/creating-nodes/edit-dialog/',
+ *   ]);
+ *   ...
+ *   {WIDGET_PAGES.has(Astro.url.pathname) && <DocsWidgets />}
+ *
+ * Astro deduplicates the hoisted script, so rendering it more than once on a page
+ * is harmless.
+ */
+---
+
+<script>
+  import './nr-typed-input.js';
+  import './nr-auto-complete.js';
+  import './demo-frame.css';
+  import './nr-editor-button.css';
+</script>

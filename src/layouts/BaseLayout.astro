@@ -1,0 +1,702 @@
+---
+import { Font } from 'astro:assets';
+import AnnouncementBanner from '../components/AnnouncementBanner.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import WordmarkTuner from '../components/WordmarkTuner.astro';
+import { VIEW_TRANSITION_HEAD } from '../styles/view-transition-head.js';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Optional path to a per-page social-share image (must start with /). */
+  ogImage?: string;
+  /**
+   * Fragment of the LAST element on this page that carries a
+   * `view-transition-name`, used as a render-blocking anchor.
+   *
+   * The arriving document is snapshotted at its first rendering opportunity. The
+   * head's stylesheets block that, the body does not, so on a real connection the
+   * snapshot can happen while the body is still parsing: measured at 120ms per
+   * response, `pagereveal` fired with `readyState: "loading"` and no
+   * `.nr-announce` band in the DOM yet, so the band and rail were missing from
+   * the new capture. Every pair then collapses into an exit, and the old band
+   * slides away over a page that has one sitting still.
+   *
+   * `<link rel="expect" blocking="render">` holds first render until that element
+   * exists, which is the platform's answer to this. Point it at the last named
+   * element, since everything above it is parsed by then: a rail page blocks on the
+   * rail, a band-only page on the band, and everything else on the header, which is
+   * the default and costs nothing since the header is the first thing in the body.
+   */
+  vtAnchor?: string;
+  /**
+   * Keep this page out of search engines. For internal pages that are reachable
+   * but are not content: they have no navigation pointing at them and nothing to
+   * say to a searcher, so an indexed result would be a poor one for the project.
+   *
+   * Setting this is only half the job. Crawlers that never fetch the page cannot
+   * read the meta tag, so the route must ALSO be excluded from the sitemap, in
+   * the `sitemap()` filter in astro.config.mjs. Keep the two in step.
+   */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = 'Low-code programming for event-driven applications',
+  ogImage,
+  vtAnchor = '#nr-vt-header',
+  noindex = false,
+} = Astro.props;
+const resolvedOgImage = new URL(ogImage ?? '/node-red-icon.png', Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <!-- Inline, and deliberately not part of the bundled CSS. See
+         src/styles/view-transition-head.js for why. -->
+    <style is:inline set:html={VIEW_TRANSITION_HEAD}></style>
+    <link rel="expect" href={vtAnchor} blocking="render" />
+    <title>{title} - Node-RED</title>
+    <link rel="icon" href="/favicon.ico" />
+    {/* `noarchive` as well as `noindex`, so a cached copy cannot outlive the tag. */}
+    {noindex && <meta name="robots" content="noindex, nofollow, noarchive" />}
+    {
+      /* No canonical on a noindex page: the two are contradictory instructions, and
+        a canonical is an invitation to index the URL it names. */
+    }
+    {!noindex && <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).toString()} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site).toString()} />
+    <meta property="og:image" content={resolvedOgImage} />
+    <meta property="og:site_name" content="Node-RED" />
+
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:site" content="@nodered" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={resolvedOgImage} />
+
+    {
+      /* Self-hosted fonts. Both families are declared in the `fonts` block in
+         astro.config.mjs, which is also where the reasoning lives: the Google
+         Fonts CSS2 link these two components replace was the only
+         render-blocking resource on the page, and it sat in front of font files
+         on a second third-party origin. <Font /> emits the generated @font-face
+         rules inline and the preload links for same-origin font files, so
+         nothing here blocks on a network round trip.
+
+         What used to sit here, and must not come back: two `preconnect` links
+         to fonts.googleapis.com and fonts.gstatic.com plus the stylesheet
+         `<link>`. Nothing on the site touches either origin now, so a
+         preconnect would open connections to a third party for no reason.
+
+         The removed link also carried a claim worth correcting rather than just
+         deleting, because it reads plausibly: that the CSS2 endpoint "ships a
+         single woff2 keyed on both axes, so the cost is one file regardless of
+         how many weights the page uses". It does not. Google splits a family by
+         `unicode-range` and serves a file per subset, and a measured docs page
+         pulled several of them. Variable axes are why one file can cover every
+         weight; they are not why there is one file, because there is not one
+         file.
+
+         Preload: the latin sans face only, and only that one. It is the single
+         file first paint genuinely waits on, because every string above the fold
+         on a marketing page is sans and ASCII (the masthead wordmark, the nav,
+         the hero copy), and one variable file covers the whole 100..900 range
+         those use. The latin-ext, math and symbols faces are `unicode-range`
+         gated and most pages never trigger them, so preloading them would spend
+         connections on bytes that go unused. Ubuntu Mono gets no preload at all:
+         monospace appears only in body content, never in the header, so it can
+         load off the critical path. Preloading everything would be worse than
+         preloading nothing, since it competes with the CSS and the images the
+         first screen actually needs. */
+    }
+    <Font cssVariable="--font-google-sans-flex" preload={[{ subset: 'latin', style: 'normal' }]} />
+    <Font cssVariable="--font-ubuntu-mono" />
+    <!-- Pre-paint theme script. Mirrors Starlight's ThemeProvider.astro so the
+         marketing pages set <html data-theme> before first paint and don't
+         flash a wrong-theme frame. Uses the same `starlight-theme` localStorage
+         key as the docs so theme preference is shared across the whole site. -->
+    <script is:inline>
+      (function () {
+        try {
+          const stored = localStorage.getItem('starlight-theme');
+          const theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark';
+          document.documentElement.dataset.theme = theme;
+        } catch {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <SiteHeader />
+    {
+      /* Directly under the sticky navbar, in the slot the red breadcrumb band
+        used to occupy, and in normal flow so it scrolls up under the navbar just
+        as that band did. Docs render the same component inside a fixed band
+        instead: see the component. */
+    }
+    <AnnouncementBanner />
+    <WordmarkTuner />
+
+    <main id="main-content" tabindex="-1">
+      <slot />
+    </main>
+
+    <SiteFooter />
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/design-tokens.css';
+
+  /* ── Reset ── */
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  /* In-page anchors animate rather than jump, so following one reads as travel
+     through the page instead of a cut. The homepage hero's Install CTA is the
+     main one: it is a #install link, and the jump gave no sense of where the
+     section sat relative to the hero.
+
+     scroll-padding-top keeps the sticky header off the landing spot, so the
+     target's own top edge clears the 76px bar instead of hiding under it.
+
+     Here rather than in design-tokens.css because that file also loads as
+     Starlight customCss, and docs should keep Starlight's own anchor and
+     table-of-contents scrolling untouched. This layout is marketing-only.
+
+     Both are overridden by the prefers-reduced-motion block in
+     design-tokens.css, which forces scroll-behavior back to auto. */
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 76px;
+  }
+
+  /* ── Base Typography ── */
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.7;
+    color: var(--nr-text-body);
+    background: var(--nr-surface);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+
+  /* ── Links ── */
+  a {
+    color: var(--nr-text-link, var(--nr-red));
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+
+  a:hover {
+    color: var(--nr-red-hover);
+    text-decoration-thickness: 2px;
+  }
+
+  :root[data-theme='dark'] a:hover {
+    color: #e87a7a;
+  }
+
+  /* Chrome links (header/footer/nav/cards/buttons/announcement) suppress the
+     body-text underline rule; they have their own affordances. */
+  header nav a,
+  footer a,
+  .nr-btn,
+  .nr-btn-primary,
+  .nr-btn-secondary,
+  .nr-card a,
+  .nr-announce a,
+  .header-logo,
+  .footer-logo,
+  .footer-foundation {
+    text-decoration: none;
+  }
+  /* The OpenJS Foundation block's prose keeps an underlined affordance
+     on its links — the rest of the footer chrome (column links, logo,
+     OpenJSF lockup) suppresses it via the rule above. */
+  .footer-openjs-text a {
+    text-decoration: underline;
+  }
+
+  /* ── Headings ── */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--nr-text-strong);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  h1 {
+    font-size: var(--text-h1);
+    letter-spacing: -0.025em;
+  }
+  h2 {
+    font-size: var(--text-h2);
+    letter-spacing: -0.02em;
+  }
+  h3 {
+    font-size: var(--text-h3);
+    letter-spacing: -0.015em;
+  }
+  h4 {
+    font-size: var(--text-h4);
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Code ── */
+  code {
+    font-family: var(--font-mono);
+    background: var(--nr-code-bg);
+    color: var(--nr-code-text);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  pre {
+    background: var(--nr-bg-dark);
+    color: var(--nr-gray-300);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--nr-code-border, #2d2d2d);
+  }
+
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: var(--text-code);
+    line-height: 1.6;
+  }
+
+  /* ── Focus ── */
+  :focus-visible {
+    outline: 3px solid var(--nr-focus);
+    outline-offset: 2px;
+  }
+
+  /* ── Images ── */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* The red band directly under the navbar used to be a breadcrumb, rendered by
+     /about/, the blog and /releases/ and absent everywhere else. The announcement
+     band replaced it and is on every page, so the styles that lived here now live
+     in AnnouncementBanner.astro alongside the markup. */
+
+  /* ===================================================================
+     NAVBAR WIDTH (non-docs pages only)
+     SiteHeader leaves .header-inner uncapped so the navbar can run edge to
+     edge, which is what the docs shell wants. On the content pages the navbar
+     should instead start on the same x as everything else: the drawing, the
+     prose, the announcement band and the footer columns.
+
+     This lives in BaseLayout's global block rather than in SiteHeader, which
+     is what scopes it to non-docs pages: docs render through Starlight's
+     layout and never load this stylesheet. `.site-header` keeps its own
+     background and bottom border, so the band still spans the viewport and
+     only the contents move inward.
+
+     Two class selectors to outrank SiteHeader's own single-class scoped rule,
+     whose specificity this would otherwise tie with, leaving the outcome to
+     stylesheet order.
+     =================================================================== */
+  .site-header .header-inner {
+    max-width: var(--nr-content-box-width);
+    margin-inline: auto;
+    /* Overrides only the inline half of SiteHeader's `padding: 0 <edge-pad>`,
+       so the 75px row keeps its zero block padding. */
+    padding-inline: var(--grid-padding);
+  }
+
+  /* ===================================================================
+     ABOUT PAGES — shared prose layout
+     Used by about/index.astro and about/[...slug].astro.
+     Consolidated here to avoid duplication; both pages use the same
+     .about-layout / .about-content class names.
+
+     Layout is the canonical 12-col `.nr-grid`: section rail 3 columns,
+     prose 9. That puts the rail's left edge on the same track as the
+     homepage's first column. Everything inside the rail is styled in
+     src/components/AboutSidebar.astro; only placement lives here.
+     =================================================================== */
+  .about-layout {
+    /* .nr-grid supplies max-width / centring / inline padding.
+
+       No block margin: the rail/prose divider runs from the announcement band
+       to the footer, the way the docs sidebar's border spans the whole page body,
+       rather than stopping short at a margin. The vertical space moves inside
+       the two panes instead. */
+    margin-block: 0;
+    row-gap: var(--space-6);
+    /* Required for the rail's `position: sticky`: a stretched grid item is
+       already as tall as its row, so it has nothing to stick within. */
+    align-items: start;
+  }
+
+  .about-rail {
+    grid-column: span 3;
+    padding-block: var(--space-7);
+  }
+
+  /* Flat pane, not a card: no radius, shadow, elevated surface or box border,
+     matching the docs main pane. The only division is the vertical hairline. */
+  .about-content {
+    grid-column: span 9;
+    /* The 9-col track reaches ~1220px on the 1728px grid, well past a
+       readable measure. Cap the pane rather than the track, which keeps
+       the prose width where it was before the rail landed. */
+    max-width: 64rem;
+    padding: var(--space-7) var(--space-8);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    /* The divider. It lives on the prose pane rather than the rail because the
+       rail is `position: sticky`, which needs `align-self: start` and so is
+       only ever as tall as its own items. Docs can put the line on its sidebar
+       because that pane is full height; here the prose pane is the one that
+       stretches. */
+    border-inline-start: 1px solid var(--nr-border);
+    /* Stretch so the line still spans the row when the prose is shorter than
+       the rail, as on /about/license/ (36 words against ten rail items). */
+    align-self: stretch;
+  }
+
+  /* Tablet: --grid-columns drops to 8, so 3+9 would wrap the prose below
+     the rail. Retrack to 2+6. This band matters most, since SiteHeader
+     hides the nav (and its about popout) below 75rem, so from 768px to
+     1200px the rail is the only sibling nav on the page.
+
+     Must follow the base .about-content rule above: same specificity, so
+     source order decides which grid-column wins. */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .about-rail {
+      grid-column: span 2;
+    }
+
+    .about-content {
+      grid-column: span 6;
+    }
+  }
+
+  /* ===================================================================
+     BLOG POST LAYOUT — grid placement
+     Mirrors the About tracks above so a reader crossing from /about/ to a
+     post sees the rail in the same place. Lives here rather than in
+     BlogPostLayout's scoped block because .blog-rail is rendered by
+     SectionRail.astro; a scoped selector there carries BlogPostLayout's
+     hash and would never match the child component's element.
+     =================================================================== */
+  .post-layout {
+    /* See .about-layout: no block margin, so the divider reaches the
+       announcement band and the footer. */
+    margin-block: 0;
+    row-gap: var(--space-6);
+    /* Required for the rail's `position: sticky`: a stretched grid item is
+       already as tall as its row, so it has nothing to stick within. */
+    align-items: start;
+  }
+
+  .blog-rail {
+    grid-column: span 3;
+    padding-block: var(--space-7);
+  }
+
+  .post-article {
+    grid-column: span 9;
+    /* Keeps the prose measure where it was before the rail landed, rather
+       than stretching to the 9-col track's ~1220px. */
+    max-width: 64rem;
+    /* Divider and stretch, for the same reasons as .about-content. */
+    border-inline-start: 1px solid var(--nr-border);
+    align-self: stretch;
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .blog-rail {
+      grid-column: span 2;
+    }
+
+    .post-article {
+      grid-column: span 6;
+    }
+  }
+
+  /* Single column below 768px: the rail collapses to its disclosure and stacks
+     above the prose, so a vertical divider between them has nothing to divide.
+     The block margin comes back since there is no full-height line to carry. */
+  @media (max-width: 767px) {
+    .about-layout,
+    .post-layout {
+      margin-block: var(--space-6);
+    }
+
+    .about-rail,
+    .blog-rail {
+      padding-block: 0;
+    }
+
+    .about-content,
+    .post-article {
+      border-inline-start: 0;
+    }
+
+    .blog-rail,
+    .post-article {
+      grid-column: 1 / -1;
+      max-width: none;
+    }
+  }
+
+  /* ===================================================================
+     RAIL SPLIT — align the divider with the footer
+     Both layouts drop the 12-column track for the shared rail split, so the
+     hairline on the prose pane lands on precisely the same x as the footer's
+     first link column directly beneath it. See --nr-rail-columns for why the
+     two grids could not agree while the rail was 3-of-12.
+
+     Placement is by track index now rather than by span, since there are only
+     two tracks to sit in.
+
+     Last of the layout blocks on purpose: same specificity as the base and
+     tablet rules above, so source order is what makes these win.
+
+     From 1024px only. Below that the tablet block's 2+6 retrack and then the
+     stacked single column take over, and the footer has collapsed to one track
+     by 950px anyway, so there is no second column left to line up with.
+     =================================================================== */
+  /* The rail's view-transition-name is NOT here. It lives in the inline head
+     snippet, src/styles/view-transition-head.js, with every other name and the
+     opt-in: a name in bundled CSS arrives after the browser has decided what to
+     capture, and the arriving page's rail is then missed entirely, so the pair
+     collapses into an exit and the panel slides out over a page that has one.
+     Only the animations are in design-tokens.css. */
+
+  @media (min-width: 1024px) {
+    .about-layout,
+    .post-layout {
+      grid-template-columns: var(--nr-rail-columns);
+      column-gap: var(--nr-rail-gap);
+    }
+
+    .about-rail,
+    .blog-rail {
+      grid-column: 1;
+    }
+
+    .about-content,
+    .post-article {
+      grid-column: 2;
+    }
+  }
+
+  .about-content h1 {
+    font-size: var(--text-h1);
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: 3px solid var(--nr-red);
+    letter-spacing: -0.025em;
+  }
+
+  .about-content h2 {
+    font-size: var(--text-h2);
+    margin: var(--space-6) 0 var(--space-4);
+    letter-spacing: -0.02em;
+  }
+
+  .about-content h3 {
+    font-size: var(--text-h3);
+    margin: var(--space-5) 0 var(--space-3);
+    letter-spacing: -0.015em;
+  }
+
+  .about-content p {
+    margin: var(--space-4) 0;
+    line-height: 1.7;
+  }
+
+  .about-content ul,
+  .about-content ol {
+    margin: var(--space-4) 0;
+    padding-left: 28px;
+  }
+
+  .about-content li {
+    margin: var(--space-2) 0;
+  }
+
+  .about-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
+
+  .about-content .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+    margin: var(--space-5) 0;
+    align-items: center;
+  }
+
+  .about-content .col-1-2 {
+    min-width: 0;
+  }
+
+  .about-content .doc-callout {
+    background: var(--nr-red-light);
+    border-left: 4px solid var(--nr-red);
+    padding: var(--space-4) var(--space-5);
+    margin: var(--space-5) 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    /* Theme-aware strong text so copy stays readable on both themes:
+       dark slate on #FCE5E5 (light) vs. near-white on dark-mode red wash. */
+    color: var(--nr-text-strong);
+  }
+
+  .about-content iframe {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+    margin: var(--space-5) 0;
+  }
+
+  /* GFM tables — borders + header treatment matching docs tables. */
+  .about-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--space-5) 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--nr-border);
+  }
+  /* --nr-surface-alt, not --nr-gray-100: the grays are raw palette values that
+     do not flip with the theme, so a gray-100 header kept its light fill in dark
+     mode while the header text followed --nr-text-* to near-white. "Field" and
+     "Value" were then white on #F5F5F5, invisible. The semantic token is a step
+     off the page surface in whichever direction the theme needs. */
+  .about-content table th {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    border-bottom: 2px solid var(--nr-red);
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--nr-surface-alt);
+    font-size: 0.9375rem;
+    letter-spacing: -0.01em;
+  }
+  .about-content table td {
+    border-bottom: 1px solid var(--nr-border);
+    padding: 10px 14px;
+    font-size: 0.9375rem;
+    vertical-align: top;
+  }
+  .about-content table tr:last-child td {
+    border-bottom: 0;
+  }
+  .about-content table tr:hover td {
+    background: var(--nr-surface-alt);
+  }
+
+  @media (max-width: 767px) {
+    .about-layout {
+      row-gap: var(--space-4);
+    }
+
+    /* Single column: the rail collapses to its disclosure and stacks above
+       the article. --grid-columns is 4 here, so span outright. */
+    .about-rail,
+    .about-content {
+      grid-column: 1 / -1;
+      max-width: none;
+    }
+
+    .about-content {
+      padding: var(--space-5);
+    }
+
+    .about-content .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<style>
+  /* ===================================================================
+     HEADER
+     =================================================================== */
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: var(--space-4);
+    background: var(--nr-red);
+    color: var(--nr-white);
+    padding: var(--space-2) var(--space-4);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    z-index: 1000;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 0;
+    color: var(--nr-white);
+    text-decoration: none;
+  }
+
+  /* Header chrome lives in src/components/SiteHeader.astro. Both this layout
+     and the docs (Starlight) Header.astro override render the same
+     <SiteHeader/>, so the navbar is identical everywhere apart from its
+     measure: the global block above caps .header-inner to the content width on
+     these pages, while docs leaves it edge to edge to match its full-bleed
+     shell. */
+
+  /* ===================================================================
+     MAIN
+     =================================================================== */
+  main {
+    flex: 1;
+  }
+</style>

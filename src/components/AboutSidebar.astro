@@ -1,0 +1,31 @@
+---
+/**
+ * The About section's rail. A thin wrapper that feeds SectionRail.astro,
+ * which owns the behaviour and styling shared with the blog rail.
+ *
+ * Page order comes from `aboutSidebar` in src/data/navigation.ts, shared with
+ * the header's about popout so the two cannot drift.
+ *
+ * No `listHeading`: the items are the section itself, so a "Pages" heading
+ * above them would only repeat the page heading.
+ */
+import SectionRail from './SectionRail.astro';
+import { aboutSidebar } from '../data/navigation';
+
+interface Props {
+  /** `Astro.url.pathname` of the page being rendered. */
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+---
+
+<SectionRail
+  class="about-rail"
+  items={aboutSidebar}
+  currentPath={currentPath}
+  navLabel="About section"
+  eyebrow="About"
+  fallbackLabel="About Node-RED"
+  sectionRoot="/about/"
+/>

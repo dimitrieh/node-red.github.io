@@ -1,0 +1,166 @@
+---
+/**
+ * Nav version badge — shows the latest stable Node-RED release and links
+ * to /releases. Rendered into the shared SiteHeader chrome so it appears
+ * site-wide (marketing + docs).
+ *
+ * The version is a build-time snapshot. The inline script below re-checks
+ * GitHub's `releases/latest` on load and patches the badge plus any
+ * `/releases` hero hooks (`[data-nr-latest-*]`) if the snapshot is stale,
+ * since the static site only rebuilds on its own repo changes.
+ */
+import { getReleaseData } from '../lib/releases';
+
+const { latestStable } = await getReleaseData();
+const version = latestStable?.tag ?? null;
+---
+
+{
+  version && (
+    <a
+      class="version-badge"
+      href="/releases"
+      data-version-badge
+      data-version={version}
+      aria-label={`Node-RED ${version} — view releases`}
+    >
+      <span class="version-badge-dot" aria-hidden="true" />
+      <span class="version-badge-text">
+        v<span data-nr-latest>{version}</span>
+      </span>
+    </a>
+  )
+}
+
+<style>
+  /* Plain text lockup, deliberately not a button: a small red dot plus the
+     monospace version, reading as metadata next to the wordmark rather than an
+     action.
+
+     Metadata still has to be legible. At 12px in --nr-text-faint it was closer
+     to invisible than quiet, so it takes 14px and the muted step instead: a
+     clear read, still plainly subordinate to the wordmark beside it. The gap
+     grows with the text, since 5px left the dot crowding the "v" once the glyphs
+     got bigger. */
+  .version-badge {
+    /* Paired across a marketing/docs navigation, see the names block in
+       SiteHeader.astro. It sits in the brand lockup, which shifts when docs adds
+       its sidebar inset, so it has a real distance to travel. */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--nr-text-muted);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color var(--duration-fast, 150ms) var(--ease-standard, ease);
+    /* Measured 23.8px, 0.2px under the 24px target-size floor. Growing the box
+       rather than the type keeps the wordmark advance measurement in
+       SiteHeader.astro untouched. */
+    min-height: 24px;
+  }
+
+  .version-badge:hover,
+  .version-badge:focus-visible {
+    color: var(--nr-red);
+    text-decoration: none;
+  }
+
+  .version-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--nr-red);
+    flex-shrink: 0;
+  }
+
+  /* Drop the badge on the smallest phones, where the wordmark is also
+     hidden and horizontal space is tight. */
+  @media (max-width: 30rem) {
+    .version-badge {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { cached, isRecord, HOUR_MS } from '../lib/api-cache';
+
+  // Progressive enhancement: refresh the build-time snapshot from GitHub.
+  // If this fails (offline / rate-limited / blocked), the server-rendered
+  // version stands — that's the intended fallback, not a swallowed error.
+  //
+  // Cached hard, because this badge is the site's single most expensive
+  // API read: it renders into the shared header, so uncached it spent one
+  // of GitHub's 60 unauthenticated core requests/hour per IP on EVERY
+  // page of the site, and a visitor working through a run of docs pages
+  // burned a large share of their hour's budget re-reading a version that
+  // had not moved. Releases ship a handful of times a year, so a TTL well
+  // past an hour costs nothing: the build-time snapshot above means a
+  // stale cache is never visible as a gap, only as a slightly older
+  // number that the next read past the TTL corrects.
+  const RELEASE_TTL = 6 * HOUR_MS;
+
+  interface LatestRelease {
+    tag: string;
+  }
+
+  // A release tag is a version string. Checking the shape keeps anything
+  // odd out of the archive href below, whether it arrived from the API or
+  // from some other script writing to this origin's localStorage. A cache
+  // read is still untrusted input.
+  const TAG_PATTERN = /^v?\d[\d.]*(?:-[A-Za-z0-9.]+)?$/;
+
+  function isLatestRelease(value: unknown): value is LatestRelease {
+    return isRecord(value) && typeof value['tag'] === 'string' && TAG_PATTERN.test(value['tag']);
+  }
+
+  // Only a successful, well-formed response is cached. A rejection here
+  // reaches the catch below, which keeps the snapshot and leaves nothing
+  // stored, so the next page view retries.
+  async function fetchLatestRelease(): Promise<LatestRelease> {
+    const res = await fetch('https://api.github.com/repos/node-red/node-red/releases/latest', {
+      headers: { Accept: 'application/vnd.github+json' },
+    });
+    if (!res.ok) throw new Error(`releases/latest ${res.status}`);
+    const data: unknown = await res.json();
+    const candidate = { tag: isRecord(data) ? String(data['tag_name'] ?? '') : '' };
+    if (!isLatestRelease(candidate)) throw new Error('releases/latest returned no usable tag');
+    return candidate;
+  }
+
+  (async () => {
+    const badge = document.querySelector<HTMLElement>('[data-version-badge]');
+    const snapshot = badge?.dataset.version ?? null;
+    try {
+      const { tag } = await cached(
+        'latest-release',
+        RELEASE_TTL,
+        fetchLatestRelease,
+        isLatestRelease,
+      );
+      if (tag === snapshot) return;
+
+      const safeTag = encodeURIComponent(tag);
+      const zipUrl = `https://github.com/node-red/node-red/archive/refs/tags/${safeTag}.zip`;
+      if (badge) badge.dataset.version = tag;
+      document
+        .querySelectorAll<HTMLElement>('[data-nr-latest]')
+        .forEach((el) => (el.textContent = tag));
+      document
+        .querySelectorAll<HTMLAnchorElement>('[data-nr-latest-zip]')
+        .forEach((el) => (el.href = zipUrl));
+      document
+        .querySelectorAll<HTMLElement>('[data-nr-stale-notice]')
+        .forEach((el) => el.removeAttribute('hidden'));
+    } catch (err) {
+      /* Keep the server-rendered snapshot. Logged rather than silent so a
+         rate limit or an outage is visible on the console instead of
+         looking like the badge simply never refreshes. */
+      console.warn('[version badge] keeping the build-time snapshot:', err);
+    }
+  })();
+</script>

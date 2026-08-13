@@ -1,0 +1,176 @@
+# Pull-request and migration-branch checks.
+#
+# Everything this repo already configures and, until now, never ran: ESLint,
+# Prettier, `astro check`, the build itself, the two dist/ verification scripts,
+# Vitest, Playwright and Lighthouse CI. One job rather than several, because
+# every step after the build consumes dist/ and splitting them would mean
+# rebuilding the site (or passing it between jobs as an artifact) three times
+# over for no gain.
+name: Checks
+
+on:
+  pull_request:
+  push:
+    # main as well as pull requests, so a merge that lands broken is reported
+    # against main rather than only against the pull request that introduced it.
+    # Deployment is a separate workflow: see deploy-pages.yml.
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+# A second push to the same PR or branch makes the earlier run's answer
+# irrelevant, and this workflow is not cheap (it builds the whole site and
+# drives a browser twice).
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # package.json engines: ^22.22.3 || ^24.16.0 || >=26.3.0. Node 24 is inside
+  # that range and matches what the local dev container runs, so a failure here
+  # is reproducible with `podman-compose` locally.
+  NODE_VERSION: '24'
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      # Third-party and first-party actions alike are pinned to a full commit
+      # SHA rather than a tag. Tags are mutable: whoever controls the action's
+      # repository can repoint v5 at a new commit, and that commit runs with
+      # this workflow's token and secrets. A SHA is the only reference an
+      # upstream owner cannot change under us. The trailing comment records
+      # which release the SHA belongs to, so the pin stays readable and
+      # reviewable when it is bumped.
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # .npmrc sets ignore-scripts=true, deliberately: no dependency gets to
+      # execute code at install time. sharp and Pagefind both ship their
+      # platform binaries as optional dependencies rather than postinstall
+      # downloads (@img/sharp-linux-x64 and @pagefind/linux-x64 are both in
+      # package-lock.json), so a scriptless install still produces a working
+      # image pipeline and a working search index on an x64 Linux runner. No
+      # apt packages are needed for either. Playwright is the one exception and
+      # is handled at its own step below.
+      - name: Install dependencies
+        run: npm ci
+
+      # `npm run lint` is `eslint . && prettier --check .`, and the two halves
+      # are in very different states on this branch, so they are run as separate
+      # steps rather than through the composite script.
+      #
+      # Prettier is clean across the tree and gates the job.
+      - name: Check formatting (Prettier)
+        run: npx prettier --check .
+
+      # ESLint is not clean. What is left is a single rule,
+      # @typescript-eslint/no-explicit-any, across the migration scripts, blog
+      # utilities and a couple of specs. None of it is a defect this workflow
+      # introduced and clearing it means giving real types to code that reads
+      # untyped JSON from external APIs, which is its own piece of work.
+      #
+      # So the step runs and prints the backlog without gating, on the same
+      # reasoning as the Lighthouse step below: a check that is red from its
+      # first run for pre-existing reasons trains everyone to ignore the red.
+      # Remove continue-on-error as soon as the backlog is cleared, and keep it
+      # visible until then rather than deleting the step.
+      - name: Lint (ESLint, report only)
+        run: npx eslint .
+        continue-on-error: true
+
+      # `npm run build` runs `astro check` itself, so this step is redundant on
+      # a green run. It is here because a type error and a build error are
+      # different failures and naming them separately is worth the extra minute:
+      # a red "Type check" step points straight at the diagnostics.
+      - name: Type check
+        run: npm run check
+
+      # Built WITHOUT DISABLE_PAGEFIND, and that is the whole point of this
+      # comment. astro.config.mjs supports DISABLE_PAGEFIND=1 because Pagefind
+      # bundles jemalloc compiled for 4 KB memory pages and crashes with
+      # "Unsupported system page size" on ARM64 hosts with 16 KB pages, which is
+      # what the local dev container is. GitHub's runners are 4 KB-page x64
+      # hosts, so Pagefind works here and must run: it is what generates the
+      # docs search index. Do not reach for the `build:sandbox` /
+      # `test:sandbox` scripts in CI. They exist for the 16 KB-page sandbox and
+      # would ship the docs with search quietly broken.
+      # GITHUB_TOKEN is read by src/lib/releases.ts, which fetches the release
+      # list from api.github.com at build time for the nav version badge and the
+      # /releases page. Unauthenticated, that endpoint allows 60 requests an hour
+      # per IP, and runner IPs are shared, so the request fails often enough that
+      # the build would regularly fall back to the checked-in 4.1.10 snapshot and
+      # publish a stale version. Authenticated it is 1000/hour for this
+      # repository. `contents: read` above is all the scope this needs.
+      - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build
+
+      - name: Verify URLs
+        run: npm run verify:urls
+
+      - name: Verify images
+        run: npm run verify:images
+
+      # `vitest` with no subcommand picks watch or run mode by inspecting the
+      # environment. Spelling out `run` means CI never depends on that guess.
+      - name: Unit and integration tests
+        run: npx vitest run
+
+      # Needed because ignore-scripts=true also suppresses Playwright's own
+      # browser download, so `npm ci` leaves no browser behind. Only chromium is
+      # installed: playwright.config.ts defines a single chromium project.
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      # Report-only for now, on purpose, and not because Lighthouse is
+      # decorative.
+      #
+      # lighthouserc.json asserts accessibility at error level with a minimum
+      # score of 0.9. The remaining categories are warn level and cannot fail a
+      # run. The a11y work on this branch left an explicitly tracked set of
+      # open serious violations, allowlisted in tests/e2e/a11y.spec.ts as
+      # KNOWN_OPEN: color-contrast and link-in-text-block on the marketing pages
+      # plus some heading-order skips. Lighthouse scores the same audits, and the
+      # marketing URLs collected here (/ and /blog/) are exactly where those
+      # violations live, so the accessibility assertion is likely to come in
+      # under 0.9 on this branch. On top of that, Lighthouse has never actually
+      # executed against this site: every previous attempt ran in a sandbox with
+      # no usable Chrome and died with NO_FCP, so the category scores are
+      # unmeasured rather than known-good.
+      #
+      # Landing this as a required check would therefore mean landing a red
+      # pipeline for reasons already tracked elsewhere. Instead the step runs,
+      # uploads its report, and does not gate the job. Drop
+      # continue-on-error once the KNOWN_OPEN allowlist is empty and a few real
+      # runs have shown what the scores are; the thresholds in
+      # lighthouserc.json are left untouched so they stay the target.
+      - name: Lighthouse CI (report only)
+        run: npm run lighthouse
+        continue-on-error: true
+
+      - name: Upload test and Lighthouse output
+        # `always()` so a failing test still surfaces its traces and reports,
+        # which is when they matter most.
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: checks-output
+          path: |
+            test-results/
+            playwright-report/
+            .lighthouseci/
+          if-no-files-found: ignore
+          retention-days: 7

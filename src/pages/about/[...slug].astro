@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutSidebar from '../../components/AboutSidebar.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const aboutPages = await getCollection('about');
+
+  return aboutPages
+    .filter((page) => page.id !== 'index.md' && page.id !== 'index')
+    .map((page) => {
+      let slug = page.id
+        .replace(/\/index\.md$/, '')
+        .replace(/\.md$/, '')
+        .replace(/\/index$/, '');
+      return {
+        params: { slug },
+        props: { page },
+      };
+    });
+}
+
+const { page } = Astro.props;
+const { Content } = await render(page);
+---
+
+<BaseLayout title={page.data.title} vtAnchor="#nr-vt-rail">
+  <div class="about-layout nr-grid">
+    <AboutSidebar currentPath={Astro.url.pathname} />
+
+    <div class="about-content">
+      <h1>{page.data.title}</h1>
+      <Content />
+    </div>
+  </div>
+</BaseLayout>

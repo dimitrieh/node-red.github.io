@@ -1,0 +1,177 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import BlogSidebar from '../components/BlogSidebar.astro';
+import BlogPostPager from '../components/BlogPostPager.astro';
+import { authors } from '../data/authors';
+import { formatBlogDate } from '../utils/blog';
+
+interface Adjacent {
+  title: string;
+  href: string;
+  date: Date;
+}
+
+interface Props {
+  title: string;
+  author: string;
+  date: Date;
+  description?: string;
+  image?: string;
+  /** Recent posts for the rail, newest first, already trimmed by the route. */
+  recentPosts?: Adjacent[];
+  /** Adjacent posts in date order. Absent at the ends of the archive. */
+  newer?: Adjacent | undefined;
+  older?: Adjacent | undefined;
+}
+
+const { title, author, date, description, image, recentPosts = [], newer, older } = Astro.props;
+
+const authorInfo = authors[author] || { displayName: author, url: '#' };
+---
+
+<BaseLayout
+  title={title}
+  vtAnchor="#nr-vt-rail"
+  {...description !== undefined ? { description } : {}}
+  {...image !== undefined ? { ogImage: image } : {}}
+>
+  <div class="post-layout nr-grid">
+    <BlogSidebar posts={recentPosts} currentPath={Astro.url.pathname} />
+
+    <article class="post-article">
+      <div class="post-inner">
+        <header class="post-header mb-7 border-b-3 border-nr-red pb-5">
+          <h1
+            class="post-title mb-4 text-[var(--text-h1)] text-nr-text-strong font-bold leading-[1.2] tracking-[-0.03em]"
+          >
+            {title}
+          </h1>
+          <div class="post-meta flex items-center gap-3">
+            <time datetime={date.toISOString()}>{formatBlogDate(date)}</time>
+            <span aria-hidden="true">&middot;</span>
+            <a href={authorInfo.url} target="_blank" rel="noopener">{authorInfo.displayName}</a>
+          </div>
+        </header>
+
+        <div class="post-content">
+          <slot />
+        </div>
+
+        <BlogPostPager newer={newer} older={older} />
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Breadcrumb bar styles live in BaseLayout (global) to keep parity
+     across blog/about/blogpost. */
+
+  /* ── Article Layout ──
+     Grid placement for .post-layout / .blog-rail / .post-article lives in
+     BaseLayout's global block, next to the equivalent About rules: the rail
+     is rendered by SectionRail.astro, so a scoped selector here would not
+     reach it and splitting the pair across two files reads worse than
+     keeping both with the other page-level grid placement.
+
+     The article stays wider than a typical 65ch reading column because the
+     post card has thick inner padding (space-8 vertical + space-9
+     horizontal, roughly 32/40px) and a substantial border-radius shell. The
+     capped outer keeps the prose inside the card in the comfortable reading
+     zone while letting code blocks, images and tables breathe
+     side-to-side. */
+  /* Flat pane, not a card, matching .about-content and the docs main pane: the
+     vertical hairline on .post-article is the only division. Padding matches
+     About's so the two sections read as one system. */
+  .post-inner {
+    padding: var(--space-7) var(--space-8);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .post-meta {
+    font-size: var(--text-caption);
+    color: var(--nr-text-faint);
+  }
+
+  .post-meta time {
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+  }
+
+  .post-meta a {
+    color: var(--nr-red);
+  }
+
+  .post-meta a:hover {
+    text-decoration: underline;
+  }
+
+  /* ── Post Content ── */
+  .post-content {
+    font-size: var(--text-body);
+    line-height: 1.8;
+    color: var(--nr-text-body);
+  }
+
+  .post-content :global(h2) {
+    font-size: var(--text-h2);
+    margin: var(--space-7) 0 var(--space-4);
+    letter-spacing: -0.02em;
+  }
+
+  .post-content :global(h3) {
+    font-size: var(--text-h3);
+    margin: var(--space-6) 0 var(--space-3);
+    letter-spacing: -0.015em;
+  }
+
+  .post-content :global(p) {
+    margin: var(--space-4) 0;
+  }
+
+  .post-content :global(ul),
+  .post-content :global(ol) {
+    margin: var(--space-4) 0;
+    padding-left: 28px;
+  }
+
+  .post-content :global(li) {
+    margin: var(--space-2) 0;
+  }
+
+  .post-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+    margin: var(--space-5) 0;
+  }
+
+  .post-content :global(blockquote) {
+    border-left: 4px solid var(--nr-red);
+    margin: var(--space-5) 0;
+    padding: var(--space-3) var(--space-5);
+    background: var(--nr-gray-50);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    color: var(--nr-gray-700);
+  }
+
+  .post-content :global(pre) {
+    margin: var(--space-5) 0;
+  }
+
+  @media (max-width: 767px) {
+    /* Grid placement and the block margin are handled in BaseLayout's
+       @media (max-width: 767px) block; this only tightens the prose inset.
+       No border-radius: the pane is flat at every width now. */
+    .post-inner {
+      padding: var(--space-5) 0;
+    }
+
+    .post-title {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+    }
+  }
+</style>

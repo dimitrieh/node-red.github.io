@@ -1,0 +1,818 @@
+---
+/**
+ * Canonical site header used by both marketing (BaseLayout) and docs
+ * (Starlight Header.astro override). Renders the same chrome on both
+ * sides so the navbar is byte-identical visually.
+ *
+ * Slots:
+ *   - `search`: optional. Docs slot Starlight's Search component here so
+ *     the search button is keyboard-driven and Pagefind-backed. On
+ *     marketing the slot is left empty and the component renders a
+ *     visual placeholder that links to /docs/ — keeps the navbar layout
+ *     identical without wiring Pagefind into marketing pages.
+ */
+import { readFileSync } from 'node:fs';
+import { mainNav } from '../data/navigation';
+import ThemeToggle from './ThemeToggle.astro';
+import VersionBadge from './VersionBadge.astro';
+
+/* The navbar parts that a second component also renders: the drawer button,
+   which is Starlight's own below 50rem on docs, and the drawer sub-items,
+   which PageFrame lists again at the top of the docs sidebar. Both are
+   defined once in there, not here and again in starlight-custom.css.
+   Imported by this component rather than registered as a global stylesheet
+   so it ships exactly where the navbar does, on both page types, since both
+   render this file. See src/styles/nav-shared.css. */
+import '../styles/nav-shared.css';
+
+// Inline the official Node-RED icon body so we can recolour the upstream
+// #8f0000 to the site's accent red (#DA0000) and avoid the PNG asset.
+const logoSrc = readFileSync('./public/about/media/node-red-icon.svg', 'utf8');
+const logoMatch = logoSrc.match(/<\/metadata>([\s\S]*)<\/svg>/);
+const logoBody = (logoMatch?.[1] ?? '').trim().replace(/#8f0000/gi, '#DA0000');
+
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) => {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+};
+---
+
+<header class="site-header" id="nr-vt-header" data-site-header>
+  <div class="header-inner">
+    <div class="header-brand flex shrink-0 items-center">
+      <a href="/" class="header-logo flex shrink-0 items-center gap-3" aria-label="Node-RED home">
+        <svg
+          class="header-logo-img"
+          viewBox="16 16 448 448"
+          preserveAspectRatio="xMidYMid meet"
+          aria-hidden="true"
+          focusable="false"><Fragment set:html={logoBody} /></svg
+        >
+        <span class="header-logo-wordmark" aria-hidden="true"
+          >Node-<span class="wordmark-red">RED</span></span
+        >
+      </a>
+      <VersionBadge />
+    </div>
+
+    <nav class="header-nav min-w-0 items-center" aria-label="Main navigation">
+      {
+        mainNav.map((item) => {
+          const active = !item.external && isActive(item.href);
+          const hasSubmenu = !!item.submenu?.length;
+          if (hasSubmenu) {
+            return (
+              <div
+                class="header-nav-item has-submenu relative inline-flex items-stretch"
+                data-nav-submenu
+              >
+                <a
+                  href={item.href}
+                  class:list={[
+                    'header-nav-link',
+                    'header-nav-link-with-submenu',
+                    'inline-flex',
+                    'items-center',
+                    'gap-1',
+                    { 'is-active': active },
+                  ]}
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  {...(active ? { 'aria-current': 'page' } : {})}
+                >
+                  {item.label}
+                </a>
+                <div class="header-nav-popout" role="menu" aria-label={`${item.label} sub-pages`}>
+                  {item.submenu!.map((sub) => {
+                    const subActive =
+                      !sub.external &&
+                      (Astro.url.pathname === sub.href ||
+                        (Astro.url.pathname.startsWith(sub.href) && sub.href !== item.href));
+                    return (
+                      <a
+                        href={sub.href}
+                        role="menuitem"
+                        class:list={['header-nav-popout-link', { 'is-active': subActive }]}
+                        {...(sub.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                      >
+                        {sub.label}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+          return (
+            <a
+              href={item.href}
+              class:list={['header-nav-link', { 'is-active': active }]}
+              {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              {...(active ? { 'aria-current': 'page' } : {})}
+            >
+              {item.label}
+            </a>
+          );
+        })
+      }
+    </nav>
+
+    <div class="header-chrome flex shrink-0 items-center gap-3">
+      <div class="header-search">
+        <slot name="search">
+          {
+            /*
+            Marketing pages have no search index of their own: Pagefind is built by
+            Starlight and only ships on docs routes. So this is a link to docs
+            rather than a control, and the #search hash asks the docs page to open
+            its search dialog on arrival (handled in starlight/Header.astro). The
+            reader clicks Search once and lands with the box already open, instead
+            of landing on the docs index and having to find and click Search again.
+          */
+          }
+          <a href="/docs/#search" class="search-placeholder" aria-label="Search docs">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Search</span>
+          </a>
+        </slot>
+      </div>
+      <ThemeToggle />
+      {
+        /*
+          Two glyphs, swapped on aria-expanded: the drawer below covers the
+          rest of the navbar's row and pushes the page down, so the button is
+          the way back out and says so while it is open. The class names are
+          Starlight's own (`open-menu` / `close-menu`), so the swap and the
+          sizing are one pair of rules covering this button and Starlight's
+          docs drawer button both. See src/styles/nav-shared.css.
+
+          Both marks are drawn on Starlight's grid rather than a 22-unit one
+          of ours, because the docs drawer button renders Starlight's own
+          icons and its component cannot be given different art. Its bars are
+          a 2-unit rounded rect from x=3 to 21 on y=7, 12 and 17 of a 24 box,
+          which is exactly the three lines below; its close mark's extremes at
+          4.29 and 19.71 are the round-capped diagonals below. Same viewBox,
+          same coordinates, same rendered size, so the two buttons rasterise
+          to the same pixels instead of to marks that are 8% apart in
+          thickness and a pixel apart at the ends: 18 units of mark in a
+          22-unit box and 20 in a 24-unit one cannot be reconciled by scaling,
+          which is what a first pass at this tried.
+        */
+      }
+      <button
+        class="mobile-toggle"
+        aria-label="Toggle menu"
+        aria-controls="mobile-nav"
+        aria-expanded="false"
+      >
+        <svg
+          class="open-menu"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <line x1="3" y1="7" x2="21" y2="7"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="17" x2="21" y2="17"></line>
+        </svg>
+        <svg
+          class="close-menu"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <line x1="5" y1="5" x2="19" y2="19"></line>
+          <line x1="19" y1="5" x2="5" y2="19"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+    {
+      mainNav.map((item) => {
+        const active = !item.external && isActive(item.href);
+        const hasSubmenu = !!item.submenu?.length;
+        return (
+          <>
+            <a
+              href={item.href}
+              class:list={['mobile-nav-link', { 'is-active': active }]}
+              {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            >
+              {item.label}
+            </a>
+            {hasSubmenu &&
+              item.submenu!.map((sub) => (
+                <a
+                  href={sub.href}
+                  class="mobile-nav-link mobile-nav-sublink"
+                  {...(sub.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                >
+                  {sub.label}
+                </a>
+              ))}
+          </>
+        );
+      })
+    }
+  </nav>
+</header>
+
+<style>
+  /* ── View transition names ──
+     The names for these parts are NOT declared here. They live in the inline head
+     snippet, src/styles/view-transition-head.js, because a name in bundled CSS
+     arrives after the browser has decided what to capture. Keep the class names
+     below and the selectors in that file in step. What follows is why the names
+     exist at all, and it still applies.
+
+     A name pairs an element in the outgoing document with the element of the same
+     name in the incoming one, and the browser tweens between their two boxes. That
+     works here only because both layouts render this one component, so each part
+     really is the same element on both sides. The parts move between the two
+     contexts, which is the whole reason to animate: docs pins the header and adds
+     the sidebar inset, so the brand lockup and nav sit at different x, and the
+     wordmark and version badge drop out entirely at narrow widths.
+
+     Names have to be unique within a document, so these are single-purpose. The
+     nav is named as one unit rather than per link: the links are identical either
+     side, so there is nothing to gain from naming twenty of them, and every extra
+     name is another element the compositor has to snapshot.
+
+     .header-search is named even though it holds different children on each side,
+     Starlight's Pagefind button on docs and a placeholder link on marketing. That
+     is the point: naming the wrapper morphs the one into the other instead of
+     flashing an unrelated control into place.
+
+     Elements that are display:none at a given width are simply not captured, so
+     the wordmark and badge fade rather than morph below their breakpoints. That is
+     the correct behaviour and needs no special casing. */
+  .site-header {
+    background: var(--nr-surface);
+    border-bottom: 1px solid var(--nr-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-nav {
+  }
+
+  /* Flex, so the wrapper is exactly as tall as the control inside it. As a block
+     box its inline child contributed a baseline descender, making it 33px on
+     marketing against 32px on docs, where the control is a flex-displayed button.
+     A 1px difference nobody would notice on separate pages, except these two boxes
+     are now paired by view-transition-name and the mismatch plays as a twitch. */
+  .header-search {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-inner {
+    /* 75px-tall navbar; mobile uses flex. Desktop switches to a 3-column
+       grid that mirrors the docs page-body tracks
+       (sidebar | main | toc-chrome). Identical layout on marketing and
+       docs so the first nav link's x doesn't jump when crossing the
+       marketing↔docs boundary on wide screens.
+
+       --nav-edge-pad: horizontal padding equal to the icon's vertical
+       breathing room. Icon is centred in the 75px row, so the gap
+       above and below the icon is (75 − icon_size) / 2. Mirroring that
+       same gap on the left and right makes the icon and the right-side
+       chrome look optically equidistant from every edge. */
+    --nav-edge-pad: calc((75px - clamp(24px, 2.4vw, 36px)) / 2);
+    max-width: none;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--nav-edge-pad);
+    gap: var(--space-4, 16px);
+    height: 75px;
+  }
+
+  /* The horizontal nav only exists at desktop widths (≥75rem / 1200px —
+     the big wordmark + flow-node nav need the room; below that they
+     collide with the chrome); below that the mobile-toggle owns the nav
+     and this row stays a simple flex space-between (brand left, chrome
+     right). Display is controlled here rather than via a `flex` utility
+     class on the element so the desktop grid can't be defeated by
+     utility specificity. */
+  .header-nav {
+    display: none;
+    align-items: center;
+    position: relative;
+    gap: 22px;
+  }
+
+  @media (min-width: 75rem) {
+    .header-inner {
+      display: grid;
+      /* Logo column sizes to the brand lockup (big text wordmark +
+         version badge) instead of the old fixed sidebar-width track,
+         which the large wordmark overflowed — the badge ended up
+         clipped under the first nav node. */
+      grid-template-columns:
+        [logo] auto
+        [nav] 1fr
+        [chrome] auto;
+      gap: 0;
+      align-items: center;
+    }
+
+    .header-nav {
+      display: flex;
+      /* Clear air between the brand lockup (wordmark + version badge)
+         and the first flow node. */
+      padding-inline-start: 40px;
+      /* Hug the nodes instead of stretching across the [nav] track so
+         the wire below can end at the last node. */
+      justify-self: start;
+    }
+
+    /* The wire the nodes sit on. It runs behind the whole row; the
+       opaque node bodies mask it, leaving wire segments between nodes.
+       The 18px/6px insets keep the line ends tucked under the first
+       and last node bodies. */
+    .header-nav::before {
+      content: '';
+      position: absolute;
+      left: 46px;
+      right: 6px;
+      top: 50%;
+      height: 1.5px;
+      margin-top: -0.75px;
+      background: var(--nr-text-strong);
+      opacity: 0.55;
+    }
+  }
+
+  /* Nav links drawn as Node-RED flow nodes: white rounded-rect bodies
+     with 1px borders and square-ish ports on both edges, sitting on a
+     single wire (the .header-nav::before line behind the row). The
+     opaque node bodies mask the line so only the segments between
+     nodes read as wire. */
+  .header-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    box-sizing: border-box;
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm, 14px);
+    font-weight: 500;
+    color: var(--nr-text-strong);
+    text-decoration: none;
+    padding: 0 14px;
+    background: var(--nr-surface);
+    border: 1px solid var(--nr-text-strong);
+    border-radius: 5px;
+    transition:
+      color var(--duration-fast, 150ms) var(--ease-standard, ease),
+      border-color var(--duration-fast, 150ms) var(--ease-standard, ease),
+      box-shadow var(--duration-fast, 150ms) var(--ease-standard, ease);
+  }
+
+  /* Input / output ports. Node-RED ports are small rounded squares that
+     straddle the node's edge, vertically centred. */
+  .header-nav-link::before,
+  .header-nav-link::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    margin-top: -4.5px;
+    background: var(--nr-surface);
+    border: 1px solid var(--nr-text-strong);
+    border-radius: 2.5px;
+  }
+
+  .header-nav-link::before {
+    left: -5px;
+  }
+
+  .header-nav-link::after {
+    right: -5px;
+  }
+
+  /* The flow reads start-to-end: the first node has no input port and
+     the last node has no output port, so no connector is left dangling.
+     Both selector forms are needed because submenu items wrap their
+     link in a .header-nav-item div while plain items are bare links. */
+  .header-nav > :first-child > .header-nav-link::before,
+  .header-nav > .header-nav-link:first-child::before,
+  .header-nav > :last-child > .header-nav-link::after,
+  .header-nav > .header-nav-link:last-child::after {
+    display: none;
+  }
+
+  .header-nav-link:hover,
+  .header-nav-link:focus-visible {
+    color: var(--nr-red);
+    border-color: var(--nr-red);
+    text-decoration: none;
+  }
+
+  .header-nav-link.is-active {
+    /* Text takes the per-theme token: --nr-red measured 3.35:1 against the dark
+       header surface, short of the 4.5:1 this label needs. The outline keeps
+       --nr-red, because a border is a UI component boundary rather than text and
+       3:1 is the bar there, which 3.35 clears. */
+    color: var(--nr-text-link);
+    border-color: var(--nr-red);
+    box-shadow: inset 0 0 0 1px var(--nr-red);
+  }
+
+  .header-nav-popout {
+    position: absolute;
+    top: 100%;
+    inset-inline-start: 0;
+    margin-top: 0;
+    min-width: 220px;
+    background: var(--nr-surface);
+    border: 1px solid var(--nr-border);
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.12),
+      0 4px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition:
+      opacity var(--duration-fast, 150ms) var(--ease-standard, ease),
+      transform var(--duration-fast, 150ms) var(--ease-standard, ease);
+    z-index: 200;
+  }
+
+  .header-nav-item.has-submenu:hover .header-nav-popout,
+  .header-nav-item.has-submenu:focus-within .header-nav-popout,
+  .header-nav-item.has-submenu[data-open] .header-nav-popout {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .header-nav-popout-link {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: var(--nr-text-strong);
+    font-size: var(--text-body-sm, 14px);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    transition: color var(--duration-fast, 150ms) var(--ease-standard, ease);
+  }
+
+  .header-nav-popout-link:hover,
+  .header-nav-popout-link:focus-visible {
+    color: var(--nr-red);
+    background: var(--nr-red-overlay-soft, rgba(218, 0, 0, 0.08));
+    text-decoration: none;
+  }
+
+  .header-nav-popout-link.is-active {
+    color: var(--nr-text-link);
+    font-weight: 600;
+    background: var(--nr-red-overlay-soft, rgba(218, 0, 0, 0.08));
+  }
+
+  /* Logo + version badge lockup. The badge sits just right of the
+     wordmark, separated by a small gap; the whole brand block occupies
+     the [logo] grid column. */
+  .header-brand {
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .header-logo-img {
+    width: clamp(24px, 2.4vw, 36px);
+    height: clamp(24px, 2.4vw, 36px);
+    display: block;
+    flex-shrink: 0;
+  }
+
+  /* Text wordmark — Google Sans Flex at weight 600, sized to dominate
+     the bar. RED keeps the brand red, horizontal (no rotated lockup).
+     All-caps setting, so tracking flips positive: capitals are drawn to
+     sit beside lowercase and read cramped when set solid; ~2.5% of em
+     restores the counters' rhythm at this size. Optical sizing stays
+     automatic so the font serves forms cut for the rendered size
+     instead of the 144pt display master, and kerning stays on for the
+     E-D and D-hyphen pairs. Hidden below the nav-collapse breakpoint so
+     the mobile nav has the row to itself. */
+  .header-logo-wordmark {
+    font-family: 'Google Sans Flex', var(--font-sans, system-ui, sans-serif);
+    font-size: clamp(28px, 2.9vw, 42px);
+    font-weight: 600;
+    font-optical-sizing: auto;
+    font-kerning: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    line-height: 1;
+    color: var(--nr-text-strong);
+    white-space: nowrap;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .header-logo-wordmark .wordmark-red {
+    color: var(--nr-red, #da0000);
+    /* Both properties, not just the weight, so the pair below moves together. */
+    transition:
+      font-weight var(--duration-fast, 150ms) var(--ease-standard, ease),
+      letter-spacing var(--duration-fast, 150ms) var(--ease-standard, ease);
+  }
+
+  /* Hovering the lockup weights RED up without shifting a single pixel of the
+     rest of the wordmark. NODE- sits before RED in the inline flow so it cannot
+     move; what has to be dealt with is RED getting wider, which would push the
+     version badge and everything after it along.
+
+     Google Sans Flex's wght axis costs a flat 0.0203em of advance per 100 units
+     across all three glyphs (measured: RED is 83.188px at 600 and 87.234px at
+     800, at a 42px rendered size, rising perfectly linearly in between). So
+     600 -> 800 adds 0.03211em per letter, and letter-spacing applies once after
+     each of the three, which makes -0.03211em per letter an exact cancellation
+     rather than an approximation. RED's own letters draw closer as it thickens,
+     which is the intended reading: the word gets heavier in place.
+
+     Being linear in the weight is what makes this hold mid-transition too, not
+     only at the ends, as long as both properties share the easing and duration
+     above. Re-measure if the wordmark's font or its 0.025em tracking changes. */
+  .header-logo:hover .wordmark-red,
+  .header-logo:focus-visible .wordmark-red {
+    font-weight: 800;
+    letter-spacing: calc(0.025em - 0.03211em);
+  }
+
+  /* The floor where the wordmark drops out and the icon is the whole mark.
+     Measured rather than inherited: the wordmark is at its clamp floor of
+     28px for every width below 966px, where NODE-RED sets 147.8px wide, so
+     the brand lockup (24px icon, 12px gap, wordmark) ends at x=203.8 with the
+     gutter at 20px. The chrome opposite it is theme toggle plus drawer button
+     plus their gaps, 108px wide, which starts at x=252 at 360px and at x=282
+     at 390px. So 360px still leaves 48px of air between the two, and this used
+     to be hidden from 480px down, leaving a phone with a 24px icon alone in a
+     bar with 78px of unused room in it.
+     The floor is 360 rather than lower because 320px would leave 8px, and the
+     wordmark's width is a font metric: it moves if the font's delivery or its
+     0.025em tracking changes, and 8px is not enough headroom to absorb that.
+     Nothing about the rendered size changes at the widths this opens up, since
+     28px is the clamp floor either side of the old breakpoint, so the RED
+     hover compensation above is unaffected. */
+  @media (max-width: 22.49rem) {
+    .header-logo-wordmark {
+      display: none;
+    }
+  }
+
+  /* Marketing-side search placeholder, styled to match Starlight's
+     Search button. When the `search` slot is filled (docs side), this
+     placeholder is hidden because the slot replaces the default content
+     above. The slot's :empty selector ensures only the placeholder
+     remains when no Search component is passed. */
+  .search-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--nr-surface-alt);
+    border: 1px solid var(--nr-border);
+    color: var(--nr-text-muted);
+    font: 500 13px/1 var(--font-sans, system-ui, sans-serif);
+    padding: 6px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition:
+      border-color var(--duration-fast, 150ms),
+      color var(--duration-fast, 150ms);
+    min-height: 32px;
+  }
+
+  .search-placeholder:hover,
+  .search-placeholder:focus-visible {
+    background: var(--nr-surface-elevated);
+    border-color: var(--nr-border-strong);
+    color: var(--nr-text-strong);
+    text-decoration: none;
+  }
+
+  .search-placeholder kbd {
+    display: inline-flex;
+    gap: 2px;
+    font-family: var(--font-sans, system-ui, sans-serif);
+    font-size: 11px;
+    margin-left: 4px;
+  }
+
+  .search-placeholder kbd kbd {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e5e5e5;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 0;
+  }
+
+  /* The drawer button's geometry, states, icon sizing and touch target are
+     NOT here. They live in src/styles/nav-shared.css, imported at the top of
+     this file, because Starlight renders a second button for the same job on
+     docs below 50rem and the two have to be one control. Only `display` stays
+     in this component, further down, since that is this call site's own
+     breakpoint rather than anything shared. Change the size through
+     --nr-menu-button-w / --nr-menu-button-h in that file and both buttons plus
+     the docs navbar's gutter reservation move together. */
+
+  .mobile-nav {
+    display: none;
+    flex-direction: column;
+    background: var(--nr-surface);
+    padding: 0 var(--grid-padding) var(--space-5, 20px);
+    border-top: 1px solid var(--nr-border);
+  }
+
+  .mobile-nav[aria-hidden='false'] {
+    display: flex;
+  }
+
+  .mobile-nav-link {
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm, 14px);
+    font-weight: 500;
+    color: var(--nr-text-strong);
+    text-decoration: none;
+    padding: var(--space-4, 16px) 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--nr-border);
+    transition: color var(--duration-fast, 150ms);
+  }
+
+  .mobile-nav-link:hover {
+    color: var(--nr-red);
+    text-decoration: none;
+  }
+  .mobile-nav-link.is-active {
+    color: var(--nr-text-link);
+  }
+
+  /* Sub-items inside the mobile nav (e.g. About > Community/Contribute/...).
+     Indent so the hierarchy is obvious even though the items live in the same
+     flat list visually.
+
+     The indent's base is this list's own text start, which is the drawer's
+     inline padding, so the token is the whole inset here. The muting, the
+     smaller size and the red turn-down arrow are shared with the docs
+     sidebar drawer's Site nav, which lists the same sub-items, and live in
+     src/styles/nav-shared.css with the indent token. */
+  .mobile-nav-sublink {
+    padding-inline-start: var(--nr-drawer-sublink-indent);
+    border-bottom-color: var(--nr-border);
+  }
+
+  /* Hide horizontal nav and inline search on phones / small tablets;
+     mobile-toggle takes over and the .mobile-nav disclosure exposes the
+     full nav set vertically. */
+  .mobile-toggle {
+    display: none;
+  }
+
+  @media (max-width: 74.99rem) {
+    .header-search {
+      display: none;
+    }
+    .mobile-toggle {
+      display: inline-flex;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector('[data-site-header]');
+  const toggle = root?.querySelector('.mobile-toggle');
+  const mobileNav = root?.querySelector('.mobile-nav');
+
+  const setOpen = (open: boolean) => {
+    toggle?.setAttribute('aria-expanded', String(open));
+    mobileNav?.setAttribute('aria-hidden', String(!open));
+  };
+
+  toggle?.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    setOpen(!expanded);
+  });
+
+  mobileNav?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => setOpen(false));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      (toggle as HTMLElement | null)?.focus();
+    }
+  });
+
+  const mql = window.matchMedia('(min-width: 1024px)');
+  mql.addEventListener?.('change', (e) => {
+    if (e.matches) setOpen(false);
+  });
+
+  // ─── Desktop popout submenus ───
+  // Hover-only is fine on mice, but keyboard/touch users need a real
+  // click affordance. The trigger anchor still navigates to the parent
+  // route, so we only intercept on touch (no associated mouse hover
+  // event) or when the user activates it via keyboard with no intent
+  // to navigate (Space). Enter on the trigger keeps default — navigate
+  // to parent.
+  const submenuItems = root?.querySelectorAll<HTMLElement>('[data-nav-submenu]') ?? [];
+  const closeAll = (except?: HTMLElement) => {
+    submenuItems.forEach((item) => {
+      if (item !== except) {
+        item.removeAttribute('data-open');
+        item.querySelector('[aria-haspopup]')?.setAttribute('aria-expanded', 'false');
+      }
+    });
+  };
+
+  submenuItems.forEach((item) => {
+    const trigger = item.querySelector<HTMLAnchorElement>('[aria-haspopup]');
+    if (!trigger) return;
+
+    // Touch users: tap once to open the popout, tap again to navigate.
+    trigger.addEventListener('click', (e) => {
+      // Detect "tap without preceding hover" via the mouse-event flag.
+      // Pointer events on touch devices fire `click` after no `mouseover`.
+      const isOpen = item.hasAttribute('data-open');
+      const isHover = item.matches(':hover');
+      if (!isHover && !isOpen) {
+        e.preventDefault();
+        closeAll(item);
+        item.setAttribute('data-open', '');
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    trigger.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        closeAll(item);
+        item.setAttribute('data-open', '');
+        trigger.setAttribute('aria-expanded', 'true');
+        const first = item.querySelector<HTMLAnchorElement>('.header-nav-popout-link');
+        first?.focus();
+      } else if (e.key === 'Escape') {
+        item.removeAttribute('data-open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        item.removeAttribute('data-open');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.focus();
+      }
+    });
+  });
+
+  // Click outside any submenu closes them all.
+  document.addEventListener('click', (e) => {
+    const target = e.target as Node;
+    let inside = false;
+    submenuItems.forEach((item) => {
+      if (item.contains(target)) inside = true;
+    });
+    if (!inside) closeAll();
+  });
+</script>

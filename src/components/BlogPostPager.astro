@@ -1,0 +1,147 @@
+---
+/**
+ * Newer / older pager below a blog post.
+ *
+ * The rail beside the article only lists recent posts, so once you are
+ * reading something from the archive it shows no neighbours. This pager
+ * always carries the exact adjacent posts in date order, which is what makes
+ * reading straight through the archive possible.
+ *
+ * "Newer" is on the left and "older" on the right, matching the reverse
+ * chronological order of /blog/ itself rather than a book's page order.
+ * Either side can be absent: the newest post has no newer neighbour and the
+ * oldest has no older one, in which case the remaining link keeps its side
+ * of the row and the other side stays empty.
+ */
+import { formatBlogDate } from '../utils/blog';
+
+interface Adjacent {
+  title: string;
+  href: string;
+  date: Date;
+}
+
+interface Props {
+  newer?: Adjacent | undefined;
+  older?: Adjacent | undefined;
+}
+
+const { newer, older } = Astro.props;
+---
+
+{
+  (newer || older) && (
+    <nav class="post-pager" aria-label="More posts">
+      {newer ? (
+        <a class="post-pager-link is-newer" href={newer.href} rel="prev">
+          <span class="post-pager-direction">Newer</span>
+          <span class="post-pager-title">{newer.title}</span>
+          <span class="post-pager-date">{formatBlogDate(newer.date)}</span>
+        </a>
+      ) : (
+        <div class="post-pager-empty" />
+      )}
+
+      {older ? (
+        <a class="post-pager-link is-older" href={older.href} rel="next">
+          <span class="post-pager-direction">Older</span>
+          <span class="post-pager-title">{older.title}</span>
+          <span class="post-pager-date">{formatBlogDate(older.date)}</span>
+        </a>
+      ) : (
+        <div class="post-pager-empty" />
+      )}
+    </nav>
+  )
+}
+
+<style>
+  .post-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+  }
+
+  .post-pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--nr-border);
+    border-radius: var(--radius-md);
+    background: var(--nr-surface-alt);
+    text-decoration: none;
+    transition: border-color 0.12s ease;
+  }
+
+  .post-pager-link:hover {
+    border-color: var(--nr-red);
+    background: var(--nr-surface-elevated);
+    text-decoration: none;
+  }
+
+  /* The older link right-aligns so the pair reads outward from the centre,
+     making the direction legible without relying on the arrow glyphs alone. */
+  .post-pager-link.is-older {
+    text-align: right;
+  }
+
+  .post-pager-direction {
+    color: var(--nr-text-faint);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .post-pager-link.is-newer .post-pager-direction::before {
+    content: '\2190\00a0';
+  }
+
+  .post-pager-link.is-older .post-pager-direction::after {
+    content: '\00a0\2192';
+  }
+
+  .post-pager-title {
+    color: var(--nr-text-strong);
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+
+  .post-pager-link:hover .post-pager-title {
+    color: var(--nr-text-link);
+  }
+
+  .post-pager-date {
+    color: var(--nr-text-faint);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* Holds the empty half of the row so a lone link stays on its own side
+     rather than stretching across both columns. */
+  .post-pager-empty {
+    display: block;
+  }
+
+  @media (max-width: 767px) {
+    .post-pager {
+      grid-template-columns: 1fr;
+    }
+
+    /* Stacked, both links read left-to-right; the arrows carry direction. */
+    .post-pager-link.is-older {
+      text-align: left;
+    }
+
+    .post-pager-empty {
+      display: none;
+    }
+  }
+</style>

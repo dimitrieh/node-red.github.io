@@ -1,0 +1,1078 @@
+---
+/**
+ * In-page wordmark tuner. Activates only when the URL has `?tune`. When
+ * active it:
+ *   1. Marks the body with `data-wm-tuning` so CSS hides the SVG
+ *      wordmarks in the masthead and nav lockup.
+ *   2. Renders live Google Sans Flex `NODE` + `RED` in their place, via
+ *      --font-sans rather than the family name: Astro's Fonts API appends a
+ *      config hash to the @font-face family, so the bare literal silently
+ *      matches nothing and this tuner would preview in system-ui, which is
+ *      useless for the advance-width measurement it exists to support.
+ *      with INDEPENDENT CSS variables per context (--wm-mast-* and
+ *      --wm-nav-*) so the masthead and the nav lockup can be tuned
+ *      separately.
+ *   3. Floats a control panel with one section for the masthead and
+ *      one for the nav lockup. The masthead section also exposes
+ *      container padding/margin, background colour, and a toggle to
+ *      wrap RED onto a new line below NODE.
+ *   4. Mirrors the full state to the URL hash so the choices round-trip:
+ *      copy the hash to save a setting, or share it to reproduce one.
+ *
+ * All structural DOM is rendered here in Astro (server-side); the
+ * runtime script never touches innerHTML.
+ */
+import { readFileSync } from 'node:fs';
+
+const tuning = import.meta.env.DEV;
+
+const wordmarkSrc = readFileSync('./src/assets/node-red-wordmark.svg', 'utf8');
+const wordmarkGhost = wordmarkSrc
+  .replace(/fill="black"/gi, 'fill="#0080ff"')
+  .replace(/fill="#DA0000"/gi, 'fill="#00b050"');
+
+// ─── Axis definitions ─────────────────────────────────────────────
+// Each axis lists: key (state slot), label, min/max/step, default, type.
+// `type` is 'float' (default), 'int', 'bool', or 'color'. The script
+// reads/writes per-context state via `data-k="<context>/<axis.key>"`.
+type Axis = {
+  key: string;
+  label: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  default: number | boolean | string;
+  type?: 'int' | 'float' | 'bool' | 'color';
+};
+
+const MAST_AXES: Record<string, Axis[]> = {
+  NODE: [
+    { key: 'node.wght',     label: 'weight',          min: 100,  max: 900,  step: 1,     default: 500,    type: 'int' },
+    { key: 'node.opsz',     label: 'optical size',    min: 6,    max: 144,  step: 1,     default: 144,    type: 'int' },
+    { key: 'node.ls',       label: 'letter-spacing',  min: -0.1, max: 0.05, step: 0.001, default: -0.030 },
+    { key: 'node.size',     label: 'font-size',       min: 10,   max: 50,   step: 0.1,   default: 35.6   },
+    { key: 'node.colLight', label: 'color · light',   default: '#000000', type: 'color' },
+    { key: 'node.colDark',  label: 'color · dark',    default: '#fafafa', type: 'color' },
+  ],
+  RED: [
+    { key: 'red.wght',     label: 'weight',         min: 100,  max: 900,  step: 1,     default: 600,    type: 'int' },
+    { key: 'red.opsz',     label: 'optical size',   min: 6,    max: 144,  step: 1,     default: 144,    type: 'int' },
+    { key: 'red.ls',       label: 'letter-spacing', min: -0.1, max: 0.05, step: 0.001, default: -0.031 },
+    { key: 'red.size',     label: 'font-size',      min: 2,    max: 25,   step: 0.1,   default: 14.9   },
+    { key: 'red.rot',      label: 'rotation',       min: 0,    max: 360,  step: 1,     default: 90,     type: 'int' },
+    { key: 'red.tx',       label: 'translate X',    min: -3,   max: 3,    step: 0.01,  default: 0      },
+    { key: 'red.ty',       label: 'translate Y',    min: -3,   max: 3,    step: 0.01,  default: 0      },
+    { key: 'red.colLight', label: 'color · light',  default: '#DA0000', type: 'color' },
+    { key: 'red.colDark',  label: 'color · dark',   default: '#DA0000', type: 'color' },
+  ],
+  Layout: [
+    { key: 'gap',      label: 'gap',                min: 0, max: 20, step: 0.01, default: 0 },
+    { key: 'leftPad',  label: 'indent left',        min: 0, max: 20, step: 0.01, default: 0 },
+    { key: 'redCol',   label: 'RED column width',   min: 2, max: 15, step: 0.01, default: 11 },
+    { key: 'stackRed', label: 'RED on new line',    default: false, type: 'bool' },
+  ],
+  Container: [
+    { key: 'padTop',    label: 'padding top',    min: 0, max: 15, step: 0.05, default: 1.5 },
+    { key: 'padRight',  label: 'padding right',  min: 0, max: 15, step: 0.05, default: 1.0 },
+    { key: 'padBottom', label: 'padding bottom', min: 0, max: 15, step: 0.05, default: 1.0 },
+    { key: 'padLeft',   label: 'padding left',   min: 0, max: 15, step: 0.05, default: 1.0 },
+    { key: 'marTop',    label: 'margin top',     min: 0, max: 15, step: 0.05, default: 0 },
+    { key: 'marRight',  label: 'margin right',   min: 0, max: 15, step: 0.05, default: 0 },
+    { key: 'marBottom', label: 'margin bottom',  min: 0, max: 15, step: 0.05, default: 0 },
+    { key: 'marLeft',   label: 'margin left',    min: 0, max: 15, step: 0.05, default: 0 },
+    { key: 'bgLight',   label: 'bg · light',     default: '#ffffff', type: 'color' },
+    { key: 'bgDark',    label: 'bg · dark',      default: '#18181b', type: 'color' },
+  ],
+  Verify: [
+    { key: 'overlay', label: 'ghost SVG opacity', min: 0, max: 1, step: 0.05, default: 0 },
+  ],
+};
+
+const NAV_AXES: Record<string, Axis[]> = {
+  NODE: [
+    { key: 'node.wght',     label: 'weight',           min: 100,  max: 900,  step: 1,     default: 500,    type: 'int' },
+    { key: 'node.opsz',     label: 'optical size',     min: 6,    max: 144,  step: 1,     default: 144,    type: 'int' },
+    { key: 'node.ls',       label: 'letter-spacing',   min: -0.1, max: 0.05, step: 0.001, default: -0.030 },
+    { key: 'node.size',     label: 'font-size',        min: 0.3,  max: 1.8,  step: 0.01,  default: 0.92   },
+    { key: 'node.colLight', label: 'color · light',    default: '#000000', type: 'color' },
+    { key: 'node.colDark',  label: 'color · dark',     default: '#fafafa', type: 'color' },
+  ],
+  RED: [
+    { key: 'red.wght',     label: 'weight',         min: 100,  max: 900,  step: 1,     default: 600,    type: 'int' },
+    { key: 'red.opsz',     label: 'optical size',   min: 6,    max: 144,  step: 1,     default: 144,    type: 'int' },
+    { key: 'red.ls',       label: 'letter-spacing', min: -0.1, max: 0.05, step: 0.001, default: -0.031 },
+    { key: 'red.size',     label: 'font-size',      min: 0.15, max: 1.0,  step: 0.01,  default: 0.45   },
+    { key: 'red.rot',      label: 'rotation',       min: 0,    max: 360,  step: 1,     default: 90,     type: 'int' },
+    { key: 'red.colLight', label: 'color · light',  default: '#DA0000', type: 'color' },
+    { key: 'red.colDark',  label: 'color · dark',   default: '#DA0000', type: 'color' },
+  ],
+  Layout: [
+    { key: 'gap',     label: 'gap',              min: 0, max: 40, step: 0.5, default: 12 },
+    { key: 'leftPad', label: 'indent left',      min: 0, max: 40, step: 0.5, default: 0  },
+    { key: 'redCol',  label: 'RED column width', min: 0.15, max: 1.0, step: 0.01, default: 0.45 },
+  ],
+};
+
+const SECTIONS = [
+  { id: 'mast', label: 'MASTHEAD',  swatch: '#111',     groups: MAST_AXES },
+  { id: 'nav',  label: 'NAV LOCKUP', swatch: '#DA0000', groups: NAV_AXES  },
+];
+---
+
+{tuning && (
+  <>
+    <style is:global>
+      /* Defaults must mirror the axis defaults above so the *initial*
+         paint (before the script runs) doesn't flicker. */
+      :root {
+        /* Masthead vars */
+        --wm-mast-node-wght: 500;
+        --wm-mast-node-opsz: 144;
+        --wm-mast-node-ls:   -0.030em;
+        --wm-mast-node-size: 35.6cqw;
+        --wm-mast-red-wght:  600;
+        --wm-mast-red-opsz:  144;
+        --wm-mast-red-ls:    -0.031em;
+        --wm-mast-red-size:  14.9cqw;
+        --wm-mast-red-rot:   90deg;
+        --wm-mast-red-tx:    0em;
+        --wm-mast-red-ty:    0em;
+        --wm-mast-gap:        0cqw;
+        --wm-mast-leftPad:    0cqw;
+        --wm-mast-redCol:    11cqw;
+        --wm-mast-padTop:    1.5%;
+        --wm-mast-padBottom: 1.0%;
+        --wm-mast-padLeft:   1.0%;
+        --wm-mast-padRight:  1.0%;
+        --wm-mast-marTop:    0%;
+        --wm-mast-marBottom: 0%;
+        --wm-mast-marLeft:   0%;
+        --wm-mast-marRight:  0%;
+        /* Per-theme colour pairs. The active value (--wm-mast-bg etc.)
+           is resolved below in :root[data-theme=...] selectors. */
+        --wm-mast-bg-light:       #ffffff;
+        --wm-mast-bg-dark:        #18181b;
+        --wm-mast-node-col-light: #000000;
+        --wm-mast-node-col-dark:  #fafafa;
+        --wm-mast-red-col-light:  #DA0000;
+        --wm-mast-red-col-dark:   #DA0000;
+        --wm-mast-overlay:        0;
+
+        /* Nav vars (ratios are unitless multipliers of --wm-nav-h, the
+           live nav-logo slot height in px, set by the runtime script). */
+        --wm-nav-node-wght:  500;
+        --wm-nav-node-opsz:  144;
+        --wm-nav-node-ls:    -0.030em;
+        --wm-nav-node-size:  calc(var(--wm-nav-h, 28px) * 0.92);
+        --wm-nav-red-wght:   600;
+        --wm-nav-red-opsz:   144;
+        --wm-nav-red-ls:     -0.031em;
+        --wm-nav-red-size:   calc(var(--wm-nav-h, 28px) * 0.45);
+        --wm-nav-red-rot:    90deg;
+        --wm-nav-gap:         12px;
+        --wm-nav-leftPad:     0px;
+        --wm-nav-redCol:     calc(var(--wm-nav-h, 28px) * 0.45);
+        --wm-nav-node-col-light: #000000;
+        --wm-nav-node-col-dark:  #fafafa;
+        --wm-nav-red-col-light:  #DA0000;
+        --wm-nav-red-col-dark:   #DA0000;
+      }
+
+      /* Theme-resolved colour vars. The lockup CSS reads these
+         (--wm-mast-bg, --wm-mast-node-col, etc.) directly; the
+         resolution happens here based on the page's data-theme. */
+      :root[data-theme='light'],
+      :root:not([data-theme]) {
+        --wm-mast-bg:       var(--wm-mast-bg-light);
+        --wm-mast-node-col: var(--wm-mast-node-col-light);
+        --wm-mast-red-col:  var(--wm-mast-red-col-light);
+        --wm-nav-node-col:  var(--wm-nav-node-col-light);
+        --wm-nav-red-col:   var(--wm-nav-red-col-light);
+      }
+      :root[data-theme='dark'] {
+        --wm-mast-bg:       var(--wm-mast-bg-dark);
+        --wm-mast-node-col: var(--wm-mast-node-col-dark);
+        --wm-mast-red-col:  var(--wm-mast-red-col-dark);
+        --wm-nav-node-col:  var(--wm-nav-node-col-dark);
+        --wm-nav-red-col:   var(--wm-nav-red-col-dark);
+      }
+
+      /* When the body has `data-wm-tuning`, the SVG wordmarks are
+         hidden and the live GSF replacements drive the lockups.
+         Without the attribute (reset / neutral state) the SVGs are
+         visible and the live wordmarks are hidden, so the page looks
+         identical to a non-tune visit. */
+      body[data-wm-tuning] .masthead > svg,
+      body[data-wm-tuning] .header-logo-wordmark {
+        display: none !important;
+      }
+      /* Hide live wordmarks + overlay when NOT in tuning mode. Using
+         `body:not([data-wm-tuning])` keeps the specificity above the
+         layout rules further down that set `display: flex` on these
+         elements unconditionally. */
+      body:not([data-wm-tuning]) .masthead > .wm-live,
+      body:not([data-wm-tuning]) .header-logo > .wm-live,
+      body:not([data-wm-tuning]) .wm-overlay {
+        display: none !important;
+      }
+      /* A synthesized masthead (script-injected on pages that have no
+         .masthead of their own) has no other content, so hide the whole
+         container outside tuning mode to keep the neutral page intact. */
+      body:not([data-wm-tuning]) .masthead[data-wm-synthetic] {
+        display: none !important;
+      }
+
+      body[data-wm-tuning] .masthead,
+      body[data-wm-tuning] .header-logo {
+        container-type: inline-size;
+        position: relative;
+      }
+
+      /* Masthead container — padding, margin, background under tuning. */
+      body[data-wm-tuning] .masthead {
+        background: var(--wm-mast-bg) !important;
+        padding:
+          var(--wm-mast-padTop)
+          var(--wm-mast-padRight)
+          var(--wm-mast-padBottom)
+          var(--wm-mast-padLeft) !important;
+        margin:
+          var(--wm-mast-marTop)
+          var(--wm-mast-marRight)
+          var(--wm-mast-marBottom)
+          var(--wm-mast-marLeft) !important;
+      }
+
+      /* Live wordmark in the masthead */
+      .masthead > .wm-live {
+        display: flex;
+        align-items: stretch;
+        line-height: 1;
+        width: 100%;
+        padding-inline-start: var(--wm-mast-leftPad);
+        gap: var(--wm-mast-gap);
+      }
+      /* Stacked RED: both NODE and RED-col are flex-start (left edge)
+         and RED-col shrinks to its content. RED inside is left-aligned
+         in its col so the column sizing doesn't centre it away from
+         NODE's start x. The rotation slider still works — set rot=0
+         for horizontal RED below NODE. */
+      .masthead > .wm-live[data-stack-red] {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .masthead > .wm-live[data-stack-red] .wm-red-col {
+        width: auto;
+        align-self: flex-start;
+        justify-content: flex-start;
+      }
+      .masthead > .wm-live[data-stack-red] .wm-red {
+        text-align: left;
+      }
+
+      .masthead > .wm-live .wm-node {
+        flex: 0 0 auto;
+        font-family: var(--font-sans, system-ui, sans-serif);
+        text-transform: uppercase;
+        white-space: nowrap;
+        line-height: 1;
+        text-box: cap alphabetic;
+        text-box-trim: trim-both;
+        font-variation-settings: 'opsz' var(--wm-mast-node-opsz), 'wght' var(--wm-mast-node-wght);
+        font-size: var(--wm-mast-node-size);
+        letter-spacing: var(--wm-mast-node-ls);
+        color: var(--wm-mast-node-col);
+      }
+      .masthead > .wm-live .wm-red-col {
+        flex: 0 0 auto;
+        width: var(--wm-mast-redCol);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+      }
+      .masthead > .wm-live .wm-red {
+        display: block;
+        font-family: var(--font-sans, system-ui, sans-serif);
+        text-transform: uppercase;
+        white-space: nowrap;
+        line-height: 1;
+        text-box: cap alphabetic;
+        text-box-trim: trim-both;
+        font-variation-settings: 'opsz' var(--wm-mast-red-opsz), 'wght' var(--wm-mast-red-wght);
+        font-size: var(--wm-mast-red-size);
+        letter-spacing: var(--wm-mast-red-ls);
+        color: var(--wm-mast-red-col);
+        transform:
+          translate(var(--wm-mast-red-tx), var(--wm-mast-red-ty))
+          rotate(var(--wm-mast-red-rot));
+        transform-origin: center center;
+      }
+
+      /* Live wordmark in the nav lockup */
+      .header-logo > .wm-live {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        flex: 1 1 auto;
+        padding-inline-start: var(--wm-nav-leftPad);
+        gap: var(--wm-nav-gap);
+      }
+      .header-logo > .wm-live .wm-node {
+        flex: 0 0 auto;
+        font-family: var(--font-sans, system-ui, sans-serif);
+        text-transform: uppercase;
+        white-space: nowrap;
+        line-height: 1;
+        text-box: cap alphabetic;
+        text-box-trim: trim-both;
+        font-variation-settings: 'opsz' var(--wm-nav-node-opsz), 'wght' var(--wm-nav-node-wght);
+        font-size: var(--wm-nav-node-size);
+        letter-spacing: var(--wm-nav-node-ls);
+        color: var(--wm-nav-node-col);
+      }
+      .header-logo > .wm-live .wm-red-col {
+        flex: 0 0 auto;
+        width: var(--wm-nav-redCol);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+      }
+      .header-logo > .wm-live .wm-red {
+        display: block;
+        font-family: var(--font-sans, system-ui, sans-serif);
+        text-transform: uppercase;
+        white-space: nowrap;
+        line-height: 1;
+        text-box: cap alphabetic;
+        text-box-trim: trim-both;
+        font-variation-settings: 'opsz' var(--wm-nav-red-opsz), 'wght' var(--wm-nav-red-wght);
+        font-size: var(--wm-nav-red-size);
+        letter-spacing: var(--wm-nav-red-ls);
+        color: var(--wm-nav-red-col);
+        transform: rotate(var(--wm-nav-red-rot));
+        transform-origin: center center;
+      }
+
+      /* Ghost overlay on the masthead only. */
+      .wm-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: var(--wm-mast-overlay);
+        mix-blend-mode: multiply;
+      }
+      .wm-overlay > svg { width: 100%; height: auto; display: block; }
+
+      .wm-staging { position: absolute; left: -99999px; top: 0; }
+
+      /* Panel theme tokens. Two sets — light and dark — selected by
+         the page's `data-theme` attribute. The panel reads only from
+         these vars so its chrome flips when the user toggles the site
+         theme, with no JS involvement. */
+      :root[data-theme='dark'] {
+        --wm-pn-bg:       #18181b;
+        --wm-pn-bg-elev:  rgba(255,255,255,0.04);
+        --wm-pn-bg-input: #0f0f12;
+        --wm-pn-border:   #2a2a30;
+        --wm-pn-border-2: #3a3a40;
+        --wm-pn-text:     #fafafa;
+        --wm-pn-text-mid: #d4d4d8;
+        --wm-pn-text-mut: #9a9aa3;
+        --wm-pn-shadow:   0 24px 60px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.25);
+        --wm-pn-thumb:    #fafafa;
+        --wm-pn-thumb-rim:#18181b;
+      }
+      :root[data-theme='light'],
+      :root:not([data-theme]) {
+        --wm-pn-bg:       #ffffff;
+        --wm-pn-bg-elev:  #f7f7f8;
+        --wm-pn-bg-input: #fafafa;
+        --wm-pn-border:   #e4e4e7;
+        --wm-pn-border-2: #d4d4d8;
+        --wm-pn-text:     #18181b;
+        --wm-pn-text-mid: #404048;
+        --wm-pn-text-mut: #6b6b73;
+        --wm-pn-shadow:   0 24px 60px rgba(15,15,18,0.18), 0 8px 16px rgba(15,15,18,0.08);
+        --wm-pn-thumb:    #18181b;
+        --wm-pn-thumb-rim:#ffffff;
+      }
+
+      /* Floating control panel.
+         Typography: 13.5px base ui-sans-serif so labels stay readable;
+         numeric inputs in ui-monospace so digit columns line up. */
+      .wm-panel {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        width: 420px;
+        max-height: calc(100vh - 32px);
+        background: var(--wm-pn-bg);
+        color: var(--wm-pn-text);
+        border: 1px solid var(--wm-pn-border);
+        border-radius: 12px;
+        box-shadow: var(--wm-pn-shadow);
+        font: 13.5px/1.5 ui-sans-serif, system-ui, -apple-system, 'SF Pro Text', sans-serif;
+        z-index: 100000;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .wm-panel header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: var(--wm-pn-bg-elev);
+        border-bottom: 1px solid var(--wm-pn-border);
+        cursor: move;
+        user-select: none;
+        gap: 8px;
+      }
+      .wm-panel header h2 {
+        margin: 0;
+        font-size: 13px; font-weight: 700;
+        letter-spacing: 0.06em; text-transform: uppercase;
+        color: var(--wm-pn-text-mid);
+        flex: 1 1 auto;
+      }
+      .wm-panel header button {
+        background: transparent; border: 0;
+        color: var(--wm-pn-text-mut);
+        cursor: pointer;
+        font: 600 11px/1 ui-sans-serif;
+        line-height: 1; padding: 6px 10px;
+        border-radius: 5px;
+      }
+      .wm-panel header button:hover {
+        color: var(--wm-pn-text);
+        background: var(--wm-pn-border);
+      }
+      .wm-panel header button.x {
+        font-size: 20px;
+        padding: 2px 8px;
+      }
+      .wm-panel header button.reset {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .wm-panel .body { overflow-y: auto; padding: 0; }
+      .wm-section {
+        border-bottom: 2px solid var(--wm-pn-border);
+      }
+      .wm-section:last-of-type { border-bottom: 0; }
+      .wm-section-title {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: linear-gradient(180deg, var(--wm-pn-bg) 0%, var(--wm-pn-bg) 85%, transparent 100%);
+        padding: 14px 16px 8px;
+        font: 700 14px/1 ui-sans-serif, system-ui, sans-serif;
+        letter-spacing: 0.08em;
+        color: var(--wm-pn-text);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .wm-section-title .sw {
+        display: inline-block; width: 11px; height: 11px;
+        border-radius: 3px;
+      }
+      .wm-section-title .reset-section {
+        margin-left: auto;
+        background: transparent;
+        border: 1px solid var(--wm-pn-border);
+        color: var(--wm-pn-text-mut);
+        font: 500 10px/1 ui-sans-serif;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        padding: 5px 8px; border-radius: 4px;
+        cursor: pointer;
+      }
+      .wm-section-title .reset-section:hover {
+        color: var(--wm-pn-text);
+        border-color: var(--wm-pn-border-2);
+      }
+      .wm-group {
+        padding: 8px 16px 14px;
+      }
+      .wm-group > h3 {
+        margin: 6px 0 8px;
+        font: 600 11px/1 ui-sans-serif, system-ui, sans-serif;
+        letter-spacing: 0.1em; text-transform: uppercase;
+        color: var(--wm-pn-text-mut);
+      }
+      .wm-row {
+        display: grid;
+        grid-template-columns: 130px 1fr 72px;
+        align-items: center;
+        column-gap: 12px;
+        padding: 6px 0;
+      }
+      .wm-row label {
+        font: 500 12.5px/1.3 ui-sans-serif, system-ui, sans-serif;
+        color: var(--wm-pn-text-mid);
+      }
+      .wm-row input[type="range"] {
+        appearance: none; -webkit-appearance: none;
+        width: 100%; height: 20px; background: transparent;
+      }
+      .wm-row input[type="range"]::-webkit-slider-runnable-track {
+        height: 3px; background: var(--wm-pn-border); border-radius: 2px;
+      }
+      .wm-row input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px; height: 16px; margin-top: -7px;
+        background: var(--wm-pn-thumb); border-radius: 50%;
+        border: 2px solid var(--wm-pn-thumb-rim);
+        box-shadow: 0 0 0 1px var(--wm-pn-border-2);
+        cursor: pointer;
+      }
+      .wm-row input[type="number"],
+      .wm-row input[type="text"] {
+        width: 100%;
+        background: var(--wm-pn-bg-input);
+        border: 1px solid var(--wm-pn-border);
+        color: var(--wm-pn-text);
+        font: 500 12.5px/1.2 ui-monospace, 'SF Mono', Menlo, monospace;
+        padding: 6px 7px; border-radius: 5px; text-align: right;
+      }
+      .wm-row input[type="number"]:focus,
+      .wm-row input[type="text"]:focus {
+        outline: none; border-color: var(--wm-pn-border-2);
+      }
+      .wm-row input[type="color"] {
+        width: 100%; height: 28px;
+        background: var(--wm-pn-bg-input);
+        border: 1px solid var(--wm-pn-border);
+        border-radius: 5px; padding: 0; cursor: pointer;
+      }
+      .wm-row.toggle {
+        grid-template-columns: 130px 1fr;
+      }
+      .wm-row.toggle .switch {
+        justify-self: end;
+        appearance: none; -webkit-appearance: none;
+        width: 38px; height: 22px;
+        background: var(--wm-pn-border); border-radius: 11px;
+        position: relative; cursor: pointer;
+        transition: background 120ms ease;
+      }
+      .wm-row.toggle .switch:checked { background: #DA0000; }
+      .wm-row.toggle .switch::after {
+        content: ''; position: absolute;
+        top: 2px; left: 2px;
+        width: 18px; height: 18px;
+        background: var(--wm-pn-thumb); border-radius: 50%;
+        transition: transform 120ms ease;
+      }
+      .wm-row.toggle .switch:checked::after { transform: translateX(16px); }
+
+      .wm-readout {
+        padding: 12px 16px;
+        font: 500 12px/1.5 ui-monospace, 'SF Mono', Menlo, monospace;
+        background: var(--wm-pn-bg-elev);
+        border-top: 1px solid var(--wm-pn-border);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px 14px;
+      }
+      .wm-readout .k {
+        color: var(--wm-pn-text-mut);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      .wm-readout .v { color: var(--wm-pn-text); text-align: right; }
+      .wm-readout .v.good { color: #4caf63; }
+      .wm-readout .v.warn { color: #d99511; }
+      .wm-readout .v.bad  { color: #d23a3a; }
+      .wm-hash {
+        display: flex; gap: 8px; padding: 12px 16px;
+        border-top: 1px solid var(--wm-pn-border);
+        background: var(--wm-pn-bg-elev);
+      }
+      .wm-hash code {
+        flex: 1;
+        font: 500 11px/1 ui-monospace, 'SF Mono', Menlo, monospace;
+        background: var(--wm-pn-bg-input);
+        border: 1px solid var(--wm-pn-border);
+        border-radius: 5px;
+        padding: 8px 9px; color: var(--wm-pn-text);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      .wm-hash button {
+        font: 600 12px/1 ui-sans-serif;
+        background: #DA0000; color: #fff; border: 0;
+        padding: 8px 14px; border-radius: 5px; cursor: pointer;
+      }
+      .wm-hash button.ok { background: #4caf63; color: #fff; }
+
+      .wm-reopen {
+        position: fixed;
+        right: 16px; bottom: 16px;
+        background: var(--wm-pn-bg); color: var(--wm-pn-text);
+        border: 1px solid var(--wm-pn-border);
+        padding: 10px 16px; border-radius: 999px;
+        font: 600 13px/1 ui-sans-serif;
+        cursor: pointer; z-index: 100000;
+        display: none;
+        box-shadow: var(--wm-pn-shadow);
+      }
+      .wm-reopen.visible { display: inline-flex; }
+    </style>
+
+    <div class="wm-staging" data-wm-staging aria-hidden="true">
+      <div class="wm-live" data-wm-template="live">
+        <span class="wm-node">Node</span>
+        <div class="wm-red-col"><span class="wm-red">Red</span></div>
+      </div>
+      <div class="wm-overlay" data-wm-template="overlay">
+        <Fragment set:html={wordmarkGhost} />
+      </div>
+    </div>
+
+    <aside class="wm-panel" data-wm-panel>
+      <header>
+        <h2>Wordmark tuner</h2>
+        <button type="button" class="reset" data-action="reset-all" title="Reset all values to defaults">Reset</button>
+        <button type="button" class="x" data-action="close" aria-label="Hide tuner">×</button>
+      </header>
+      <div class="body">
+        {SECTIONS.map((section) => (
+          <section class="wm-section" data-section={section.id}>
+            <div class="wm-section-title">
+              <span class="sw" style={`background:${section.swatch}`}></span>
+              {section.label}
+              <button type="button" class="reset-section" data-action="reset-section" data-section={section.id} title={`Reset ${section.label.toLowerCase()} to defaults`}>Reset</button>
+            </div>
+            {Object.entries(section.groups).map(([groupName, axes]) => (
+              <div class="wm-group">
+                <h3>{groupName}</h3>
+                {axes.map((a) => {
+                  const dk = `${section.id}/${a.key}`;
+                  if (a.type === 'bool') return (
+                    <div class="wm-row toggle">
+                      <label>{a.label}</label>
+                      <input type="checkbox" class="switch" data-k={dk} checked={!!a.default} />
+                    </div>
+                  );
+                  if (a.type === 'color') return (
+                    <div class="wm-row">
+                      <label>{a.label}</label>
+                      <input type="color" data-k={dk} value={a.default as string} />
+                      <input type="text" data-k={dk} data-mirror value={a.default as string} maxlength="7" />
+                    </div>
+                  );
+                  return (
+                    <div class="wm-row">
+                      <label>{a.label}</label>
+                      <input type="range"  min={a.min} max={a.max} step={a.step} value={a.default as number} data-k={dk} />
+                      <input type="number" min={a.min} max={a.max} step={a.step} value={a.default as number} data-k={dk} data-mirror />
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </section>
+        ))}
+
+        <div class="wm-readout" data-readout>
+          <span class="k">masthead left pad</span><span class="v" data-rd="leftPad">—</span>
+          <span class="k">masthead NODE w</span><span class="v" data-rd="nodeW">—</span>
+          <span class="k">masthead gap</span><span class="v" data-rd="gap">—</span>
+          <span class="k">masthead RED w</span><span class="v" data-rd="redW">—</span>
+          <span class="k">masthead NODE h/row</span><span class="v" data-rd="nodeH">—</span>
+        </div>
+      </div>
+      <div class="wm-hash">
+        <code data-hash>—</code>
+        <button type="button" data-action="copy">Copy</button>
+      </div>
+    </aside>
+    <button type="button" class="wm-reopen" data-wm-reopen>⚙ Tuner</button>
+
+    <script is:inline data-wm-tuner>
+      (() => {
+        'use strict';
+
+        const params = new URLSearchParams(window.location.search);
+        if (!params.has('tune')) {
+          document.querySelectorAll('[data-wm-staging], [data-wm-panel], [data-wm-reopen]').forEach((el) => el.remove());
+          return;
+        }
+
+        const REF = { leftPad: 3.21, nodeW: 86.27, gap: 3.34, redW: 7.17, nodeH: 96.7 };
+
+        // ─── State ───────────────────────────────────────────────
+        // Two buckets — `mast` and `nav` — so the same axis names
+        // (node.wght etc.) can hold independent values per context.
+        const DEFAULTS = {
+          mast: {
+            'node.wght': 500, 'node.opsz': 144, 'node.ls': -0.030, 'node.size': 35.6,
+            'node.colLight': '#000000', 'node.colDark': '#fafafa',
+            'red.wght':  600, 'red.opsz':  144, 'red.ls':  -0.031, 'red.size': 14.9, 'red.rot': 90,
+            'red.tx': 0, 'red.ty': 0,
+            'red.colLight': '#DA0000', 'red.colDark': '#DA0000',
+            gap: 0, leftPad: 0, redCol: 11,
+            stackRed: false,
+            padTop: 1.5, padBottom: 1.0, padLeft: 1.0, padRight: 1.0,
+            marTop: 0, marBottom: 0, marLeft: 0, marRight: 0,
+            bgLight: '#ffffff', bgDark: '#18181b',
+            overlay: 0,
+          },
+          nav: {
+            'node.wght': 500, 'node.opsz': 144, 'node.ls': -0.030, 'node.size': 0.92,
+            'node.colLight': '#000000', 'node.colDark': '#fafafa',
+            'red.wght':  600, 'red.opsz':  144, 'red.ls':  -0.031, 'red.size': 0.45, 'red.rot': 90,
+            'red.colLight': '#DA0000', 'red.colDark': '#DA0000',
+            gap: 12, leftPad: 0, redCol: 0.45,
+          },
+        };
+
+        const INT_KEYS = new Set([
+          'mast/node.wght','mast/node.opsz','mast/red.wght','mast/red.opsz','mast/red.rot',
+          'nav/node.wght','nav/node.opsz','nav/red.wght','nav/red.opsz','nav/red.rot',
+        ]);
+        const BOOL_KEYS = new Set(['mast/stackRed']);
+        const COLOR_KEYS = new Set([
+          'mast/bgLight','mast/bgDark',
+          'mast/node.colLight','mast/node.colDark','mast/red.colLight','mast/red.colDark',
+          'nav/node.colLight','nav/node.colDark','nav/red.colLight','nav/red.colDark',
+        ]);
+
+        const state = JSON.parse(JSON.stringify(DEFAULTS));
+
+        const flatKeys = () => {
+          const out = [];
+          for (const ctx of Object.keys(state)) {
+            for (const k of Object.keys(state[ctx])) out.push(`${ctx}/${k}`);
+          }
+          return out;
+        };
+
+        const parse = (dk, raw) => {
+          if (BOOL_KEYS.has(dk))  return raw === '1' || raw === true || raw === 'true';
+          if (COLOR_KEYS.has(dk)) {
+            const v = raw.startsWith('#') ? raw : ('#' + raw);
+            return /^#[0-9a-f]{6}$/i.test(v) ? v : null;
+          }
+          if (INT_KEYS.has(dk))   { const v = parseInt(raw, 10); return Number.isNaN(v) ? null : v; }
+          const v = parseFloat(raw); return Number.isNaN(v) ? null : v;
+        };
+
+        const get = (dk) => { const [c, k] = dk.split('/'); return state[c][k]; };
+        const setV = (dk, v) => { const [c, k] = dk.split('/'); state[c][k] = v; };
+
+        const toHash = () => flatKeys().map((dk) => {
+          const v = get(dk);
+          if (BOOL_KEYS.has(dk))  return `${dk}=${v ? 1 : 0}`;
+          if (COLOR_KEYS.has(dk)) return `${dk}=${v.replace('#','')}`;
+          return `${dk}=${+(v).toFixed(4)}`;
+        }).join('&');
+
+        const fromHash = (h) => {
+          if (!h) return false;
+          let any = false;
+          for (const pair of h.replace(/^#/, '').split('&').filter(Boolean)) {
+            const eq = pair.indexOf('=');
+            if (eq < 0) continue;
+            const dk = pair.slice(0, eq), raw = pair.slice(eq + 1);
+            const [c, k] = dk.split('/');
+            if (!state[c] || !(k in state[c])) continue;
+            const v = parse(dk, raw);
+            if (v !== null && v !== undefined) { state[c][k] = v; any = true; }
+          }
+          return any;
+        };
+
+        // ─── Install live wordmarks ────────────────────────────
+        const installWordmarks = () => {
+          const staging = document.querySelector('[data-wm-staging]');
+          if (!staging) return;
+          const liveTpl = staging.querySelector('[data-wm-template="live"]');
+          const overTpl = staging.querySelector('[data-wm-template="overlay"]');
+          let masthead = document.querySelector('.masthead');
+          if (!masthead) {
+            // Pages without a .masthead (the homepage dropped it in
+            // 7991a3c) still need a masthead tuning target — synthesize
+            // one at the top of <main>. CSS keeps it display:none until
+            // the body enters tuning mode.
+            masthead = document.createElement('div');
+            masthead.className = 'masthead';
+            masthead.setAttribute('data-wm-synthetic', '');
+            const anchor = document.querySelector('main') || document.body;
+            anchor.insertBefore(masthead, anchor.firstChild);
+          }
+          if (masthead && !masthead.querySelector(':scope > .wm-live')) {
+            masthead.appendChild(liveTpl.cloneNode(true));
+            masthead.appendChild(overTpl.cloneNode(true));
+          }
+          const navLogo = document.querySelector('.header-logo');
+          if (navLogo && !navLogo.querySelector(':scope > .wm-live')) {
+            navLogo.appendChild(liveTpl.cloneNode(true));
+          }
+          staging.remove();
+        };
+
+        const syncNavSize = () => {
+          const navLogo = document.querySelector('.header-logo');
+          if (!navLogo) return;
+          const h = navLogo.getBoundingClientRect().height;
+          if (h > 0) document.documentElement.style.setProperty('--wm-nav-h', h + 'px');
+        };
+
+        // ─── Apply state → CSS variables ─────────────────────────
+        const applyVars = () => {
+          const r = document.documentElement.style;
+          const m = state.mast, n = state.nav;
+          // Masthead
+          r.setProperty('--wm-mast-node-wght', String(m['node.wght']));
+          r.setProperty('--wm-mast-node-opsz', String(m['node.opsz']));
+          r.setProperty('--wm-mast-node-ls',   m['node.ls'] + 'em');
+          r.setProperty('--wm-mast-node-size', m['node.size'] + 'cqw');
+          r.setProperty('--wm-mast-red-wght',  String(m['red.wght']));
+          r.setProperty('--wm-mast-red-opsz',  String(m['red.opsz']));
+          r.setProperty('--wm-mast-red-ls',    m['red.ls'] + 'em');
+          r.setProperty('--wm-mast-red-size',  m['red.size'] + 'cqw');
+          r.setProperty('--wm-mast-red-rot',   m['red.rot'] + 'deg');
+          r.setProperty('--wm-mast-red-tx',    m['red.tx'] + 'em');
+          r.setProperty('--wm-mast-red-ty',    m['red.ty'] + 'em');
+          r.setProperty('--wm-mast-gap',       m.gap + 'cqw');
+          r.setProperty('--wm-mast-leftPad',   m.leftPad + 'cqw');
+          r.setProperty('--wm-mast-redCol',    m.redCol + 'cqw');
+          r.setProperty('--wm-mast-padTop',    m.padTop + '%');
+          r.setProperty('--wm-mast-padBottom', m.padBottom + '%');
+          r.setProperty('--wm-mast-padLeft',   m.padLeft + '%');
+          r.setProperty('--wm-mast-padRight',  m.padRight + '%');
+          r.setProperty('--wm-mast-marTop',    m.marTop + '%');
+          r.setProperty('--wm-mast-marBottom', m.marBottom + '%');
+          r.setProperty('--wm-mast-marLeft',   m.marLeft + '%');
+          r.setProperty('--wm-mast-marRight',  m.marRight + '%');
+          // Per-theme colours; CSS rules pick the right one via data-theme.
+          r.setProperty('--wm-mast-bg-light',        m.bgLight);
+          r.setProperty('--wm-mast-bg-dark',         m.bgDark);
+          r.setProperty('--wm-mast-node-col-light',  m['node.colLight']);
+          r.setProperty('--wm-mast-node-col-dark',   m['node.colDark']);
+          r.setProperty('--wm-mast-red-col-light',   m['red.colLight']);
+          r.setProperty('--wm-mast-red-col-dark',    m['red.colDark']);
+          r.setProperty('--wm-mast-overlay',   String(m.overlay));
+
+          // Nav (ratios multiplied by nav-h)
+          r.setProperty('--wm-nav-node-wght', String(n['node.wght']));
+          r.setProperty('--wm-nav-node-opsz', String(n['node.opsz']));
+          r.setProperty('--wm-nav-node-ls',   n['node.ls'] + 'em');
+          r.setProperty('--wm-nav-node-size', `calc(var(--wm-nav-h, 28px) * ${n['node.size']})`);
+          r.setProperty('--wm-nav-red-wght',  String(n['red.wght']));
+          r.setProperty('--wm-nav-red-opsz',  String(n['red.opsz']));
+          r.setProperty('--wm-nav-red-ls',    n['red.ls'] + 'em');
+          r.setProperty('--wm-nav-red-size',  `calc(var(--wm-nav-h, 28px) * ${n['red.size']})`);
+          r.setProperty('--wm-nav-red-rot',   n['red.rot'] + 'deg');
+          r.setProperty('--wm-nav-gap',       n.gap + 'px');
+          r.setProperty('--wm-nav-leftPad',   n.leftPad + 'px');
+          r.setProperty('--wm-nav-redCol',    `calc(var(--wm-nav-h, 28px) * ${n.redCol})`);
+          r.setProperty('--wm-nav-node-col-light', n['node.colLight']);
+          r.setProperty('--wm-nav-node-col-dark',  n['node.colDark']);
+          r.setProperty('--wm-nav-red-col-light',  n['red.colLight']);
+          r.setProperty('--wm-nav-red-col-dark',   n['red.colDark']);
+
+          // Stack-RED toggle: data attribute on the masthead's live wm
+          const mastLive = document.querySelector('.masthead > .wm-live');
+          if (mastLive) {
+            if (m.stackRed) mastLive.setAttribute('data-stack-red', '');
+            else mastLive.removeAttribute('data-stack-red');
+          }
+        };
+
+        const measure = () => {
+          const masthead = document.querySelector('.masthead');
+          const wm = masthead?.querySelector(':scope > .wm-live');
+          const node = wm?.querySelector('.wm-node');
+          const col = wm?.querySelector('.wm-red-col');
+          if (!masthead || !wm || !node || !col) return null;
+          const mb = masthead.getBoundingClientRect();
+          const wmb = wm.getBoundingClientRect();
+          const nb = node.getBoundingClientRect();
+          const cb = col.getBoundingClientRect();
+          const total = mb.width;
+          return {
+            leftPad: (wmb.left - mb.left + (nb.left - wmb.left)) / total * 100,
+            nodeW:   nb.width / total * 100,
+            gap:     (cb.left - nb.right) / total * 100,
+            redW:    cb.width / total * 100,
+            nodeH:   nb.height / mb.height * 100,
+          };
+        };
+
+        const deltaClass = (d) => {
+          const a = Math.abs(d);
+          return a < 0.25 ? 'good' : a < 1 ? 'warn' : 'bad';
+        };
+
+        const panel = document.querySelector('[data-wm-panel]');
+        const reopen = document.querySelector('[data-wm-reopen]');
+
+        const syncControls = () => {
+          panel.querySelectorAll('[data-k]').forEach((el) => {
+            const dk = el.getAttribute('data-k');
+            const v = get(dk);
+            if (BOOL_KEYS.has(dk)) {
+              el.checked = !!v;
+            } else if (COLOR_KEYS.has(dk)) {
+              el.value = v;
+            } else {
+              el.value = v;
+            }
+          });
+        };
+
+        const renderHash = () => {
+          const h = '#' + toHash();
+          const codeEl = panel.querySelector('[data-hash]');
+          if (codeEl) codeEl.textContent = h;
+          if (window.location.hash !== h) {
+            history.replaceState(null, '', window.location.pathname + window.location.search + h);
+          }
+        };
+
+        const renderReadout = () => {
+          requestAnimationFrame(() => {
+            const m = measure();
+            const cells = { leftPad: REF.leftPad, nodeW: REF.nodeW, gap: REF.gap, redW: REF.redW, nodeH: REF.nodeH };
+            for (const k of Object.keys(cells)) {
+              const cell = panel.querySelector('[data-rd="' + k + '"]');
+              if (!cell) continue;
+              if (!m) { cell.textContent = '—'; cell.className = 'v'; continue; }
+              const live = m[k];
+              const d = live - cells[k];
+              const sign = d >= 0 ? '+' : '';
+              cell.textContent = live.toFixed(2) + '% (' + sign + d.toFixed(2) + ')';
+              cell.className = 'v ' + deltaClass(d);
+            }
+          });
+        };
+
+        const render = () => { applyVars(); renderReadout(); renderHash(); };
+
+        // ─── Wiring ─────────────────────────────────────────────
+        // Any input flips the body into tuning mode so the live
+        // wordmarks take over from the SVGs.
+        panel.addEventListener('input', (e) => {
+          const t = e.target;
+          const dk = t.getAttribute && t.getAttribute('data-k');
+          if (!dk) return;
+          let raw;
+          if (BOOL_KEYS.has(dk))      raw = t.checked;
+          else if (COLOR_KEYS.has(dk))raw = t.value;
+          else                         raw = t.value;
+          const v = parse(dk, raw);
+          if (v === null || v === undefined) return;
+          setV(dk, v);
+          document.body.setAttribute('data-wm-tuning', '');
+          // Mirror across paired inputs (range ↔ number, color ↔ text).
+          panel.querySelectorAll('[data-k="' + cssEscape(dk) + '"]').forEach((el) => {
+            if (el === t) return;
+            if (BOOL_KEYS.has(dk)) el.checked = !!v;
+            else el.value = v;
+          });
+          render();
+        });
+
+        function cssEscape(s) {
+          // Used only for matching simple data-k strings inside an
+          // attribute selector. CSS.escape isn't available everywhere.
+          return s.replace(/(["\\])/g, '\\$1');
+        }
+
+        // Reset → all values back to DEFAULTS (both contexts), drop
+        // the tuning attribute so the SVG wordmarks come back, and
+        // clear the URL hash. End result is visually identical to a
+        // visit without `?tune` — the "neutral" / baseline page.
+        panel.querySelector('[data-action="reset-all"]').addEventListener('click', () => {
+          Object.assign(state, JSON.parse(JSON.stringify(DEFAULTS)));
+          document.body.removeAttribute('data-wm-tuning');
+          syncControls();
+          render();
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        });
+
+        // Per-section reset — only that context's values go back to
+        // their defaults. Useful when you've nailed one side and want
+        // to redo the other from scratch.
+        panel.querySelectorAll('[data-action="reset-section"]').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const ctx = btn.getAttribute('data-section');
+            if (!ctx || !(ctx in DEFAULTS)) return;
+            state[ctx] = JSON.parse(JSON.stringify(DEFAULTS[ctx]));
+            syncControls();
+            render();
+          });
+        });
+
+        panel.querySelector('[data-action="close"]').addEventListener('click', () => {
+          panel.style.display = 'none';
+          reopen.classList.add('visible');
+        });
+        reopen.addEventListener('click', () => {
+          panel.style.display = '';
+          reopen.classList.remove('visible');
+        });
+
+        panel.querySelector('[data-action="copy"]').addEventListener('click', async (e) => {
+          const btn = e.currentTarget;
+          try {
+            await navigator.clipboard.writeText('#' + toHash());
+            btn.textContent = 'Copied';
+            btn.classList.add('ok');
+            setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 1200);
+          } catch (err) { console.warn(err); }
+        });
+
+        const header = panel.querySelector('header');
+        let dragging = null;
+        header.addEventListener('mousedown', (e) => {
+          if (e.target.closest && e.target.closest('button')) return;
+          const r = panel.getBoundingClientRect();
+          dragging = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+          e.preventDefault();
+        });
+        window.addEventListener('mousemove', (e) => {
+          if (!dragging) return;
+          panel.style.left   = (e.clientX - dragging.dx) + 'px';
+          panel.style.top    = (e.clientY - dragging.dy) + 'px';
+          panel.style.right  = 'auto';
+          panel.style.bottom = 'auto';
+        });
+        window.addEventListener('mouseup', () => { dragging = null; });
+
+        const init = () => {
+          installWordmarks();
+          syncNavSize();
+          // Only flip into tuning mode if the URL hash already has
+          // values — that means the user is restoring a tuned state.
+          // A fresh `?tune=1` visit stays in neutral (SVG-visible) mode.
+          const hadHash = fromHash(window.location.hash);
+          if (hadHash) document.body.setAttribute('data-wm-tuning', '');
+          syncControls();
+          if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+          else setTimeout(render, 200);
+          window.addEventListener('resize', () => { syncNavSize(); renderReadout(); });
+          window.addEventListener('hashchange', () => {
+            if (fromHash(window.location.hash)) {
+              document.body.setAttribute('data-wm-tuning', '');
+              syncControls();
+              render();
+            }
+          });
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+  </>
+)}

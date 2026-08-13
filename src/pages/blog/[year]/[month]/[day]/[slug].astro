@@ -1,0 +1,72 @@
+---
+import BlogPostLayout from '../../../../../layouts/BlogPostLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { parseBlogDate } from '../../../../../utils/blog';
+
+export async function getStaticPaths() {
+  /** How many posts the rail lists before deferring to /blog/. Enough to
+   *  show what is current without turning the rail into a 52-entry scroll.
+   *
+   *  Declared inside getStaticPaths, not at module scope: Astro extracts
+   *  this function into its own prerender chunk, so a frontmatter const is
+   *  out of scope there and the build fails with "not defined". */
+  const RECENT_POST_COUNT = 10;
+
+  const posts = await getCollection('blog');
+
+  // Newest first, so index-1 is the newer neighbour and index+1 the older
+  // one. Sorted once here: getStaticPaths runs a single time, whereas the
+  // page body below runs once per post.
+  //
+  // Deliberately not using parseBlogPosts / sortBlogPosts from utils/blog:
+  // those take `any[]` and return ParsedBlogPost, which has no `collection`
+  // field, so the entry no longer satisfies render()'s parameter type. The
+  // raw collection entry is kept alongside its parsed date instead.
+  const ordered = posts
+    .map((post) => ({ post, ...parseBlogDate(post.id) }))
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const toAdjacent = (entry: (typeof ordered)[number]) => ({
+    title: entry.post.data.title,
+    href: `/blog/${entry.year}/${entry.month}/${entry.day}/${entry.slug}/`,
+    date: entry.date,
+  });
+
+  const recentPosts = ordered.slice(0, RECENT_POST_COUNT).map(toAdjacent);
+
+  return ordered.map((entry, index) => {
+    const { post, year, month, day, slug, date } = entry;
+    const newer = ordered[index - 1];
+    const older = ordered[index + 1];
+
+    return {
+      params: { year, month, day, slug },
+      props: {
+        post,
+        date,
+        recentPosts,
+        // Absent at the ends of the archive: the newest post has no newer
+        // neighbour and the oldest has no older one.
+        ...(newer ? { newer: toAdjacent(newer) } : {}),
+        ...(older ? { older: toAdjacent(older) } : {}),
+      },
+    };
+  });
+}
+
+const { post, date, recentPosts, newer, older } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BlogPostLayout
+  title={post.data.title}
+  author={post.data.author}
+  date={date}
+  recentPosts={recentPosts}
+  {...post.data.description !== undefined ? { description: post.data.description } : {}}
+  {...post.data.image !== undefined ? { image: post.data.image } : {}}
+  {...newer !== undefined ? { newer } : {}}
+  {...older !== undefined ? { older } : {}}
+>
+  <Content />
+</BlogPostLayout>

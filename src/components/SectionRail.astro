@@ -1,0 +1,382 @@
+---
+/**
+ * Persistent left-hand section rail, shared by /about/* and blog posts.
+ *
+ * Both sections have the same problem: a page deep inside them offers no
+ * route to its siblings, because SiteHeader hides the main nav (and the
+ * about popout with it) below 75rem. This rail appears from 768px up,
+ * covering that whole band, and collapses to a disclosure below it.
+ *
+ * The rail is generic on purpose. The About version was previously
+ * copy-pasted into both About pages, and un-picking that is why the shared
+ * About prose CSS sits in BaseLayout today. One implementation owns the
+ * active-state rules, the responsive disclosure and the styling; callers
+ * supply data and a grid-placement class. See AboutSidebar.astro and
+ * BlogSidebar.astro for the two thin wrappers.
+ */
+
+export interface RailItem {
+  label: string;
+  href: string;
+  /** Second line under the label. Blog posts use it for the date. */
+  meta?: string;
+  /** One level of nesting only. About uses it for Community's sub-pages. */
+  children?: RailItem[];
+}
+
+interface Props {
+  items: RailItem[];
+  /** `Astro.url.pathname` of the page being rendered. */
+  currentPath: string;
+  /** `aria-label` for the nav element, e.g. "About section". */
+  navLabel: string;
+  /** Uppercase prefix inside the collapsed summary, e.g. "About". */
+  eyebrow: string;
+  /** Summary text when no item matches the current path. */
+  fallbackLabel: string;
+  /** Optional heading above the list at rail widths. About shows none: its
+   *  items are the section itself, so a heading would be redundant. */
+  listHeading?: string;
+  /** Excluded from ancestor matching, because every path in the section
+   *  starts with it and it would otherwise match every page. */
+  sectionRoot?: string;
+  /** Optional link under the list, e.g. blog's "All posts". */
+  footerLink?: { label: string; href: string };
+  /** Grid placement class for the aside. Owned by the page layout, since
+   *  that is where the surrounding column tracks are defined. */
+  class?: string;
+}
+
+const {
+  items,
+  currentPath,
+  navLabel,
+  eyebrow,
+  fallbackLabel,
+  listHeading,
+  sectionRoot,
+  footerLink,
+  class: className,
+} = Astro.props;
+
+/** Trailing slashes vary between dev and the built site, so compare with one
+ *  forced on both sides rather than matching the raw strings. */
+const withSlash = (path: string) => (path.endsWith('/') ? path : `${path}/`);
+const here = withSlash(currentPath);
+
+const isCurrent = (item: RailItem) => withSlash(item.href) === here;
+
+/**
+ * True when the current page sits below this entry, for instance Community
+ * while you are reading /about/community/slack/. Styled as the open section
+ * but deliberately given no `aria-current`: only one element per page may
+ * claim that, and tests/e2e/a11y.spec.ts runs axe across these pages.
+ */
+const isSection = (item: RailItem) =>
+  item.href !== sectionRoot && !isCurrent(item) && here.startsWith(withSlash(item.href));
+
+/**
+ * Label for the collapsed summary, so a shut rail still shows position.
+ *
+ * Flattened parent-then-children with the last match winning, so the deepest
+ * entry names the page: /about/community/slack/ reads "Slack", not
+ * "Community". Pages below the rail's depth, such as the 2019 and 2023
+ * survey archives, have no entry of their own and fall back to their deepest
+ * containing section rather than to the section index.
+ */
+const everyItem = items.flatMap((item) => [item, ...(item.children ?? [])]);
+const currentLabel =
+  everyItem.findLast(isCurrent)?.label ?? everyItem.findLast(isSection)?.label ?? fallbackLabel;
+---
+
+<!-- id is the render-blocking anchor for view transitions: BaseLayout points a
+     rel=expect link at it so the arriving document is not snapshotted before this
+     panel has been parsed. See src/styles/view-transition-head.js. -->
+<aside id="nr-vt-rail" class:list={['section-rail', className]}>
+  <details class="section-rail-disclosure" open>
+    <summary class="section-rail-summary">
+      <span class="section-rail-summary-eyebrow">{eyebrow}</span>
+      <span class="section-rail-summary-current">{currentLabel}</span>
+    </summary>
+
+    <nav aria-label={navLabel}>
+      {listHeading && <p class="section-rail-heading">{listHeading}</p>}
+
+      <ul class="section-rail-list">
+        {
+          items.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class:list={[
+                  'section-rail-link',
+                  { 'is-active': isCurrent(item), 'is-section': isSection(item) },
+                ]}
+                aria-current={isCurrent(item) ? 'page' : undefined}
+              >
+                <span class="section-rail-link-label">{item.label}</span>
+                {item.meta && <span class="section-rail-link-meta">{item.meta}</span>}
+              </a>
+
+              {item.children && (
+                <ul class="section-rail-sublist">
+                  {item.children.map((child) => (
+                    <li>
+                      <a
+                        href={child.href}
+                        class:list={[
+                          'section-rail-link',
+                          'section-rail-sublink',
+                          { 'is-active': isCurrent(child), 'is-section': isSection(child) },
+                        ]}
+                        aria-current={isCurrent(child) ? 'page' : undefined}
+                      >
+                        <span class="section-rail-link-label">{child.label}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+
+      {
+        footerLink && (
+          <a class="section-rail-footer-link" href={footerLink.href}>
+            {footerLink.label}
+          </a>
+        )
+      }
+    </nav>
+  </details>
+</aside>
+
+<style>
+  /* Grid placement comes from the caller's `class` (.about-rail / .blog-rail),
+     defined in BaseLayout's global block alongside the layouts that own the
+     surrounding column tracks. Everything internal is scoped here. */
+
+  .section-rail {
+    /* SiteHeader is `position: sticky` at 75px tall (SiteHeader.astro:175);
+       clear it plus a little air. Not a token yet: if a third place needs the
+       header height, promote it to design-tokens.css. */
+    position: sticky;
+    top: calc(75px + var(--space-5));
+    /* Own scroll region so a rail taller than the viewport stays reachable
+       instead of clipping its last entries. */
+    max-height: calc(100vh - 75px - var(--space-7));
+    overflow-y: auto;
+    /* Nothing to overscroll on a short rail; keeps the wheel on the page. */
+    overscroll-behavior: contain;
+  }
+
+  /* No card treatment: the rail is chrome, the prose is the content. Keeps it
+     reading like the docs sidebar rather than a second panel competing with
+     the elevated article surface next to it. */
+  .section-rail-list,
+  .section-rail-sublist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* No left padding: the heading's first glyph sits on the same x as the
+     items' hairline below it, so the rail has one left edge instead of a line
+     floating 16px out from the label. The items' text is then indented past
+     the hairline, which is what carries the hierarchy. */
+  .section-rail-heading {
+    margin: 0 0 var(--space-3);
+    padding-left: 0;
+    color: var(--nr-text-faint);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .section-rail-link {
+    display: block;
+    padding: 7px var(--space-4);
+    /* Hairline that the active marker thickens, so text never shifts
+       sideways between states. */
+    border-left: 2px solid var(--nr-border);
+    color: var(--nr-text-muted);
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm);
+    line-height: 1.45;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    transition:
+      color 0.12s ease,
+      border-color 0.12s ease;
+  }
+
+  /* Hover reddens the hairline. A grey-on-grey hover is too quiet to read as an
+     affordance, so the marker is what responds; the label only darkens. */
+  .section-rail-link:hover,
+  .section-rail-link:focus-visible {
+    color: var(--nr-text-strong);
+    border-left-color: var(--nr-red);
+    text-decoration: none;
+  }
+
+  /* Current page. It shares the red marker with hover, so the label colour and
+     weight are what separate them: red semibold text for "you are here",
+     near-black regular for "the pointer is here". */
+  .section-rail-link.is-active {
+    color: var(--nr-text-link);
+    border-left-color: var(--nr-red);
+    font-weight: 600;
+  }
+
+  /* Ancestor of the current page, e.g. Community while on .../slack/. Reads
+     as "you are in here" without competing with the active entry. */
+  .section-rail-link.is-section {
+    color: var(--nr-text-strong);
+    border-left-color: var(--nr-border-strong);
+    font-weight: 600;
+  }
+
+  .section-rail-sublink {
+    /* Indent past the parent's text start so the nesting is legible from the
+       marker column alone. */
+    padding-left: var(--space-6);
+    font-size: 0.875rem;
+  }
+
+  .section-rail-link-label {
+    display: block;
+  }
+
+  /* Post dates. Kept out of the link's own font-size so a long title and its
+     date stay visually distinct at rail width. */
+  .section-rail-link-meta {
+    display: block;
+    margin-top: 2px;
+    color: var(--nr-text-faint);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+
+  .section-rail-footer-link {
+    display: block;
+    margin-top: var(--space-4);
+    padding: 7px var(--space-4);
+    border-left: 2px solid transparent;
+    color: var(--nr-text-link);
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .section-rail-footer-link:hover {
+    text-decoration: underline;
+  }
+
+  /* ── Collapsed state (below 768px) ──
+     The disclosure ships `open` from the server so a visitor without JS gets
+     the full list rather than a summary that cannot be opened; the script
+     below shuts it on small screens, where a stack of entries above the
+     article would push the prose off-screen. */
+  .section-rail-summary {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--nr-border);
+    border-radius: var(--radius-sm);
+    background: var(--nr-surface-alt);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    list-style: none;
+  }
+
+  /* Safari still paints its own triangle without this. */
+  .section-rail-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .section-rail-summary-eyebrow {
+    color: var(--nr-text-faint);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .section-rail-summary-current {
+    color: var(--nr-text-strong);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+  }
+
+  /* Chevron, rotated when open. */
+  .section-rail-summary-current::after {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-left: var(--space-3);
+    border-right: 2px solid var(--nr-text-muted);
+    border-bottom: 2px solid var(--nr-text-muted);
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.15s ease;
+  }
+
+  .section-rail-disclosure[open] .section-rail-summary-current::after {
+    transform: translateY(1px) rotate(-135deg);
+  }
+
+  .section-rail-disclosure[open] .section-rail-summary {
+    margin-bottom: var(--space-4);
+  }
+
+  /* ── Rail state (768px and up) ──
+     768px is the design system's own mobile boundary, where --grid-columns
+     drops to 4, and it sits below SiteHeader's 75rem nav cutoff, so the rail
+     is present across the whole band where the header nav is not. */
+  @media (min-width: 768px) {
+    .section-rail-summary {
+      display: none;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .section-rail {
+      position: static;
+      max-height: none;
+      overflow: visible;
+    }
+
+    /* The heading duplicates the summary's eyebrow once collapsed. */
+    .section-rail-heading {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // Responsive `open` state. CSS alone cannot do this: a closed <details>
+  // hides its content through UA behaviour that stylesheets cannot reliably
+  // override across the browsers Node-RED's audience runs.
+  const disclosure = document.querySelector<HTMLDetailsElement>('.section-rail-disclosure');
+
+  if (disclosure) {
+    const isNarrow = window.matchMedia('(max-width: 767px)');
+
+    // Only drive `open` from the breakpoint. Once someone toggles it by hand
+    // on a phone, leave their choice alone until the width changes.
+    const sync = (event: MediaQueryList | MediaQueryListEvent) => {
+      disclosure.open = !event.matches;
+    };
+
+    sync(isNarrow);
+    isNarrow.addEventListener('change', sync);
+  }
+</script>

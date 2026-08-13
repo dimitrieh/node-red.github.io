@@ -1,0 +1,134 @@
+# Builds the site and publishes it to GitHub Pages, which serves nodered.org.
+#
+# This is the outward-facing workflow: whatever it uploads is what the public
+# reads. Everything about its triggers is therefore deliberately narrow. See the
+# `on:` block below before adding anything to it.
+name: Deploy to GitHub Pages
+
+on:
+  # main only. Nothing else, ever.
+  #
+  # The Astro rewrite is being developed on a long-lived migration branch, and a
+  # deploy triggered from an unmerged branch would replace nodered.org with
+  # work in progress. Pull requests are excluded for the same reason, with a
+  # second one on top: a deploy job holds the `pages: write` and `id-token:
+  # write` permissions below, and pull_request runs can come from forks. Branch
+  # checks live in checks.yml, which has read-only permissions and can safely
+  # run on anything.
+  push:
+    branches:
+      - main
+  # Manual re-publish, for when the site needs rebuilding without a commit (a
+  # reverted Pages setting, a failed deployment to retry). Runs against the
+  # ref it is dispatched on; dispatch it on main.
+  workflow_dispatch:
+
+permissions:
+  # Read the repository for the build.
+  contents: read
+  # Create a Pages deployment.
+  pages: write
+  # actions/deploy-pages authenticates to the Pages service with an OIDC token
+  # minted for this run instead of a long-lived secret, which is why this scope
+  # is required and why the trigger list above has to stay tight.
+  id-token: write
+
+# One deployment at a time, and never cancel one that is already publishing:
+# a cancelled deploy can leave the site mid-swap. Queue instead.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # package.json engines: ^22.22.3 || ^24.16.0 || >=26.3.0. Node 24 satisfies
+  # it and matches both the local dev container and checks.yml, so the artifact
+  # published here is built on the same runtime the checks passed on.
+  NODE_VERSION: '24'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Every action below is pinned to a full commit SHA, including the
+      # first-party actions/* ones. A tag is a mutable pointer: whoever owns the
+      # action repository can move v5 to a different commit, and that commit
+      # would run inside this job, which holds permission to publish
+      # nodered.org. A SHA cannot be repointed. The trailing comment names the
+      # release each SHA came from so a reviewer can see what is pinned and a
+      # bump stays a readable diff. Do not replace these with tags.
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Emits the Pages origin and base path for this repository as outputs and
+      # as environment variables for the build. Harmless here (astro.config.mjs
+      # pins `site` to https://nodered.org and needs no `base`, since the site
+      # is served from the domain root), but it is part of the official Pages
+      # flow and keeps this workflow recognisable against GitHub's own template.
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # .npmrc sets ignore-scripts=true so no dependency executes code during
+      # install. Nothing extra is needed on the runner to make that work for
+      # this build: sharp (which powers astro:assets image optimisation) and
+      # Pagefind both ship prebuilt platform binaries as optional dependencies,
+      # and package-lock.json carries @img/sharp-linux-x64 and
+      # @pagefind/linux-x64 for exactly this runner. No libvips, no apt step.
+      - name: Install dependencies
+        run: npm ci
+
+      # Built WITHOUT DISABLE_PAGEFIND, which is not an oversight.
+      #
+      # astro.config.mjs offers DISABLE_PAGEFIND=1 because Pagefind bundles
+      # jemalloc compiled for 4 KB memory pages and aborts with "Unsupported
+      # system page size" on ARM64 hosts with 16 KB pages, which is what the
+      # local dev container is. GitHub's runners are 4 KB-page x64 hosts, so
+      # Pagefind runs correctly here, and it has to: it generates the search
+      # index behind the docs search box. A deploy with the variable set, or
+      # using the `build:sandbox` script, would publish the documentation with
+      # search silently broken. Leave the variable unset.
+      # GITHUB_TOKEN is read by src/lib/releases.ts for the build-time release
+      # fetch behind the nav version badge and /releases. Without it the request
+      # is unauthenticated, capped at 60/hour per shared runner IP, and a failure
+      # silently publishes the checked-in 4.1.10 fallback as the latest version.
+      # It matters more here than in checks.yml, because this job is the one whose
+      # output the public reads.
+      - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build
+
+      # Uploads dist/ as the Pages artifact. Two things worth knowing about how
+      # Pages serves it:
+      #
+      # - No Jekyll runs on an artifact deployment, so Astro's `_astro/` asset
+      #   directory is served as-is. (Under the older branch-based Pages deploy
+      #   Jekyll would have stripped underscore-prefixed directories and the
+      #   site would have loaded without CSS or JS. That is why .nojekyll is not
+      #   needed here, and why switching back to a branch deploy would need one.)
+      # - The custom domain is a repository Pages setting. public/CNAME is
+      #   copied into dist/ as part of the build and rides along in the
+      #   artifact, which is what the branch-based deploy used to read.
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Named environment, so the deployment shows up in the repository's
+    # Environments view with its URL, and so branch or reviewer protection
+    # rules can be attached to publishing without touching this file.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

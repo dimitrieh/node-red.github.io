@@ -1,0 +1,499 @@
+/* Styling for the <nr-typed-input> illustration.
+ *
+ * A port of the Node-RED editor's own sass/ui/common/typedInput.scss (5.0.0),
+ * mapped from the editor's --red-ui-* variables onto this site's design tokens.
+ * The authoritative original is at:
+ *   packages/node_modules/@node-red/editor-client/src/sass/ui/common/typedInput.scss
+ * in the node-red/node-red repository. Diff against that file when the widget's
+ * appearance changes upstream.
+ *
+ * Three rules govern everything below.
+ *
+ * 1. EVERY selector is prefixed with the `nr-typed-input` tag name. The docs
+ *    pages this renders into are Starlight markdown, and the editor's real class
+ *    names (.red-ui-typedInput-container and friends) are generic enough that an
+ *    unprefixed rule would be a standing invitation to collide with whatever the
+ *    docs cascade grows next. Prefixing also means no rule here can apply to an
+ *    element the component did not build.
+ *
+ * 2. No --red-ui-* custom property is declared. The editor's variables are read
+ *    once, here, and re-expressed as --nr-ti-* locals scoped to the tag. Leaking
+ *    --red-ui-* names into the docs cascade would make it look as though the
+ *    editor stylesheet were present, which is exactly the confusion this work
+ *    exists to remove.
+ *
+ * 3. Both themes are first-class. The old demos hard-coded `background: white`
+ *    on their wrapper, so in the site's dark theme they were white rectangles.
+ *    Locals below carry the light values, and a :root[data-theme='dark'] block
+ *    overrides them. data-theme is the right hook rather than a media query:
+ *    ThemeToggle.astro and Starlight's ThemeProvider both resolve the user's
+ *    choice (including "auto") to that attribute before first paint.
+ *
+ * Where the port deliberately differs from the editor stylesheet:
+ *   - Focus colour. The editor's light theme focuses form controls in blue
+ *     (#0d74ce) and its 5.0 dark theme in red (#e84a4a). This uses the site's
+ *     --nr-focus in both, so a focused demo matches the focus ring of every
+ *     other control on the page it sits in.
+ *   - The caret, the option caret and the expand ellipsis are drawn in CSS.
+ *     The editor renders them as FontAwesome 4 glyphs (`fa fa-caret-down`,
+ *     `fa fa-ellipsis-h`), and this site loads no icon font, so `fa` classes
+ *     would be dead classes on a dead font.
+ *   - Type icons are the editor's own SVGs inlined as mask-image data URIs
+ *     rather than fetched from red/images/typedInput/*.svg, because those files
+ *     ship with the editor and not with this site.
+ */
+
+nr-typed-input {
+  /* Light theme values. Left column is the editor variable this replaces. */
+  --nr-ti-border: var(--nr-border-strong); /* form-input-border-color  #cecece */
+  --nr-ti-focus: var(--nr-focus); /* form-input-focus-color   #0d74ce */
+  --nr-ti-field-bg: var(--nr-surface); /* form-input-background    #fff    */
+  --nr-ti-text: var(--nr-text-body); /* form-text-color          #202020 */
+  --nr-ti-button-bg: var(--nr-gray-100); /* form-button-background   #efefef */
+  --nr-ti-button-hover: var(--nr-gray-200); /* workspace-button-background-hover */
+  --nr-ti-button-active: var(--nr-gray-300); /* secondary-background-selected  */
+  --nr-ti-menu-bg: var(--nr-surface); /* secondary-background     #fff    */
+  --nr-ti-menu-border: var(--nr-border-strong); /* primary-border-color #d9d9d9 */
+  --nr-ti-menu-divider: var(--nr-border); /* secondary-border-color   #e8e8e8 */
+  --nr-ti-menu-hover: var(--nr-gray-100); /* secondary-background-hover     */
+  --nr-ti-menu-selected: var(--nr-gray-200); /* secondary-background-selected  */
+  --nr-ti-disabled-text: var(--nr-text-faint); /* secondary-text-color-disabled  */
+  --nr-ti-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2); /* mixins.component-shadow     */
+
+  /* 34px and 14px are the editor's own metrics for this control. They are what
+     make the demo read as the editor rather than as a site form field. */
+  --nr-ti-height: 34px;
+  --nr-ti-inner-height: 32px;
+
+  display: inline-block;
+  position: relative;
+  width: 210px;
+  max-width: 100%;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 14px;
+  line-height: 14px;
+  text-align: left;
+  color: var(--nr-ti-text);
+}
+
+:root[data-theme='dark'] nr-typed-input {
+  /* Tracks the editor's own 5.0 dark palette (sass/dark-colors.scss) in
+     structure: a lifted button surface over a sunken field, borders barely
+     above the background. The values are this site's dark tokens so the demo
+     sits in the docs page rather than on top of it. */
+  --nr-ti-border: var(--nr-border-strong);
+  --nr-ti-field-bg: var(--nr-surface-alt);
+  --nr-ti-button-bg: #26262c;
+  --nr-ti-button-hover: #2f2f37;
+  --nr-ti-button-active: #35353f;
+  --nr-ti-menu-bg: var(--nr-surface-elevated);
+  --nr-ti-menu-border: var(--nr-border-strong);
+  --nr-ti-menu-divider: var(--nr-border);
+  --nr-ti-menu-hover: #26262c;
+  --nr-ti-menu-selected: #33333c;
+  --nr-ti-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* Which parts of the control are showing is driven by the `hidden` property, the
+   way the widget drives it with .show()/.hide(). The UA stylesheet's
+   `[hidden] { display: none }` is only an element-level rule, so every `display`
+   declaration below would quietly beat it and hide nothing: the first build of
+   this file showed an inert expand button on every demo and left the text field
+   taking half the width of a picker that was supposed to own the whole control.
+   This is the one place !important is the correct tool, because the alternative
+   is repeating a `[hidden]` variant of every display rule. */
+nr-typed-input [hidden] {
+  display: none !important;
+}
+
+/* Nothing the control builds carries a margin unless a rule below gives it one.
+   Stated rather than assumed, because on a docs page this renders inside
+   Starlight's markdown content, and that stylesheet gives EVERY element that
+   follows a sibling a top margin (`--sl-content-gap-y`, 1rem). The rule reaches
+   straight into this subtree: it pushed the text field and the option picker
+   down out of the control, so the picker's label was clipped by the container's
+   own overflow, and it offset the absolutely positioned menus from the field
+   they hang off. `:where()` keeps the reset at zero specificity so every margin
+   further down this file still wins, and the reset itself wins over Starlight
+   because that rule lives in `@layer starlight.content` while this file is
+   unlayered, and unlayered declarations outrank layered ones however specific
+   the layered selector is. */
+nr-typed-input :where(div, button, label, span, i, input) {
+  margin: 0;
+}
+
+/* ── The control ─────────────────────────────────────────────────────────── */
+
+nr-typed-input .red-ui-typedInput-container {
+  border: 1px solid var(--nr-ti-border);
+  border-radius: 5px;
+  height: var(--nr-ti-height);
+  line-height: 14px;
+  display: inline-flex;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  vertical-align: middle;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  background: var(--nr-ti-field-bg);
+}
+
+nr-typed-input .red-ui-typedInput-container.red-ui-typedInput-focus {
+  border-color: var(--nr-ti-focus);
+}
+
+nr-typed-input .red-ui-typedInput-input-wrap {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+}
+
+nr-typed-input input.red-ui-typedInput-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0 0 0 3px;
+  margin: 0;
+  height: var(--nr-ti-inner-height);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  vertical-align: middle;
+  background: var(--nr-ti-field-bg);
+  color: var(--nr-ti-text);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* The editor's own focus treatment is on the container, not the input: the
+   whole control lights up as one object. Suppressing the inner ring is
+   therefore not a loss of a focus indicator, it is where the indicator went. */
+nr-typed-input input.red-ui-typedInput-input:focus {
+  outline: none;
+}
+
+/* ── Buttons: type select, option trigger, expand ────────────────────────── */
+
+nr-typed-input button.red-ui-typedInput-type-select,
+nr-typed-input button.red-ui-typedInput-option-expand,
+nr-typed-input button.red-ui-typedInput-option-trigger {
+  text-align: left;
+  border: none;
+  flex-basis: auto;
+  box-sizing: border-box;
+  border-radius: 4px 0 0 4px;
+  padding: 0 1px 0 5px;
+  background: var(--nr-ti-button-bg);
+  height: var(--nr-ti-inner-height);
+  line-height: 30px;
+  vertical-align: middle;
+  color: var(--nr-ti-text);
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+nr-typed-input button.red-ui-typedInput-type-select:not(.disabled):hover,
+nr-typed-input button.red-ui-typedInput-option-expand:not(.disabled):hover,
+nr-typed-input button.red-ui-typedInput-option-trigger:not(.disabled):hover {
+  background: var(--nr-ti-button-hover);
+  text-decoration: none;
+}
+
+nr-typed-input button.red-ui-typedInput-type-select:not(.disabled):active,
+nr-typed-input button.red-ui-typedInput-option-trigger:not(.disabled):active {
+  background: var(--nr-ti-button-active);
+}
+
+/* The editor uses an inset ring rather than an outline here, so the focus mark
+   stays inside a container that clips its overflow. */
+nr-typed-input button.red-ui-typedInput-type-select:focus-visible,
+nr-typed-input button.red-ui-typedInput-option-expand:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--nr-ti-focus);
+}
+
+nr-typed-input button.red-ui-typedInput-type-select.disabled {
+  cursor: default;
+}
+
+nr-typed-input button.red-ui-typedInput-type-select.disabled .red-ui-typedInput-icon {
+  background-color: var(--nr-ti-disabled-text);
+}
+
+nr-typed-input .red-ui-typedInput-type-label,
+nr-typed-input .red-ui-typedInput-option-label {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 0 1px 0 5px;
+}
+
+nr-typed-input button.red-ui-typedInput-type-select.red-ui-typedInput-full-width {
+  flex-grow: 1;
+  border-radius: 4px;
+}
+
+nr-typed-input button.red-ui-typedInput-option-trigger {
+  border-left: 1px solid var(--nr-ti-border);
+  border-radius: 0 4px 4px 0;
+  padding: 0;
+  position: relative;
+  line-height: var(--nr-ti-inner-height);
+  display: inline-flex;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+/* When the type select is hidden (a single unlabelled type, which is how the
+   docs' custom-options example is configured) the option trigger is the whole
+   control, so it must not keep a left border and a squared left edge. */
+nr-typed-input
+  .red-ui-typedInput-container[data-nr-ti-only-options='true']
+  button.red-ui-typedInput-option-trigger {
+  border-left: none;
+  border-radius: 4px;
+}
+
+nr-typed-input button.red-ui-typedInput-option-trigger .red-ui-typedInput-option-label {
+  background: var(--nr-ti-button-bg);
+  color: var(--nr-ti-text);
+  flex-grow: 1;
+  padding: 0 0 0 8px;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+nr-typed-input .red-ui-typedInput-option-caret {
+  flex-grow: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 100%;
+}
+
+nr-typed-input button.red-ui-typedInput-option-trigger:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+nr-typed-input
+  button.red-ui-typedInput-option-trigger:focus-visible
+  .red-ui-typedInput-option-caret {
+  box-shadow: inset 0 0 0 2px var(--nr-ti-focus);
+}
+
+nr-typed-input button.red-ui-typedInput-option-expand {
+  border-radius: 0 4px 4px 0;
+  padding: 0 6px;
+  justify-content: center;
+}
+
+/* The expand button is rendered inert rather than dropped, because the JSON
+   type really does carry one in the editor and a demo without it would teach
+   the wrong shape. What it opens (RED.editor.editJSON) is a dialog belonging to
+   the editor, so there is nothing here for it to open. */
+nr-typed-input button.red-ui-typedInput-option-expand[aria-disabled='true'] {
+  cursor: not-allowed;
+  color: var(--nr-ti-disabled-text);
+}
+
+nr-typed-input button.red-ui-typedInput-option-expand[aria-disabled='true'] .nr-ti-ellipsis {
+  opacity: 0.55;
+}
+
+/* ── Icons ───────────────────────────────────────────────────────────────── */
+
+/* The editor paints its type icons as masks so one SVG follows the text colour
+   in both themes; that mechanism is kept, with the SVG inlined. */
+nr-typed-input .red-ui-typedInput-icon {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  background-color: currentColor;
+  mask-size: cover;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: cover;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+}
+
+nr-typed-input .nr-ti-type-icon {
+  height: 18px;
+  width: 13px;
+  min-width: 13px;
+  margin-right: 4px;
+}
+
+nr-typed-input .nr-ti-icon-az {
+  mask-image: url("data:image/svg+xml,%3Csvg width='26' height='36' viewBox='0%2C 0%2C 26%2C 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.27 29.15l6.733-8.143h-6.235V19.3h8.8v1.559l-6.69 8.09h6.892v1.707h-9.5zm4.909-10.125zM6.577 12.58q0 .827.604 1.304.605.478 1.432.478 1.007 0 1.95-.467 1.59-.774 1.59-2.534V9.824q-.349.222-.9.37-.552.15-1.082.213l-1.155.148q-1.04.138-1.56.435-.88.498-.88 1.59zM11.2 8.721q.657-.085.88-.551.127-.255.127-.732 0-.975-.7-1.41-.689-.445-1.983-.445-1.495 0-2.12.805-.35.446-.456 1.326H5.167q.053-2.1 1.357-2.916 1.315-.827 3.043-.827 2.004 0 3.255.763 1.24.764 1.24 2.375v6.542q0 .297.117.477.127.18.52.18.127 0 .286-.01.159-.021.34-.053v1.41q-.446.127-.68.16-.233.031-.636.031-.986 0-1.43-.7-.234-.37-.33-1.05-.583.764-1.675 1.326t-2.407.562q-1.58 0-2.587-.954-.996-.965-.996-2.407 0-1.58.986-2.45.986-.869 2.587-1.07zm-1.58-4.75z'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='26' height='36' viewBox='0%2C 0%2C 26%2C 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.27 29.15l6.733-8.143h-6.235V19.3h8.8v1.559l-6.69 8.09h6.892v1.707h-9.5zm4.909-10.125zM6.577 12.58q0 .827.604 1.304.605.478 1.432.478 1.007 0 1.95-.467 1.59-.774 1.59-2.534V9.824q-.349.222-.9.37-.552.15-1.082.213l-1.155.148q-1.04.138-1.56.435-.88.498-.88 1.59zM11.2 8.721q.657-.085.88-.551.127-.255.127-.732 0-.975-.7-1.41-.689-.445-1.983-.445-1.495 0-2.12.805-.35.446-.456 1.326H5.167q.053-2.1 1.357-2.916 1.315-.827 3.043-.827 2.004 0 3.255.763 1.24.764 1.24 2.375v6.542q0 .297.117.477.127.18.52.18.127 0 .286-.01.159-.021.34-.053v1.41q-.446.127-.68.16-.233.031-.636.031-.986 0-1.43-.7-.234-.37-.33-1.05-.583.764-1.675 1.326t-2.407.562q-1.58 0-2.587-.954-.996-.965-.996-2.407 0-1.58.986-2.45.986-.869 2.587-1.07zm-1.58-4.75z'/%3E%3C/svg%3E");
+}
+
+nr-typed-input .nr-ti-icon-09 {
+  mask-image: url("data:image/svg+xml,%3Csvg width='26' height='36' viewBox='0%2C 0%2C 26%2C 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14.16 27.38l1.555-.144c.132.731.383 1.261.755 1.591.371.33.848.494 1.429.494.497 0 .931-.114 1.303-.341.377-.228.686-.53.926-.908.24-.383.44-.899.602-1.546a8.122 8.122 0 0 0 .233-2.3 3.732 3.732 0 0 1-1.33 1.258 3.605 3.605 0 0 1-1.815.476c-1.09 0-2.013-.395-2.768-1.186s-1.133-1.834-1.133-3.128c0-1.336.393-2.411 1.178-3.226.79-.815 1.78-1.223 2.966-1.223.856 0 1.638.231 2.345.692.713.462 1.253 1.12 1.618 1.978.372.85.557 2.085.557 3.702 0 1.684-.182 3.026-.548 4.027-.365.994-.91 1.752-1.636 2.274-.719.52-1.563.781-2.534.781-1.03 0-1.872-.284-2.525-.853-.654-.576-1.046-1.381-1.178-2.418zm6.624-5.815c0-.928-.249-1.666-.746-2.21-.492-.546-1.085-.819-1.78-.819-.719 0-1.345.294-1.878.881s-.8 1.348-.8 2.283c0 .839.252 1.522.755 2.05.51.52 1.135.781 1.878.781.75 0 1.363-.26 1.843-.782.485-.527.728-1.255.728-2.184zM4.858 10.466c0-1.558.158-2.81.476-3.757.324-.952.8-1.686 1.429-2.201.635-.516 1.432-.773 2.39-.773.708 0 1.328.143 1.861.431.533.282.974.692 1.321 1.231.348.534.62 1.187.818 1.96.198.767.297 1.803.297 3.11 0 1.545-.16 2.794-.477 3.747-.317.947-.794 1.68-1.429 2.202-.629.515-1.426.773-2.39.773-1.27 0-2.268-.456-2.993-1.366-.869-1.097-1.303-2.882-1.303-5.357zm1.662 0c0 2.163.252 3.604.755 4.323.51.713 1.136 1.07 1.879 1.07.743 0 1.366-.36 1.87-1.079.508-.719.763-2.157.763-4.314 0-2.169-.255-3.61-.764-4.323-.503-.713-1.132-1.07-1.887-1.07-.743 0-1.336.315-1.78.944-.557.803-.836 2.286-.836 4.45z'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='26' height='36' viewBox='0%2C 0%2C 26%2C 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14.16 27.38l1.555-.144c.132.731.383 1.261.755 1.591.371.33.848.494 1.429.494.497 0 .931-.114 1.303-.341.377-.228.686-.53.926-.908.24-.383.44-.899.602-1.546a8.122 8.122 0 0 0 .233-2.3 3.732 3.732 0 0 1-1.33 1.258 3.605 3.605 0 0 1-1.815.476c-1.09 0-2.013-.395-2.768-1.186s-1.133-1.834-1.133-3.128c0-1.336.393-2.411 1.178-3.226.79-.815 1.78-1.223 2.966-1.223.856 0 1.638.231 2.345.692.713.462 1.253 1.12 1.618 1.978.372.85.557 2.085.557 3.702 0 1.684-.182 3.026-.548 4.027-.365.994-.91 1.752-1.636 2.274-.719.52-1.563.781-2.534.781-1.03 0-1.872-.284-2.525-.853-.654-.576-1.046-1.381-1.178-2.418zm6.624-5.815c0-.928-.249-1.666-.746-2.21-.492-.546-1.085-.819-1.78-.819-.719 0-1.345.294-1.878.881s-.8 1.348-.8 2.283c0 .839.252 1.522.755 2.05.51.52 1.135.781 1.878.781.75 0 1.363-.26 1.843-.782.485-.527.728-1.255.728-2.184zM4.858 10.466c0-1.558.158-2.81.476-3.757.324-.952.8-1.686 1.429-2.201.635-.516 1.432-.773 2.39-.773.708 0 1.328.143 1.861.431.533.282.974.692 1.321 1.231.348.534.62 1.187.818 1.96.198.767.297 1.803.297 3.11 0 1.545-.16 2.794-.477 3.747-.317.947-.794 1.68-1.429 2.202-.629.515-1.426.773-2.39.773-1.27 0-2.268-.456-2.993-1.366-.869-1.097-1.303-2.882-1.303-5.357zm1.662 0c0 2.163.252 3.604.755 4.323.51.713 1.136 1.07 1.879 1.07.743 0 1.366-.36 1.87-1.079.508-.719.763-2.157.763-4.314 0-2.169-.255-3.61-.764-4.323-.503-.713-1.132-1.07-1.887-1.07-.743 0-1.336.315-1.78.944-.557.803-.836 2.286-.836 4.45z'/%3E%3C/svg%3E");
+}
+
+nr-typed-input .nr-ti-icon-bool {
+  mask-image: url("data:image/svg+xml,%3Csvg width='26' height='36' viewBox='0%2C 0%2C 26%2C 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M9.96 21.98a5 5 0 1 1 6.11-7.917zm3.035-13.973c-5.512 0-10 4.488-10 10s4.488 9.998 10 9.998 10-4.486 10-9.998-4.488-10-10-10zm0 1.816c4.53 0 8.182 3.655 8.182 8.184s-3.652 8.182-8.182 8.182-8.181-3.653-8.181-8.182 3.652-8.184 8.181-8.184z'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='26' height='36' viewBox='0%2C 0%2C 26%2C 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M9.96 21.98a5 5 0 1 1 6.11-7.917zm3.035-13.973c-5.512 0-10 4.488-10 10s4.488 9.998 10 9.998 10-4.486 10-9.998-4.488-10-10-10zm0 1.816c4.53 0 8.182 3.655 8.182 8.184s-3.652 8.182-8.182 8.182-8.181-3.653-8.181-8.182 3.652-8.184 8.181-8.184z'/%3E%3C/svg%3E");
+}
+
+nr-typed-input .nr-ti-icon-json {
+  mask-image: url("data:image/svg+xml,%3Csvg width='26' height='36' viewBox='0%2C 0%2C 26%2C 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 5.225v-1.92h2.24q.608 0 1.216.288.608.256 1.12.8.48.512.8 1.312.32.768.32 1.792v5.824q0 .832.224 1.536t.608 1.216q.352.48.832.768.48.256.992.256v2.176q-.512 0-.992.256t-.832.736q-.384.48-.608 1.184t-.224 1.568v5.792q0 1.024-.32 1.792-.32.8-.8 1.312-.512.544-1.12.8-.608.288-1.216.288H15v-1.92h1.6q.48 0 .768-.256.288-.224.48-.64.16-.384.224-.896.064-.48.064-.96v-5.824q0-1.216.352-2.016.32-.8.768-1.28.448-.512.928-.736.448-.224.736-.256v-.096q-.288-.064-.736-.32-.48-.256-.928-.768t-.768-1.28q-.352-.8-.352-1.92V7.977q0-.512-.064-.992-.064-.512-.224-.896-.192-.384-.48-.608-.288-.256-.768-.256zm-3.648 0v-1.92h-2.24q-.608 0-1.216.288-.608.256-1.12.8-.48.512-.8 1.312-.32.768-.32 1.792v5.824q0 .832-.224 1.536t-.608 1.216q-.352.48-.832.768-.48.256-.992.256v2.176q.512 0 .992.256t.832.736q.384.48.608 1.184t.224 1.568v5.792q0 1.024.32 1.792.32.8.8 1.312.512.544 1.12.8.608.288 1.216.288h2.24v-1.92h-1.6q-.48 0-.768-.256-.288-.224-.48-.64-.16-.384-.224-.896-.064-.48-.064-.96v-5.824q0-1.216-.352-2.016-.32-.8-.768-1.28-.448-.512-.928-.736-.448-.224-.736-.256v-.096q.288-.064.736-.32.48-.256.928-.768t.768-1.28q.352-.8.352-1.92V7.977q0-.512.064-.992.064-.512.224-.896.192-.384.48-.608.288-.256.768-.256z'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='26' height='36' viewBox='0%2C 0%2C 26%2C 36' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 5.225v-1.92h2.24q.608 0 1.216.288.608.256 1.12.8.48.512.8 1.312.32.768.32 1.792v5.824q0 .832.224 1.536t.608 1.216q.352.48.832.768.48.256.992.256v2.176q-.512 0-.992.256t-.832.736q-.384.48-.608 1.184t-.224 1.568v5.792q0 1.024-.32 1.792-.32.8-.8 1.312-.512.544-1.12.8-.608.288-1.216.288H15v-1.92h1.6q.48 0 .768-.256.288-.224.48-.64.16-.384.224-.896.064-.48.064-.96v-5.824q0-1.216.352-2.016.32-.8.768-1.28.448-.512.928-.736.448-.224.736-.256v-.096q-.288-.064-.736-.32-.48-.256-.928-.768t-.768-1.28q-.352-.8-.352-1.92V7.977q0-.512-.064-.992-.064-.512-.224-.896-.192-.384-.48-.608-.288-.256-.768-.256zm-3.648 0v-1.92h-2.24q-.608 0-1.216.288-.608.256-1.12.8-.48.512-.8 1.312-.32.768-.32 1.792v5.824q0 .832-.224 1.536t-.608 1.216q-.352.48-.832.768-.48.256-.992.256v2.176q.512 0 .992.256t.832.736q.384.48.608 1.184t.224 1.568v5.792q0 1.024.32 1.792.32.8.8 1.312.512.544 1.12.8.608.288 1.216.288h2.24v-1.92h-1.6q-.48 0-.768-.256-.288-.224-.48-.64-.16-.384-.224-.896-.064-.48-.064-.96v-5.824q0-1.216-.352-2.016-.32-.8-.768-1.28-.448-.512-.928-.736-.448-.224-.736-.256v-.096q.288-.064.736-.32.48-.256.928-.768t.768-1.28q.352-.8.352-1.92V7.977q0-.512.064-.992.064-.512.224-.896.192-.384.48-.608.288-.256.768-.256z'/%3E%3C/svg%3E");
+}
+
+/* Caret and ellipsis: CSS shapes standing in for the editor's FontAwesome
+   glyphs. Both are masks too, so they inherit colour the same way the type
+   icons do and there is one code path for "icon follows text". */
+nr-typed-input .nr-ti-caret {
+  width: 9px;
+  height: 6px;
+  mask-image: linear-gradient(#000, #000);
+  -webkit-mask-image: linear-gradient(#000, #000);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+nr-typed-input .nr-ti-ellipsis {
+  width: 14px;
+  height: 4px;
+  mask-image:
+    radial-gradient(circle 2px at 2px 2px, #000 100%, transparent 0),
+    radial-gradient(circle 2px at 7px 2px, #000 100%, transparent 0),
+    radial-gradient(circle 2px at 12px 2px, #000 100%, transparent 0);
+  -webkit-mask-image:
+    radial-gradient(circle 2px at 2px 2px, #000 100%, transparent 0),
+    radial-gradient(circle 2px at 7px 2px, #000 100%, transparent 0),
+    radial-gradient(circle 2px at 12px 2px, #000 100%, transparent 0);
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+}
+
+/* ── The dropdown ────────────────────────────────────────────────────────── */
+
+/* Positioned against the custom element rather than portaled to <body> with
+   JS-computed page coordinates, which is what the editor does. Inside a
+   document the demo does not control, an absolutely positioned child that
+   travels with its element is the safer of the two: nothing to re-measure on
+   scroll or resize, and nothing left behind at the wrong coordinates if the
+   page reflows under it. */
+nr-typed-input .red-ui-typedInput-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 1px;
+  z-index: 30;
+  width: max-content;
+  min-width: 120px;
+  max-width: max(100%, 220px);
+  max-height: 350px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  border: 1px solid var(--nr-ti-menu-border);
+  background: var(--nr-ti-menu-bg);
+  box-shadow: var(--nr-ti-shadow);
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+nr-typed-input .red-ui-typedInput-options[hidden] {
+  display: none;
+}
+
+/* Flipped above the control when there is not enough room below it. The class
+   is applied by the element after measuring, because a menu that opens off the
+   bottom of a long docs page reads as a broken demo. */
+nr-typed-input .red-ui-typedInput-options.nr-ti-menu-above {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 1px;
+}
+
+nr-typed-input .nr-ti-menu-item {
+  padding: 6px 18px 6px 6px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: none;
+  border-bottom: 1px solid var(--nr-ti-menu-divider);
+  background: transparent;
+  color: var(--nr-ti-text);
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+nr-typed-input .nr-ti-menu-item:last-child {
+  border-bottom: none;
+}
+
+nr-typed-input .nr-ti-menu-item:hover {
+  background: var(--nr-ti-menu-hover);
+  text-decoration: none;
+}
+
+nr-typed-input .nr-ti-menu-item:focus-visible,
+nr-typed-input .nr-ti-menu-item[aria-checked='true'] {
+  background: var(--nr-ti-menu-selected);
+  outline: none;
+}
+
+nr-typed-input .nr-ti-menu-item:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--nr-ti-focus);
+}
+
+/* The editor's menu marks the current type only by focusing its row on open.
+   That is invisible once focus moves on, so the selected row carries a
+   persistent mark here as well as aria-current. */
+nr-typed-input .nr-ti-menu-item[aria-current='true'] {
+  background: var(--nr-ti-menu-selected);
+  font-weight: 600;
+}
+
+nr-typed-input .nr-ti-menu-item .red-ui-typedInput-icon {
+  margin-right: 6px;
+  height: 14px;
+  width: 12px;
+  min-width: 12px;
+}
+
+/* Items with no icon line up with the labels of items that have one, which is
+   the editor's `paddingLeft: 18px` fallback in _createMenu. */
+nr-typed-input .nr-ti-menu-item.nr-ti-menu-item-no-icon {
+  padding-left: 18px;
+}
+
+nr-typed-input .nr-ti-menu-item input[type='checkbox'] {
+  margin: 0 6px 0 0;
+  accent-color: var(--nr-ti-focus);
+}
+
+/* ── Touch ───────────────────────────────────────────────────────────────── */
+
+/* The rest of this site aims at a 44px minimum tap target. These demos are
+   illustrations of a desktop editor and their whole point is to look like it,
+   so the control keeps the editor's 34px; a taller box would misrepresent the
+   thing being documented. The menu is a different case: it is a list you pick
+   from with a finger and it carries no information by being 27px tall, so its
+   rows are the ones that grow. */
+@media (pointer: coarse) {
+  nr-typed-input .nr-ti-menu-item {
+    min-height: 44px;
+  }
+}

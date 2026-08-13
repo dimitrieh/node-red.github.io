@@ -1,0 +1,269 @@
+/* ===================================================================
+   SHARED NAVBAR CHROME
+   One definition for the parts that two different components render on
+   the two halves of the site.
+
+   Loaded by SiteHeader.astro's frontmatter import rather than through
+   Starlight's `customCss` or BaseLayout, so it ships exactly where the
+   navbar does: marketing through BaseLayout, docs through the Starlight
+   Header override, which renders the same SiteHeader.
+
+   Deliberately unlayered. Starlight's own declarations for the parts
+   below sit in `@layer starlight.core`, and an unlayered rule beats a
+   layered one whatever their specificity, so nothing here has to
+   out-specify upstream. It does have to out-specify OUR own broader
+   rules, which is called out at the two places where it matters.
+   =================================================================== */
+
+:root {
+  /* ── Drawer button geometry ──
+     The navbar's hamburger. Both call sites below take these, so growing
+     the control (tap targets, a denser navbar) is a change here and
+     nowhere else. starlight-custom.css also derives the docs navbar's
+     trailing gutter reservation and the fixed button's own placement
+     from them, so the two sides cannot fall out of step by a pixel. */
+  --nr-menu-button-w: 40px;
+  --nr-menu-button-h: 36px;
+  /* The icon inside it. Both call sites draw their marks in a 24-unit
+     viewBox (see the SVGs in SiteHeader.astro), so one value sizes both:
+     at 24px a unit is a pixel, which puts the bars 2px thick with their
+     round ends on x 10 and 30 and their centres on y 13, 18 and 23 of the
+     button, on both sides, with 8px of air either side of the glyph and
+     6px above and below. */
+  --nr-menu-icon-size: 24px;
+  /* The gap `.header-chrome` puts between the theme toggle and the
+     hamburger (UnoCSS `gap-3`). Named because the docs navbar has to
+     reserve it for a button that is not in that flex row. */
+  --nr-menu-button-gap: var(--space-3, 12px);
+
+  /* ── Touch targets ──
+     WCAG 2.2 AA (2.5.8) asks for 24px; iOS and Android both ask for 44.
+     Every control in this navbar is deliberately smaller than 44px as a
+     drawn box: a 44px outline square next to a 28px wordmark reads as a
+     button competing with the brand. So the box keeps its size and the
+     target is grown with a transparent pseudo-element instead. */
+  --nr-touch-target: 44px;
+
+  /* ── Drawer sub-items ──
+     How far a sub-item's text sits past its parent's text start, in both
+     drawers. Only the indent is shared: the two lists start from
+     different insets (the marketing drawer from the navbar gutter, the
+     docs drawer from the sidebar's own 16px text inset), so each adds
+     this to its own base rather than setting an absolute value. */
+  --nr-drawer-sublink-indent: var(--space-5, 24px);
+}
+
+/* ===== DRAWER BUTTON =====
+   Two components render this control:
+
+     - SiteHeader's `.mobile-toggle`, which opens `.mobile-nav`. Present
+       from 1199px down on marketing, and on docs from 1199px down to
+       800px.
+     - Starlight's `starlight-menu-button`, which opens the docs sidebar
+       drawer below 50rem. Below that width SiteHeader's own hamburger is
+       hidden (see the `max-width: 49.99rem` block in
+       starlight-custom.css) so exactly one of the two is ever on screen.
+
+   They have to be the same control, and they shared nothing. Starlight's
+   stock look is a fixed circular pill: `border-radius: 50%`, `border: 0`,
+   a `--sl-color-white` fill that inverts to a black fill in light mode,
+   `--sl-shadow-md` under it, 32x32 from `--sl-menu-button-size`, and a
+   grey fill swap for hover and open. Measured at 390px it sat at
+   x=342 y=22 while the marketing hamburger sat at x=330 y=19.5 as a
+   40x36 transparent outline box. So docs got a dark floating pill where
+   every other page has an outline button, which is what the site's owner
+   reported as the docs button floating.
+
+   Starlight's button is a component inside @astrojs/starlight, so it
+   cannot be given a class of ours: the selector list is the seam. Both
+   sides are restyled from these rules and only these rules, rather than
+   the declarations being copied into starlight-custom.css, because two
+   copies drift the moment one of them is touched.
+
+   Not restyled: what drives the drawer. Starlight's own custom element
+   still owns the click handler, the Escape handler and the `aria-expanded`
+   it writes on itself; the icon swap below reads that attribute rather
+   than replacing it. */
+.mobile-toggle,
+starlight-menu-button > button {
+  box-sizing: border-box;
+  width: var(--nr-menu-button-w);
+  height: var(--nr-menu-button-h);
+  /* `display` is deliberately absent. Each call site is gated by a
+     different breakpoint (SiteHeader's own media query, Starlight's
+     `md:sl-hidden` utility) and owns its own display value, so declaring
+     one here would put this rule in a cascade fight with the gating that
+     decides whether the button exists at all. Both resolve to a flex
+     box, so the two alignment properties still apply. */
+  align-items: center;
+  justify-content: center;
+  /* No padding: the icon is sized below, and the box is sized above, so
+     centring is what places it. Starlight's 0.5rem and SiteHeader's
+     former 9px both squeezed the glyph, measured at 20x22 inside the
+     40x36 box instead of a square 22. */
+  padding: 0;
+  border: 1px solid var(--nr-border-strong);
+  border-radius: var(--radius-sm, 6px);
+  background: none;
+  /* Kills --sl-shadow-md on the docs side. The elevation is most of what
+     made that button read as floating above the navbar rather than
+     sitting in it. */
+  box-shadow: none;
+  color: var(--nr-text-strong);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast, 150ms) var(--ease-standard, ease),
+    border-color var(--duration-fast, 150ms) var(--ease-standard, ease);
+}
+
+/* Hover and open share one appearance: red glyph, red border, and the
+   soft red wash. Open rather than a separate pressed look, because the
+   drawer it opened is the state, and the button only has to read as the
+   thing that is holding it open.
+
+   `aria-expanded` sits on the button itself on the marketing side and on
+   the custom element wrapping it on the docs side, which is why this
+   takes four selectors rather than two. */
+.mobile-toggle:hover,
+.mobile-toggle[aria-expanded='true'],
+starlight-menu-button > button:hover,
+starlight-menu-button[aria-expanded='true'] > button {
+  color: var(--nr-red);
+  border-color: var(--nr-red);
+  background: var(--nr-red-overlay-soft, rgba(218, 0, 0, 0.08));
+}
+
+/* One glyph, two viewBoxes. Starlight's icon takes its size from
+   `font-size` through a `width: 1em` rule in `@layer
+   starlight.components`, and its own `width`/`height` attributes are 16,
+   so the size has to be stated in CSS for that side either way.
+
+   `flex-shrink: 0` because both buttons are flex containers and an SVG is
+   a shrinkable flex item: that is what squeezed the marketing glyph to
+   20x22 inside its 40x36 box. */
+/* One rule, both sides, no scaling factor. That is the point of having
+   redrawn SiteHeader's marks on a 24-unit viewBox to match Starlight's
+   `Icon` component (which is `viewBox="0 0 24 24"`) rather than keeping
+   the 22-unit box it used to have: same grid, same coordinates, same
+   rendered size, so the two rasterise to identical pixels.
+
+   An earlier pass tried to reconcile the two boxes by scaling this side
+   by 24/22 instead. That does not work, and the arithmetic is worth
+   keeping so nobody retries it: 18 units of mark in a 22-unit box against
+   20 units in a 24-unit one are different proportions, not one drawing at
+   two scales, so no single factor lands both the bar thickness and the
+   end points. Scaling also left this glyph rendering at 26.18px against
+   the other's 24px, which is the mismatch the work was removing. */
+.mobile-toggle > svg,
+starlight-menu-button > button > svg {
+  width: var(--nr-menu-icon-size);
+  height: var(--nr-menu-icon-size);
+  flex-shrink: 0;
+}
+
+/* Open state swaps the hamburger for a close mark, on both sides. Kept
+   from Starlight rather than flattened away, and given to the marketing
+   button too: the drawer covers the viewport on docs and pushes the page
+   down on marketing, and in both cases the button is the way back out,
+   so it should say so. SiteHeader's markup uses Starlight's own
+   `open-menu` / `close-menu` class names so one pair of rules covers
+   both call sites. */
+.mobile-toggle[aria-expanded='true'] .open-menu,
+starlight-menu-button[aria-expanded='true'] > button .open-menu,
+.mobile-toggle:not([aria-expanded='true']) .close-menu,
+starlight-menu-button:not([aria-expanded='true']) > button .close-menu {
+  display: none;
+}
+
+/* ===== TOUCH TARGETS =====
+   Measured at 390x844 before this: `.mobile-toggle` 40x36,
+   `.theme-toggle` 36x32, Starlight's drawer button 32x32, and
+   `.header-logo` 24x24, the last being the only route home on a phone
+   once the wordmark drops out.
+
+   A transparent pseudo-element grows the target without touching the
+   drawn box or the layout, which matters because `.site-header`,
+   `.header-logo-img`, `.header-logo-wordmark`, `.version-badge` and
+   `.theme-toggle` are paired across marketing/docs navigations by
+   `view-transition-name`: any change to their boxes plays as a jump
+   mid-navigation.
+
+   Percentages in `inset` resolve against the containing block, which is
+   the control's own padding box, so `(100% - target) / 2` centres a box
+   of exactly --nr-touch-target on any control without naming that
+   control's size. A control already larger than the target gets a
+   positive inset and is left alone, which is what happens to
+   `.header-logo` once the wordmark is in it. Nothing to re-derive if a
+   control is resized. */
+.header-logo,
+.theme-toggle,
+.mobile-toggle {
+  /* The containing block for the pseudo below. Starlight's drawer button
+     is `position: fixed` already and needs no counterpart here. */
+  position: relative;
+}
+
+.header-logo::after,
+.theme-toggle::after,
+.mobile-toggle::after,
+starlight-menu-button > button::after {
+  content: '';
+  position: absolute;
+  top: calc((100% - var(--nr-touch-target)) / 2);
+  right: calc((100% - var(--nr-touch-target)) / 2);
+  bottom: calc((100% - var(--nr-touch-target)) / 2);
+  left: calc((100% - var(--nr-touch-target)) / 2);
+}
+
+/* ===== DRAWER SUB-ITEMS =====
+   Both drawers list the About children under their parent: SiteHeader's
+   `.mobile-nav` on marketing and at docs widths from 1199px to 800px,
+   and PageFrame's Site nav at the top of the docs sidebar drawer below
+   50rem. The marketing one prefixed them with a red turn-down arrow and
+   indented them; the docs one had no arrow, and its indent never
+   applied, so the two read as different lists of the same links.
+
+   Shared here: the arrow, the muted step and the smaller size. Not
+   shared: the indent's base and the hover treatment, which belong to
+   each drawer's own link system (marketing reddens the label, the docs
+   sidebar reddens a hairline and darkens the label). See
+   --nr-drawer-sublink-indent above for the indent.
+
+   The arrow is not the same convention as the /about/ and blog rails,
+   which carry no arrow: those express depth with indent alone against a
+   continuous hairline. The arrow is the drawer convention, where there
+   is no hairline to indent against, and this is the second of the two
+   drawers rather than a third pattern.
+
+   `↳` (U+21B3) is a text glyph, so it depends on the rendering font
+   having it or on the browser falling through to a system font that
+   does. Verified rendering in both drawers at the time of writing. If
+   the wordmark's font is ever subset without it AND the fallback chain
+   is narrowed at the same time, replace this with a drawn arrow (two
+   borders and a rotation, the way .section-rail-summary-current draws
+   its chevron) rather than adding a font-family here.
+
+   Both selectors are doubled up on purpose. On the docs side
+   `.sidebar-content a` (0,1,1) styles every link in the drawer,
+   including these, and outranks a lone `.docs-main-nav-mobile-sublink`
+   (0,1,0): that is why the declared indent in starlight-custom.css was
+   dead and these rows sat flush with their parents. On the marketing
+   side `.mobile-nav-link` and `.mobile-nav-sublink` are equal weight, so
+   which wins depends on stylesheet order, and this file's order relative
+   to SiteHeader's scoped styles is a bundling detail rather than
+   something to rely on. */
+.mobile-nav-link.mobile-nav-sublink,
+.docs-main-nav-mobile .docs-main-nav-mobile-sublink {
+  color: var(--nr-text-muted);
+  font-size: 13px;
+}
+
+.mobile-nav-link.mobile-nav-sublink::before,
+.docs-main-nav-mobile .docs-main-nav-mobile-sublink::before {
+  content: '↳';
+  color: var(--nr-red, #da0000);
+  opacity: 0.7;
+  margin-inline-end: 8px;
+  font-size: 14px;
+  line-height: 1;
+}

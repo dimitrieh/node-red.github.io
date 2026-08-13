@@ -1,0 +1,169 @@
+/* Styling for the <nr-auto-complete> illustration.
+ *
+ * Ported from three files in the Node-RED editor (editor-client 5.0.0), because
+ * the suggestion list the autoComplete widget shows is not its own furniture: it
+ * asks RED.popover for a panel and puts a standard editor menu inside it.
+ *   sass/ui/common/autoComplete.scss   the widget's own rules
+ *   sass/popover.scss                  .red-ui-popover-panel, the container
+ *   sass/mixins.scss (menu-light-theme) the <ul class="red-ui-menu"> inside it
+ * All three live under packages/node_modules/@node-red/editor-client/src/ in the
+ * node-red/node-red repository. Diff against them when the widget's appearance
+ * changes upstream.
+ *
+ * The same three rules as nr-typed-input.css apply: every selector is prefixed
+ * with the tag name, no --red-ui-* property is declared, and both themes are
+ * driven from :root[data-theme] rather than a media query. See the header of
+ * that file for why.
+ */
+
+nr-auto-complete {
+  --nr-ac-border: var(--nr-border-strong); /* form-input-border-color */
+  --nr-ac-focus: var(--nr-focus); /* form-input-focus-color  */
+  --nr-ac-field-bg: var(--nr-surface); /* form-input-background   */
+  --nr-ac-text: var(--nr-text-body); /* form-text-color         */
+  --nr-ac-panel-bg: var(--nr-surface); /* secondary-background    */
+  --nr-ac-panel-border: var(--nr-border-strong); /* primary-border-color */
+  --nr-ac-item-hover: var(--nr-gray-100); /* menuHoverBackground     */
+  --nr-ac-item-active: var(--nr-gray-200); /* secondary-background-selected */
+  --nr-ac-match: var(--nr-text-link); /* text-color-link         */
+  --nr-ac-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2); /* mixins.component-shadow */
+
+  display: inline-block;
+  position: relative;
+  width: 210px;
+  max-width: 100%;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 14px;
+  text-align: left;
+  color: var(--nr-ac-text);
+}
+
+:root[data-theme='dark'] nr-auto-complete {
+  --nr-ac-field-bg: var(--nr-surface-alt);
+  --nr-ac-panel-bg: var(--nr-surface-elevated);
+  --nr-ac-item-hover: #26262c;
+  --nr-ac-item-active: #33333c;
+  --nr-ac-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+nr-auto-complete input.red-ui-autoComplete {
+  box-sizing: border-box;
+  width: 100%;
+  height: 34px;
+  padding: 0 6px;
+  margin: 0;
+  border: 1px solid var(--nr-ac-border);
+  border-radius: 4px;
+  background: var(--nr-ac-field-bg);
+  color: var(--nr-ac-text);
+  font-family: inherit;
+  font-size: inherit;
+  vertical-align: middle;
+}
+
+nr-auto-complete input.red-ui-autoComplete:focus {
+  outline: none;
+  border-color: var(--nr-ac-focus);
+  box-shadow: 0 0 0 1px var(--nr-ac-focus);
+}
+
+/* The panel. The editor portals this to <body> and positions it from measured
+   page coordinates; here it is a child of the element, positioned against it.
+   Same reasoning as the typedInput menu: nothing to re-measure on scroll, and
+   nothing left behind at stale coordinates if the docs page reflows.
+   The 300px floor and the 200px cap are the widget's own numbers
+   (`width: Math.max(300, this.element.width())`, `maxHeight: 200`). */
+nr-auto-complete .red-ui-popover-panel {
+  position: absolute;
+  top: calc(100% + 1px);
+  left: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  min-width: min(300px, 100vw - 32px);
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--nr-ac-panel-border);
+  background: var(--nr-ac-panel-bg);
+  box-shadow: var(--nr-ac-shadow);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* autoComplete.scss drops the top border, so the panel reads as hanging off the
+   bottom edge of the field rather than as a separate box. */
+nr-auto-complete .red-ui-autoComplete-container {
+  border-top: none;
+}
+
+/* !important for the same reason as in nr-typed-input.css: the panel carries a
+   `position`/`overflow` rule set with a higher-specificity selector, and an
+   author `display` declaration anywhere in that rule would beat the UA's
+   element-level `[hidden] { display: none }`. */
+nr-auto-complete [hidden] {
+  display: none !important;
+}
+
+/* Same reset, and the same reason, as in nr-typed-input.css: Starlight's markdown
+   content gives every element that follows a sibling a top margin, which reaches
+   into this subtree and pushed the suggestion panel a gap away from the bottom
+   edge of the field it is supposed to hang off. Zero specificity so the margins
+   set further down still win; unlayered so it beats the layered rule. */
+nr-auto-complete :where(div, ul, li, span, input) {
+  margin: 0;
+}
+
+nr-auto-complete .red-ui-popover-panel.nr-ac-panel-above {
+  top: auto;
+  bottom: calc(100% + 1px);
+}
+
+nr-auto-complete ul.red-ui-menu {
+  list-style: none;
+  margin: 0;
+  padding: 5px 0;
+}
+
+nr-auto-complete ul.red-ui-menu li {
+  margin: 0;
+  padding: 0;
+}
+
+nr-auto-complete .nr-ac-option {
+  display: block;
+  padding: 3px 10px;
+  line-height: 20px;
+  color: var(--nr-ac-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+nr-auto-complete .nr-ac-option:hover {
+  background: var(--nr-ac-item-hover);
+}
+
+/* The active row is marked by aria-selected and painted here, rather than by
+   moving DOM focus into the list the way the editor does. Keeping focus in the
+   field is what lets the caret stay put and the input keep announcing itself
+   while the arrow keys walk the list. */
+nr-auto-complete .nr-ac-option[aria-selected='true'] {
+  background: var(--nr-ac-item-active);
+}
+
+/* The matched substring. The docs page's own example styles this bold red
+   inline; the widget's own generateSpans() uses the editor's link colour, which
+   in 5.0's dark theme is also red. This uses the site's per-theme link colour so
+   it stays legible on both backgrounds. */
+nr-auto-complete .nr-ac-match {
+  font-weight: 700;
+  color: var(--nr-ac-match);
+}
+
+@media (pointer: coarse) {
+  nr-auto-complete .nr-ac-option {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}

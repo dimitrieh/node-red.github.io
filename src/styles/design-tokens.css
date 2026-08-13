@@ -1,0 +1,1038 @@
+/* ===================================================================
+   NODE-RED DESIGN SYSTEM TOKENS
+   Refined industrial aesthetic: engineering precision meets premium craft
+   =================================================================== */
+
+:root {
+  /* Body-text link colour. The brighter --nr-red is reserved for icons,
+     chrome, and CTA backgrounds; link text on body backgrounds needs AA
+     contrast so we keep a darker per-theme token. */
+  --nr-text-link: #9f0000; /* ~5.9:1 on #FFFFFF */
+  /* Hover partner for the above. --nr-red-hover is the chrome/CTA hover and is
+     only safe on light backgrounds: it measures 7.2:1 on white but 2.46:1 on the
+     dark page surface, so red text that hovers needs this per-theme token. */
+  --nr-text-link-hover: #b30000; /* ~7.2:1 on #FFFFFF */
+
+  /* ── Primary Colors ── */
+  --nr-red: #da0000;
+  --nr-red-hover: #b30000;
+  --nr-red-dark: #9f0000; /* AA-accessible red for text on white — 5.9:1 */
+  --nr-red-light: #fce5e5;
+  --nr-red-subtle: rgba(218, 0, 0, 0.06);
+  /* Red wash for *dark* backgrounds (header chrome, mobile-nav). The
+     6%-on-white --nr-red-subtle is too faint to read on a dark surface,
+     so these higher-opacity variants are the "subtle" equivalents for
+     dark contexts. -overlay = hover state, -overlay-soft = active. */
+  --nr-red-overlay: rgba(218, 0, 0, 0.18);
+  --nr-red-overlay-soft: rgba(218, 0, 0, 0.12);
+
+  /* ── Neutral Colors ── */
+  --nr-black: #1a1a1a;
+  --nr-gray-900: #2d2d2d;
+  --nr-gray-700: #525252;
+  --nr-gray-500: #6b6b6b;
+  --nr-gray-400: #a3a3a3;
+  --nr-gray-300: #d4d4d4;
+  --nr-gray-200: #e5e5e5;
+  --nr-gray-100: #f5f5f5;
+  --nr-gray-50: #fafafa;
+  --nr-white: #ffffff;
+
+  /* ── Semantic Colors ── */
+  --nr-bg-dark: #1e1e1e;
+  --nr-bg-darker: #161616;
+  /* Border around dark code boxes. On light surfaces the dark box already
+     has high contrast, so a quiet border suffices; the dark-theme override
+     bumps this so the box separates from the near-black content panel. */
+  --nr-code-border: #2d2d2d;
+  --nr-code-text: #da0000;
+  --nr-code-bg: #fff5f5;
+  --nr-focus: #da0000;
+
+  /* ── Typography ──
+     Both families are self-hosted through Astro's Fonts API, declared in the
+     `fonts` block in astro.config.mjs and emitted on :root by the <Font />
+     components in the document head. These tokens are indirections onto the
+     variables that block generates, and they have to be: the @font-face rules
+     Astro writes do NOT declare the family as 'Google Sans Flex'. It appends a
+     hash of the family's config to the name ("Google Sans Flex-<hash>") so that
+     two differently configured families of the same name cannot collide, which
+     means naming the family literally in CSS now matches nothing at all and
+     falls silently through to system-ui. The generated variable is the only
+     supported handle on the font, so a font-family declaration anywhere in this
+     codebase must resolve to one of these two tokens or to the generated
+     variable directly.
+     The value each variable carries is already a full chain: the real family,
+     then the metric-matched local faces Astro derives from the font metrics
+     (which is what stops the swap from shifting layout), then the plain
+     fallbacks configured alongside them. So do NOT append a fallback list here.
+     Doing that would put an unmatchable name or a raw system font ahead of the
+     metric-matched entries and bring the layout shift back.
+     uno.config.ts's `theme.fontFamily` points at the same two variables, so a
+     Uno utility and a token resolve to one face. */
+  --font-sans: var(--font-google-sans-flex);
+  --font-mono: var(--font-ubuntu-mono);
+
+  --text-display: clamp(2.5rem, 5vw, 4rem);
+  --text-h1: clamp(2rem, 3.5vw, 2.75rem);
+  --text-h2: clamp(1.5rem, 2.5vw, 2rem);
+  --text-h3: 1.25rem;
+  --text-h4: 1.125rem;
+  --text-body: 1.0625rem;
+  --text-body-sm: 0.9375rem;
+  --text-caption: 0.8125rem;
+  --text-overline: 0.75rem;
+  --text-code: 0.875rem;
+
+  /* ── Spacing ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  /* ── Border Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06);
+  --shadow-red: 0 4px 16px rgba(218, 0, 0, 0.22);
+  --shadow-red-lg: 0 8px 32px rgba(218, 0, 0, 0.28);
+  --shadow-inset: inset 0 -2px 0 0 rgba(126, 0, 0, 0.45);
+
+  /* ── Transitions ── */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  /* ── Grid ──
+     Container max-width set to 1728px to mirror stripe.dev's wide canvas
+     at large desktop viewports (≥1440px). Below 1728px the grid fills
+     the viewport minus 2× --grid-padding; above 1728px it centres with
+     whitespace on either side. */
+  --grid-max-width: 1728px;
+  /* Content column cap, distinct from --grid-max-width above.
+     The hero editor drawing stops scaling at 1280px (`.ed-wrap` in
+     index.astro), so content on the content pages (homepage, /about/, blog)
+     stops at the same width and the two share one edge instead of the prose
+     running 448px wider than the illustration it sits under.
+     Chrome keeps --grid-max-width: the navbar is `max-width: none` and spans
+     the viewport as it does in docs, and the footer stays full width too.
+     Docs are untouched, since they lay out through Starlight rather than
+     `.nr-grid`. */
+  --nr-content-max-width: 1280px;
+  /* The same cap for containers that carry their own gutter padding. With
+     `box-sizing: border-box`, setting max-width to 1280px on a padded
+     container squeezes its *contents* to 1184px and the drawing shrinks with
+     them. Adding the gutters back makes the content column itself land on
+     1280px, flush with the drawing.
+     The calc resolves at use time, so the breakpoint overrides of
+     --grid-padding below are picked up automatically. */
+  --nr-content-box-width: calc(var(--nr-content-max-width) + 2 * var(--grid-padding));
+  /* Inset for full-bleed chrome. The navbar centres its logo icon in a 75px
+     row, so the gap above and below the icon is (75 - icon) / 2; mirroring
+     that on the inline sides makes the icon and the right-hand chrome look
+     optically equidistant from every edge. Viewport-dependent, because the
+     icon itself scales with 2.4vw.
+     Shared, so every piece of edge-to-edge chrome sits on the same x at every
+     width: the navbar in docs, and the docs footer. A flat value cannot track
+     it, which is how the footer ended up 4px inboard of the navbar at desktop
+     and further adrift on narrow screens. */
+  --nr-chrome-edge-pad: calc((75px - clamp(24px, 2.4vw, 36px)) / 2);
+
+  --grid-gap: 24px;
+  --grid-padding: 48px;
+  --grid-columns: 12;
+
+  /* ── Rail split ──
+     One narrow column beside one wide one, the shape SiteFooter uses for its
+     logo-plus-links row and the about / blog pages use for their rail beside
+     the prose. Shared, so the rail's divider lands on exactly the same x as the
+     footer's first link column, and keeps landing there if the split is retuned.
+
+     It used to be two unrelated grids: the footer on this 1:4 split, the rail on
+     3-of-12 of --grid-columns. Those agree at no width in particular. They were
+     ~19px apart at the content cap and drew level only around 900px, so the rail
+     divider read as almost-but-not-quite lined up with the footer beneath it. */
+  --nr-rail-columns: minmax(80px, 1fr) 4fr;
+  --nr-rail-gap: var(--space-8);
+
+  /* ── Semantic surface tokens (light = default) ──
+     Theme-aware tokens used by marketing pages. Dark mode overrides
+     these via [data-theme='dark'] below, matching Starlight's toggle. */
+  --nr-surface: var(--nr-white);
+  --nr-surface-alt: var(--nr-gray-50);
+  --nr-surface-elevated: var(--nr-white);
+  --nr-text-strong: var(--nr-black);
+  --nr-text-body: var(--nr-gray-900);
+  --nr-text-muted: var(--nr-gray-700);
+  --nr-text-faint: var(--nr-gray-500);
+  --nr-border: var(--nr-gray-200);
+  --nr-border-strong: var(--nr-gray-300);
+  --nr-raster-line: rgba(218, 0, 0, 0.1);
+  --nr-raster-line-strong: rgba(218, 0, 0, 0.12);
+  --nr-raster-line-subtle: rgba(218, 0, 0, 0.05);
+}
+
+/* ===================================================================
+   DARK MODE TOKENS
+   Activated by Starlight's <html data-theme="dark"> attribute.
+   =================================================================== */
+:root[data-theme='dark'] {
+  --nr-surface: #18181b;
+  --nr-surface-alt: #111114;
+  --nr-surface-elevated: #1f1f23;
+  --nr-text-strong: #fafafa;
+  --nr-text-body: #e4e4e7;
+  --nr-text-muted: #b5b5bd;
+  --nr-text-faint: #8a8a93;
+  --nr-border: #2e2e33;
+  --nr-border-strong: #3f3f46;
+  /* Body-text link colour: brighter red reads on the dark surface */
+  --nr-text-link: #ff5555; /* ~5.0:1 on #18181B */
+  --nr-text-link-hover: #ff8080; /* ~7.3:1 on #18181B */
+  /* Bump --nr-gray-500 specifically for the dark page bg
+     (was #6B6B6B = 3.5:1 on #111114, fails AA). */
+  --nr-gray-500: #a8a8a8;
+  /* Keep accent colours but tone the light wash to a more legible variant */
+  --nr-red-light: rgba(218, 0, 0, 0.2);
+  --nr-red-subtle: rgba(218, 0, 0, 0.14);
+  --nr-code-bg: #2a1a1a;
+  --nr-code-text: #ff6b6b;
+  /* Lighter than the light-theme value so the #1E1E1E code box reads as a
+     distinct surface against the ~#1F1F23 dark content panel. */
+  --nr-code-border: #44444c;
+  --nr-raster-line: rgba(218, 0, 0, 0.16);
+  --nr-raster-line-strong: rgba(218, 0, 0, 0.2);
+  --nr-raster-line-subtle: rgba(218, 0, 0, 0.08);
+  color-scheme: dark;
+}
+
+/* ── Tablet adjustments ── */
+@media (max-width: 1023px) {
+  :root {
+    --grid-gap: 20px;
+    --grid-padding: 32px;
+    --grid-columns: 8;
+  }
+}
+
+/* ── Mobile adjustments ── */
+@media (max-width: 767px) {
+  :root {
+    --grid-gap: 16px;
+    --grid-padding: 20px;
+    --grid-columns: 4;
+  }
+}
+
+/* ===================================================================
+   GRID SYSTEM
+   12-column canonical grid with subgrid inheritance — modelled on the
+   stripe.dev hallmark: every section snaps to the same column tracks
+   so eyebrows, headings, body copy and CTAs line up vertically across
+   the page. Nested rows (.nr-subgrid) inherit the parent's tracks via
+   `grid-template-columns: subgrid` so cards in a feature row all share
+   the same baseline alignment.
+   =================================================================== */
+
+/* The constrained, centred 12-col container. Marketing sections wrap a
+   single `<div class="nr-grid">` around their content; children pick
+   column spans with `.nr-col-*` / `.nr-colspan-*` / inline `grid-column`. */
+.nr-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), 1fr);
+  column-gap: var(--grid-gap);
+  max-width: var(--nr-content-box-width);
+  margin: 0 auto;
+  padding-inline: var(--grid-padding);
+}
+
+/* Subgrid container — for rows nested *inside* a `.nr-grid` cell that
+   spans multiple columns. Inherits the parent grid's column tracks so
+   children align to the same vertical rails as their grandparent. The
+   pairing `grid-column: 1 / -1` ensures the subgrid stretches across
+   whatever span its parent occupies. */
+.nr-subgrid {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  column-gap: var(--grid-gap);
+}
+
+/* Row-subgrid utility — apply alongside `.nr-subgrid` (or any grid) to
+   make children inherit row tracks too. Useful for card rows where
+   icon / title / body / CTA must line up horizontally across cards. */
+.nr-row-subgrid {
+  grid-template-rows: subgrid;
+}
+
+/* Generic column-span utilities (1..12). `nr-colspan-N` is the
+   "span N columns from wherever I land" flavour; `nr-col-start-N`
+   pins the start track for cases where alignment matters more than
+   span. Mobile collapses everything to a single column.
+
+   Naming note: legacy `.nr-col-N` aliases (full / 10 / 8) are kept
+   below so existing markup keeps working. */
+.nr-colspan-1 {
+  grid-column: span 1;
+}
+.nr-colspan-2 {
+  grid-column: span 2;
+}
+.nr-colspan-3 {
+  grid-column: span 3;
+}
+.nr-colspan-4 {
+  grid-column: span 4;
+}
+.nr-colspan-5 {
+  grid-column: span 5;
+}
+.nr-colspan-6 {
+  grid-column: span 6;
+}
+.nr-colspan-7 {
+  grid-column: span 7;
+}
+.nr-colspan-8 {
+  grid-column: span 8;
+}
+.nr-colspan-9 {
+  grid-column: span 9;
+}
+.nr-colspan-10 {
+  grid-column: span 10;
+}
+.nr-colspan-11 {
+  grid-column: span 11;
+}
+.nr-colspan-12 {
+  grid-column: span 12;
+}
+
+.nr-col-start-1 {
+  grid-column-start: 1;
+}
+.nr-col-start-2 {
+  grid-column-start: 2;
+}
+.nr-col-start-3 {
+  grid-column-start: 3;
+}
+.nr-col-start-4 {
+  grid-column-start: 4;
+}
+.nr-col-start-5 {
+  grid-column-start: 5;
+}
+.nr-col-start-6 {
+  grid-column-start: 6;
+}
+.nr-col-start-7 {
+  grid-column-start: 7;
+}
+.nr-col-start-8 {
+  grid-column-start: 8;
+}
+.nr-col-start-9 {
+  grid-column-start: 9;
+}
+
+/* Legacy named spans (still used by section labels etc). */
+.nr-col-full {
+  grid-column: 1 / -1;
+}
+.nr-col-10 {
+  grid-column: 2 / -2;
+}
+.nr-col-8 {
+  grid-column: 3 / -3;
+}
+
+/* Section header lockup — label on the left, action ("All posts →",
+   "See all platforms →", "Show all →") on the right. Used by every
+   section that ships a feed-style action link. Was duplicated five
+   times in pages/index.astro (.trusted-label, .blog-feed-label,
+   .forum-feed-label, .getstarted-label, .oss-label) — collapsed
+   here so any section can opt in with one class. */
+.nr-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+@media (max-width: 767px) {
+  .nr-section-header {
+    flex-wrap: wrap;
+  }
+}
+
+/* Tablet — the grid-columns var drops to 8, so a colspan-4 becomes
+   "half the row" which is what we want for 2-up card layouts.
+   For mobile (grid-columns = 4) the same colspan-4 collapses to full
+   width naturally. Below we also force the legacy named spans to be
+   full-width on tablet for parity with the previous behaviour. */
+@media (max-width: 1023px) {
+  .nr-col-10,
+  .nr-col-8 {
+    grid-column: 1 / -1;
+  }
+}
+
+/* On mobile any explicit span ≥ the column count flattens to full-row;
+   browsers already handle this by clamping `span N` to the number of
+   tracks, but we make a few common spans explicit so the layout stays
+   predictable across rasterised sections. */
+@media (max-width: 767px) {
+  .nr-colspan-3,
+  .nr-colspan-4,
+  .nr-colspan-5,
+  .nr-colspan-6,
+  .nr-colspan-7,
+  .nr-colspan-8,
+  .nr-colspan-9,
+  .nr-colspan-10,
+  .nr-colspan-11,
+  .nr-colspan-12 {
+    grid-column: 1 / -1;
+  }
+  .nr-col-start-2,
+  .nr-col-start-3,
+  .nr-col-start-4,
+  .nr-col-start-5,
+  .nr-col-start-6,
+  .nr-col-start-7,
+  .nr-col-start-8,
+  .nr-col-start-9 {
+    grid-column-start: 1;
+  }
+}
+
+/* ===================================================================
+   NODE-RED EDITOR GRID RASTER
+   CSS-only grid pattern inspired by the Node-RED flow editor workspace
+   =================================================================== */
+
+.nr-raster {
+  position: relative;
+}
+
+/* Line grid — the primary Node-RED editor grid pattern */
+.nr-raster::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--nr-raster-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nr-raster-line) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+/* Hero variant — stronger grid with radial fade */
+.nr-raster-hero::before {
+  background-image:
+    linear-gradient(var(--nr-raster-line-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nr-raster-line-strong) 1px, transparent 1px);
+  background-size: 20px 20px;
+  mask: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+  -webkit-mask: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+}
+
+/* Hero background wash — subtle red glow */
+.nr-raster-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 80% 20%, rgba(218, 0, 0, 0.06), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Subtle variant — for content sections */
+.nr-raster-subtle::before {
+  background-image:
+    linear-gradient(var(--nr-raster-line-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nr-raster-line-subtle) 1px, transparent 1px);
+  background-size: 20px 20px;
+  mask: radial-gradient(ellipse 90% 80% at 50% 40%, black 20%, transparent 80%);
+  -webkit-mask: radial-gradient(ellipse 90% 80% at 50% 40%, black 20%, transparent 80%);
+}
+
+/* Dot variant — lighter alternative */
+.nr-raster-dots::before {
+  background-image: radial-gradient(circle, var(--nr-raster-line-strong) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ===================================================================
+   COMPONENT PRIMITIVES
+   =================================================================== */
+
+/* ── Light panel ──
+   A surface that stays light in BOTH themes, for showing something that is
+   itself drawn for a light background and cannot be recoloured: the brand logo
+   files, and the mock-ups of the editor's own light help pane.
+
+   It has to set its own text colour. Migrated pages carried inline
+   `background: #f5f5f5` and let text inherit, which is legible in light mode and
+   invisible in dark, where the fill stayed put while the text went near-white.
+
+   Literal hex, not tokens, and that is not laziness. No token here can mean
+   "always light": the semantic --nr-surface-* tokens flip by design, and the
+   --nr-gray-* palette is only theme-invariant on marketing pages. Docs redefines
+   the whole gray ramp for dark mode in starlight-custom.css, so --nr-gray-100 is
+   #F5F5F5 on /about/ and #1F1F23 under /docs/. A panel built on the ramp
+   therefore stayed light on one half of the site and went dark on the other,
+   which is exactly the bug this class exists to remove.
+
+   Prefer the semantic tokens for anything that is merely a panel. Reach for this
+   only when the contents genuinely require a light backdrop. */
+.nr-light-panel {
+  background: #f5f5f5;
+  color: #2d2d2d;
+}
+
+/* Headings and secondary text inside keep their relative weight, rather than all
+   flattening to one colour. */
+.nr-light-panel :is(h1, h2, h3, h4, h5, h6, strong, b) {
+  color: #000;
+}
+
+.nr-light-panel :is(small, figcaption) {
+  color: #525252;
+}
+
+/* ── Buttons ── */
+.nr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--text-body-sm);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  /* background is in this list on purpose, and it is the whole reason the button
+     feels the way it does. Dropping it made the red snap between --nr-red and
+     --nr-red-hover, which is what "instant hover fills" asked for across the site.
+     On this primitive it turned out to be the difference between a button that
+     feels considered and one that feels abrupt: the fill, the shadow and the 1px
+     lift are meant to arrive together over --duration-fast, and losing one of the
+     three leaves the other two looking like a glitch rather than a gesture.
+
+     Restored after the button was worked back to its earlier state twice without
+     finding it, because every other property had stayed the same all along. If
+     instant fills are wanted again, the place to do it is the specific controls
+     that need it, not this shared primitive. */
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.nr-btn:hover {
+  text-decoration: none;
+}
+
+.nr-btn-primary {
+  padding: 12px 24px;
+  background: var(--nr-red);
+  color: var(--nr-white);
+  box-shadow: var(--shadow-red), var(--shadow-inset);
+}
+
+/* The 1px lift is wanted, paired with the growing shadow.
+   It was removed once, on the reading that a press keeps the hover state and so
+   the button appeared to twitch at the moment of a click. The actual cause of that
+   was the click itself: the hero's Install CTA jumped instantly to #install, and
+   the jump read as the button moving. In-page anchors animate now, so the lift is
+   just a lift again. Deliberately not neutralised on :active either, since
+   dropping the button back down on press would be the very movement that looked
+   wrong. */
+.nr-btn-primary:hover {
+  background: var(--nr-red-hover);
+  color: var(--nr-white);
+  box-shadow: var(--shadow-red-lg), var(--shadow-inset);
+  transform: translateY(-1px);
+}
+
+.nr-btn-secondary {
+  padding: 12px 24px;
+  background: var(--nr-white);
+  color: var(--nr-gray-700);
+  border: 1.5px solid var(--nr-gray-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.nr-btn-secondary:hover {
+  color: var(--nr-red);
+  border-color: var(--nr-red);
+  background: var(--nr-red-light);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Cards ── */
+.nr-card {
+  background: var(--nr-white);
+  border: 1px solid var(--nr-gray-200);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--duration-normal) var(--ease-standard),
+    box-shadow var(--duration-normal) var(--ease-standard),
+    transform var(--duration-normal) var(--ease-standard);
+}
+
+.nr-card:hover {
+  border-color: rgba(218, 0, 0, 0.32);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+/* ── Section Labels ──
+   The label sits directly above each section's first row. No bottom
+   margin/border here — the row below provides the structural top
+   hairline. Keep `padding-bottom` for breathing room between the
+   label text and that hairline. */
+.nr-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-overline);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--nr-gray-500);
+  padding-bottom: var(--space-5);
+}
+
+/* Section display heading, used by SectionLabel. Mirrors DownloadHero's
+   .dl-title (same face, same negative tracking) one step down the scale, so
+   the Install section reads as the page's primary heading and every other
+   section is introduced consistently beneath it. Keeps .nr-label's
+   padding-bottom so the following row's hairline still gets its breathing
+   room. */
+.nr-section-title {
+  font-size: var(--text-h2);
+  letter-spacing: -0.03em;
+  margin: 0;
+  padding-bottom: var(--space-5);
+}
+
+.nr-label-marker {
+  color: var(--nr-red);
+  margin-right: var(--space-2);
+  font-weight: 700;
+}
+
+/* ===================================================================
+   CHROME EDGE INSET BRIDGE
+   SiteHeader declares --nav-edge-pad locally on .header-inner using the same
+   formula as --nr-chrome-edge-pad above. Redirecting it here leaves one
+   definition instead of two that can drift, and keeps the navbar's own file
+   untouched. Two classes, to outrank that single-class scoped rule which this
+   would otherwise tie with on specificity.
+
+   This file loads in both contexts (BaseLayout imports it, and Starlight lists
+   it in customCss), so the redirect reaches the navbar on every route. Fold it
+   into SiteHeader.astro once the in-flight work in that file lands.
+   =================================================================== */
+.site-header .header-inner {
+  --nav-edge-pad: var(--nr-chrome-edge-pad);
+}
+
+/* ===================================================================
+   SECTION BASE
+   Every marketing section uses the same padding + surface.
+   =================================================================== */
+.nr-section {
+  padding: var(--space-9) 0;
+  background: var(--nr-surface);
+}
+
+/* ── Section rhythm ──
+   The full-width hairline between sections comes from position in the page,
+   not from each section opting in. Previously it was a `nr-section-bordered`
+   class applied by hand, which meant the homepage had a line at five of its
+   ten boundaries and none at the rest, purely by whether someone remembered
+   the class.
+
+   Adjacency instead: every section after the first opens with a hairline, so
+   the first section never gets a stray line under the header and adding,
+   removing or reordering sections cannot leave a gap. Sections do not need
+   the `nr-section` class for this to apply, which matters because a few set
+   their own padding and skip it.
+
+   Sibling combinator, so nested `section` elements inside a section are not
+   affected. Only the homepage has adjacent top-level sections today. */
+main > section + section {
+  border-top: 1px solid var(--nr-border);
+}
+
+/* ===================================================================
+   SECTION ACTION LINKS / BUTTONS
+   The "All posts →", "See all platforms →", "Show all →" pattern in
+   section headers. Two variants:
+     - nr-section-link  → for <a> elements
+     - nr-link-btn      → for <button> elements (adds browser resets)
+   =================================================================== */
+.nr-section-link,
+.nr-link-btn {
+  font-family: var(--font-sans);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  /* Red text, so the per-theme text token rather than the chrome --nr-red,
+     which measured 3.36:1 against the dark page surface. See the note on
+     --nr-text-link at the top of this file. */
+  color: var(--nr-text-link);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-standard);
+  /* These are standalone controls in section headers ("Show all", "See all
+     platforms"), not links inside a sentence, so WCAG 2.5.8's inline exemption
+     does not apply and they need to clear 24px. As bare text they measured 19px.
+     inline-flex centres the label in the taller box without moving it. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+.nr-section-link:hover,
+.nr-section-link:focus-visible,
+.nr-link-btn:hover,
+.nr-link-btn:focus-visible {
+  color: var(--nr-text-link-hover);
+  text-decoration: none;
+}
+
+.nr-link-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* ===================================================================
+   SUBGRID FEED PATTERN
+   Shared structure for blog, forum, community, and issues list feeds.
+   Each feed section uses these classes for identical structural parts;
+   per-section CSS handles grid-column placement and unique typography.
+   =================================================================== */
+.nr-feed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--nr-border);
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
+.nr-feed-item {
+  border-bottom: 1px solid var(--nr-border);
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
+.nr-feed-link {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: baseline;
+  padding: var(--space-4) var(--space-2);
+  text-decoration: none;
+  color: inherit;
+}
+
+.nr-feed-link:hover {
+  background: var(--nr-red-subtle);
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Date / kind column — mono overline style, spans tracks 1–2 */
+.nr-feed-date-col {
+  grid-column: span 2;
+  font-family: var(--font-mono);
+  font-size: var(--text-overline);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--nr-text-faint);
+}
+
+/* Right-edge chevron — translates on hover */
+.nr-feed-cta-col {
+  grid-column: -2 / -1;
+  text-align: end;
+  color: var(--nr-gray-300);
+  font-size: 16px;
+  transition:
+    color var(--duration-fast),
+    transform var(--duration-fast);
+}
+
+.nr-feed-link:hover .nr-feed-cta-col {
+  color: var(--nr-red);
+  transform: translateX(3px);
+}
+
+/* ===================================================================
+   VIEW TRANSITIONS
+   Cross-document transitions, so navigating between a marketing page and a docs
+   page animates the shared chrome instead of cutting to a new document.
+
+   The two page types are built by different layouts, BaseLayout and Starlight's
+   PageFrame, but both render the same SiteHeader component, so the header's parts
+   are the same elements either side of a navigation. That is what makes them
+   morphable: the `view-transition-name`s in SiteHeader.astro pair up by name
+   across the two documents and the browser tweens between the two positions.
+
+   Native and CSS-only, no client router. Browsers without cross-document
+   support simply navigate as before, which is why this needs no fallback.
+
+   Neither the `@view-transition` opt-in nor any `view-transition-name` is here.
+   Both are capture decisions the browser makes before this bundle arrives, so they
+   are inline in the <head> instead: src/styles/view-transition-head.js, rendered by
+   BaseLayout and injected into Starlight pages through the `head` array in
+   astro.config.mjs. Everything below styles the transition once it is running,
+   which is read after the arriving document's first render, so the bundle is fine.
+   =================================================================== */
+
+/* Only the chrome animates. The page body swaps.
+
+   By default the browser cross-fades the whole document as one `root` snapshot,
+   which is wrong for this site: a marketing page and a docs page have almost
+   nothing in common below the navbar, so the fade double-exposed the two. The
+   homepage hero, its buttons and the editor drawing hung translucently over the
+   docs sidebar and prose for the length of the transition. It reads worst in dark
+   mode, where two sets of light text over a dark surface smear into each other
+   rather than one simply washing out.
+
+   Dropping the root animation leaves the named header parts morphing between their
+   two positions while the content beneath is simply replaced, which is the effect
+   worth having: the chrome feels continuous, and the body does not pretend to be. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* The side navigation slides, so gaining or losing it is a movement rather than a
+   cut: leaving the homepage for docs slides a sidebar in from the left edge, and
+   going back slides it out.
+
+   The two rails carry DIFFERENT names on purpose, and that is the whole design.
+   Sharing one name would pair them, and a pair morphs, and a morph cross-fades the
+   pixels inside the box: the about rail's links appear on top of the docs sidebar's
+   links for the length of the transition. Verified, not assumed. With distinct
+   names neither has a counterpart, so each plays a clean one-way animation and no
+   two sets of text ever overlap.
+
+   The same reasoning is why the content pane is left unnamed and simply swaps. It
+   was tried, and morphing an about page's prose into a docs page's prose smears
+   exactly as described above, only across the full width of the page. Naming it
+   would also mean snapshotting a very tall element: a long blog post's pane is
+   around 9,900px.
+
+   :only-child is what limits these to genuine entrances and exits, and it is not
+   optional. A pseudo is an only child exactly when it has no counterpart, meaning
+   the rail is appearing or disappearing. Without it the selectors also caught the
+   case where a rail exists on BOTH sides: /about/ to a blog post keeps
+   nr-rail-section, so old and new both exist, and the unqualified rules slid one
+   rail out while sliding an identical one in, crossing in the middle. Measured, and
+   the reason this is written as it is. With :only-child that pair falls through to
+   the default group morph, and since the geometry is identical, nothing appears to
+   move, which is right, because nothing does.
+
+   translateX(-100%) rather than a width tween, since a sidebar arriving from
+   off-screen reads as the shell opening up, where a width animation reads as the
+   content being squeezed. */
+@keyframes nr-rail-in {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes nr-rail-out {
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+/* Existing tokens, and the asymmetric pair on purpose: the arriving rail
+   decelerates into place, the departing one accelerates away. Both at
+   --duration-normal, since --duration-slow at 400ms makes a 300px panel feel like
+   it is being dragged. */
+::view-transition-new(nr-rail-docs):only-child,
+::view-transition-new(nr-rail-section):only-child {
+  animation: nr-rail-in var(--duration-normal) var(--ease-decelerate) both;
+}
+
+/* opacity is restored because the paired-case block below zeroes it, the same way
+   Astro's transition:animate="none" does. Without this the departing panel would
+   slide out invisibly. */
+::view-transition-old(nr-rail-docs):only-child,
+::view-transition-old(nr-rail-section):only-child {
+  animation: nr-rail-out var(--duration-normal) var(--ease-accelerate) both;
+  opacity: 1;
+}
+
+/* ── The paired case: hold still and swap ──
+   When a rail or the band exists on BOTH sides, /about/ to another about page, one
+   blog page to another, or /about/ to a post, it should hold still and swap. Left
+   to the UA default two separate things go wrong.
+
+   Geometry is captured in VIEWPORT coordinates, so a scroll delta between the two
+   documents becomes travel. Measured leaving /about/ at scrollY 800: the band's old
+   box sat at y = -724 while the new one is at y = 76, and the group animation spent
+   the whole transition walking it back down. Naming an element also lifts it out of
+   ::view-transition-new(root), so the new page's snapshot carries a transparent hole
+   exactly where the band belongs, and that hole shows bare canvas, white in light
+   mode, for as long as the band is still in flight. The band appearing to fly while
+   sitting still on both pages is this, and it is the one that actually bites.
+
+   The pair also gets a plus-lighter cross-fade, which is only right when the two
+   snapshots are the same picture, and these never are: the active rail item moves
+   and the last crumb changes, so the panel carried two red markers at once and the
+   crumb read as both words overprinted.
+
+   These nine declarations are exactly what Astro's `transition:animate="none"`
+   generates (astro/dist/runtime/server/transition.js), and they are hand-written
+   rather than delegated to the directive for two measured reasons:
+
+   1. A directive's generated CSS is appended to `result._metadata.extraHead`, which
+      renderHead() flushes at the moment the <head> renders. SiteHeader and the band
+      render further down BaseLayout's body, after that point, so their generated
+      rule is silently dropped: measured `view-transition-name: none` on every header
+      part on /about/ while the identical component worked on docs pages, where
+      Starlight renders the head later. Naming in CSS is not a workaround here, it is
+      the only reliable option for this layout.
+   2. Both rails are named only above a breakpoint, since below it they collapse into
+      a disclosure and there is no side panel to animate. A directive names
+      unconditionally and cannot express that.
+
+   Replacing the animation is the part that matters: a bare `opacity: 0` loses to the
+   UA's own animation on these pseudos, and dropping the shorthand also drops the
+   `-ua-mix-blend-mode-plus-lighter` animation, which is what returns the blend to
+   normal so the new image simply covers the old. The :only-child rules above and
+   below carry higher specificity, so genuine entrances and exits still slide. */
+::view-transition-group(nr-rail-docs),
+::view-transition-group(nr-rail-section),
+::view-transition-group(nr-announce-band) {
+  animation: none;
+}
+
+::view-transition-old(nr-rail-docs),
+::view-transition-old(nr-rail-section),
+::view-transition-old(nr-announce-band) {
+  animation: none;
+  opacity: 0;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(nr-rail-docs),
+::view-transition-new(nr-rail-section),
+::view-transition-new(nr-announce-band) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* The red band under the navbar is named, but unlike the rails it has no
+   entrance or exit to animate: the announcement is on every page, so the band is
+   always paired and the block above is the whole story for it.
+
+   It used to be a breadcrumb that only /about/, the blog and /releases/ carried,
+   which meant crossing to the homepage or docs gained or lost a 48px band. That
+   needed a pair of :only-child slide rules and their keyframes, on the same
+   reasoning as the rails. Both are gone with the breadcrumb: keeping animations
+   for a state that can no longer occur is how dead CSS outlives the thing it
+   described. Restore them if a page ever opts out of the band. */
+
+/* Stacking order for the transition, which has to be stated because the pseudo tree
+   does not inherit the page's.
+
+   Every ::view-transition-group is a flat sibling of every other, painted in the
+   order the elements were captured, and that order has nothing to do with the
+   z-index: 100 that keeps .site-header above the page normally. So a rail captured
+   after the header painted over it: sliding from a blog post to docs drew the rail's
+   edge as a seam straight through the navbar and dimmed the wordmark behind it.
+
+   The rails sit below, the header bar above them, and the header's own parts above
+   that. The parts need to outrank the bar because naming a descendant lifts it out
+   of its ancestor's snapshot into a sibling group, so nothing else keeps them in
+   front of the bar they belong to. */
+::view-transition-group(nr-rail-docs),
+::view-transition-group(nr-rail-section),
+::view-transition-group(nr-announce-band) {
+  z-index: 1;
+}
+
+::view-transition-group(nr-header) {
+  z-index: 10;
+}
+
+::view-transition-group(nr-header-nav),
+::view-transition-group(nr-header-search),
+::view-transition-group(nr-header-mark),
+::view-transition-group(nr-header-wordmark),
+::view-transition-group(nr-header-version),
+::view-transition-group(nr-header-theme) {
+  z-index: 11;
+}
+
+/* Approaches that do NOT work on these pseudos, kept so nobody repeats them.
+   `display: none` and a bare `opacity: 0` on ::view-transition-old are both ignored,
+   because the UA fades these pseudos with a real animation and an animation beats a
+   static declaration. Replacing the animation is the only thing that takes, which is
+   what the paired-case block does. `:not(:only-child)` does not match in Chrome 150
+   even though the bare `:only-child` does, which is why the paired case is written as
+   the unqualified base and the entrances and exits override it on specificity rather
+   than the other way round.
+
+   Verify with getAnimations() rather than a screenshot: slowing the group while
+   leaving the old image at default speed produces a clean-looking capture that
+   proves nothing, which fooled me once. `pageswap` on the outgoing document and
+   `pagereveal` on the arriving one, carried across in sessionStorage, tell you
+   whether a transition ran at all and whether the arriving page joined it. */
+
+/* ===================================================================
+   REDUCED MOTION
+   =================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* The matching opt-out (`navigation: none`) travels with the opt-in in
+     src/styles/view-transition-opt-in.js: the blanket animation-duration
+     override above does not reach the ::view-transition pseudo-element tree,
+     and keeping the pair together makes it independent of where each head path
+     places the inline snippet relative to this bundle. */
+}

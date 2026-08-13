@@ -1,0 +1,49 @@
+{
+  "_what": "The class names the Node-RED editor's typedInput and autoComplete widgets put on their own markup, and which of them the docs illustrations in src/components/docs-widgets/ render. Read by tests/e2e/docs-widgets.spec.ts.",
+  "_why": "The illustrations are not the widgets. Keeping the real class names is what lets a test tell whether they still describe the same control, and this file is the record of what the widgets looked like when they were last checked. It is committed because CI has no Node-RED checkout: the spec re-extracts from source when one is on disk, and falls back to this snapshot when it is not.",
+  "_regenerate": "Have a node-red/node-red checkout beside this repository (or point NODE_RED_EDITOR_SRC at its editor-client src directory) and run `npm run test:e2e -- docs-widgets`. On a mismatch the spec prints the extracted list, and the fix is to decide, per new name, whether the illustration should render it or whether it belongs in `omitted` with a reason.",
+  "source": {
+    "package": "@node-red/editor-client",
+    "version": "5.0.0",
+    "commit": "85f2b71b42336657d90e6964f888f2c278ca5a8e",
+    "files": [
+      "src/js/ui/common/typedInput.js",
+      "src/js/ui/common/autoComplete.js",
+      "src/sass/ui/common/autoComplete.scss",
+      "src/js/ui/common/popover.js"
+    ]
+  },
+  "extracted": [
+    "red-ui-autoComplete",
+    "red-ui-autoComplete-completion",
+    "red-ui-autoComplete-container",
+    "red-ui-autoComplete-env-label",
+    "red-ui-editor-dialog",
+    "red-ui-menu",
+    "red-ui-popover-panel",
+    "red-ui-typedInput",
+    "red-ui-typedInput-container",
+    "red-ui-typedInput-focus",
+    "red-ui-typedInput-full-width",
+    "red-ui-typedInput-icon",
+    "red-ui-typedInput-input",
+    "red-ui-typedInput-input-wrap",
+    "red-ui-typedInput-option-caret",
+    "red-ui-typedInput-option-expand",
+    "red-ui-typedInput-option-label",
+    "red-ui-typedInput-option-trigger",
+    "red-ui-typedInput-options",
+    "red-ui-typedInput-type-label",
+    "red-ui-typedInput-type-select",
+    "red-ui-typedInput-value-label",
+    "red-ui-typedInput-value-label-inactive"
+  ],
+  "omitted": {
+    "red-ui-typedInput": "Goes on the original <input> the widget is attached to, which it then hides. The illustration is the control itself, so there is no wrapped input to mark.",
+    "red-ui-typedInput-full-width": "Applied when the selected type sets hasValue:false, so the type button becomes the whole control. None of the types the docs pages demonstrate does that.",
+    "red-ui-typedInput-value-label": "The container for the custom value renderers built on the valueLabel option: masked credentials, the two-line config-node label, the context-store name inside a flow/global field. All of them need the editor runtime.",
+    "red-ui-typedInput-value-label-inactive": "Styles the asterisks the cred type shows in place of a stored password, inside the value label above.",
+    "red-ui-autoComplete-completion": "Styles the editor's own msg-property completions, which are built from the editor's message-property table.",
+    "red-ui-autoComplete-env-label": "Styles the source label on environment-variable completions, which are read from the flow being edited."
+  }
+}

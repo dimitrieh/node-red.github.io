@@ -1,0 +1,233 @@
+---
+/**
+ * Three-state theme cycle button (auto -> light -> dark -> auto).
+ *
+ * Shares state with Starlight's ThemeSelect by reading/writing the same
+ * localStorage key (`starlight-theme`) and the same `<html data-theme>`
+ * attribute. That means a preference set in /docs/ propagates to the
+ * marketing pages and vice versa, with no extra sync logic.
+ *
+ * Pre-paint behaviour:
+ *   - In docs, Starlight's ThemeProvider.astro emits an inline script that
+ *     sets `<html data-theme>` BEFORE first paint, avoiding FOUC.
+ *   - In marketing, BaseLayout emits a matching inline script (search for
+ *     "pre-paint" in BaseLayout.astro) for the same FOUC avoidance.
+ */
+---
+
+<button
+  type="button"
+  class="theme-toggle inline-flex items-center gap-1.5"
+  aria-label="Switch colour theme"
+  data-theme-cycle
+>
+  <svg
+    class="theme-toggle-icon theme-icon-auto"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+    <line x1="8" y1="21" x2="16" y2="21"></line>
+    <line x1="12" y1="17" x2="12" y2="21"></line>
+  </svg>
+  <svg
+    class="theme-toggle-icon theme-icon-light"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+  </svg>
+  <svg
+    class="theme-toggle-icon theme-icon-dark"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+  <span class="theme-toggle-label" data-theme-label>Auto</span>
+</button>
+
+<style>
+  .theme-toggle {
+    /* Named so it morphs with the rest of the navbar across a marketing/docs
+       navigation. Without a name it stayed part of the root snapshot and
+       cross-faded, which showed as its label ghosting against itself
+       ("ark" over "Dark") for the length of the transition. See the names block in
+       SiteHeader.astro.
+
+       `position: relative` and a transparent 44px touch target are applied to
+       this class from src/styles/nav-shared.css, which owns that treatment for
+       every control in the navbar. Measured 36x32 here at 390px, below the 44px
+       both mobile platforms ask for, and the drawn box stays that size on
+       purpose: it is paired across navigations by view-transition-name, so
+       growing it would play as a jump. Do not add a `position` here without
+       reading that file. */
+    background: var(--nr-surface-alt);
+    border: 1px solid var(--nr-border);
+    color: var(--nr-text-muted);
+    font: 500 13px/1 var(--font-sans, system-ui, sans-serif);
+    letter-spacing: -0.01em;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition:
+      border-color var(--duration-fast, 150ms) var(--ease-standard, ease),
+      color var(--duration-fast, 150ms) var(--ease-standard, ease);
+    min-height: 32px;
+  }
+
+  .theme-toggle:hover,
+  .theme-toggle:focus-visible {
+    background: var(--nr-surface-elevated);
+    border-color: var(--nr-border-strong);
+    color: var(--nr-text-strong);
+  }
+
+  .theme-toggle:focus-visible {
+    outline: 3px solid var(--nr-red, #da0000);
+    outline-offset: 2px;
+  }
+
+  .theme-toggle-icon {
+    flex-shrink: 0;
+    display: none;
+  }
+
+  /* Show only the icon matching the active mode. Default state is
+     auto until the inline script applies the right one. */
+  .theme-toggle[data-mode='auto'] .theme-icon-auto,
+  .theme-toggle[data-mode='light'] .theme-icon-light,
+  .theme-toggle[data-mode='dark'] .theme-icon-dark {
+    display: inline-block;
+  }
+
+  .theme-toggle:not([data-mode]) .theme-icon-auto {
+    display: inline-block;
+  }
+
+  .theme-toggle-label {
+    line-height: 1;
+  }
+
+  @media (max-width: 479px) {
+    .theme-toggle-label {
+      display: none;
+    }
+    .theme-toggle {
+      padding: 6px 8px;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const STORAGE_KEY = 'starlight-theme';
+    const cycle = ['auto', 'light', 'dark'];
+    const labels = { auto: 'Auto', light: 'Light', dark: 'Dark' };
+
+    function readMode() {
+      try {
+        const v = localStorage.getItem(STORAGE_KEY);
+        if (v === 'light' || v === 'dark') return v;
+      } catch {
+        // localStorage throws rather than returning null when the browser
+        // blocks storage (Safari private mode, third-party-frame embeds). The
+        // stored preference is an enhancement, so falling through to 'auto'
+        // is the correct outcome, not an error worth surfacing.
+      }
+      return 'auto';
+    }
+
+    function applyMode(mode) {
+      const root = document.documentElement;
+      if (mode === 'light' || mode === 'dark') {
+        root.dataset.theme = mode;
+      } else {
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        root.dataset.theme = prefersLight ? 'light' : 'dark';
+      }
+      // Update any toggle buttons on the page
+      document.querySelectorAll('[data-theme-cycle]').forEach((btn) => {
+        btn.setAttribute('data-mode', mode);
+        const label = btn.querySelector('[data-theme-label]');
+        if (label) label.textContent = labels[mode];
+        btn.setAttribute('aria-label', `Switch colour theme (currently ${labels[mode]})`);
+      });
+      // Notify any Starlight pickers on the same page so their <select>
+      // stays in sync if it's mounted.
+      if (typeof window.StarlightThemeProvider?.updatePickers === 'function') {
+        try {
+          window.StarlightThemeProvider.updatePickers(mode);
+        } catch {
+          // Starlight's picker is only mounted on docs routes and its internals
+          // are not ours. If it changes shape, the site theme has already been
+          // applied above and only the <select>'s label goes stale.
+        }
+      }
+    }
+
+    function storeMode(mode) {
+      try {
+        localStorage.setItem(STORAGE_KEY, mode === 'light' || mode === 'dark' ? mode : '');
+      } catch {
+        // Same blocked-storage case as readMode. The theme still applies for
+        // this page view; it just will not survive a reload.
+      }
+    }
+
+    function onClick(e) {
+      const btn = e.currentTarget;
+      const current = btn.getAttribute('data-mode') || readMode();
+      const next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
+      storeMode(next);
+      applyMode(next);
+    }
+
+    // Initialise visible state on every toggle on the page.
+    applyMode(readMode());
+
+    document.querySelectorAll('[data-theme-cycle]').forEach((btn) => {
+      btn.addEventListener('click', onClick);
+    });
+
+    // When localStorage changes in another tab, reflect it here.
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEY) applyMode(readMode());
+    });
+
+    // When system theme changes and we're on 'auto', update.
+    const mql = window.matchMedia('(prefers-color-scheme: light)');
+    mql.addEventListener?.('change', () => {
+      if (readMode() === 'auto') applyMode('auto');
+    });
+  })();
+</script>

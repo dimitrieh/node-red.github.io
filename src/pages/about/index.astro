@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutSidebar from '../../components/AboutSidebar.astro';
+import { getCollection, render } from 'astro:content';
+
+const aboutPages = await getCollection('about');
+const mainPage = aboutPages.find((page) => page.id === 'index.md' || page.id === 'index');
+
+let Content = null;
+if (mainPage) {
+  const rendered = await render(mainPage);
+  Content = rendered.Content;
+}
+---
+
+<BaseLayout title="About" vtAnchor="#nr-vt-rail">
+  <div class="about-layout nr-grid">
+    <AboutSidebar currentPath={Astro.url.pathname} />
+
+    <div class="about-content">
+      <h1>About Node-RED</h1>
+      {Content ? <Content /> : <p>Content not found</p>}
+    </div>
+  </div>
+</BaseLayout>

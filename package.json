@@ -1,0 +1,62 @@
+{
+  "name": "node-red-website",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": "^22.22.3 || ^24.16.0 || >=26.3.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "dev:fresh": "node scripts/dev-fresh.mjs",
+    "start": "astro dev",
+    "check": "astro check",
+    "build": "astro check && astro build",
+    "build:sandbox": "DISABLE_PAGEFIND=1 astro check && DISABLE_PAGEFIND=1 astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "verify:urls": "npx tsx scripts/verify-urls.ts",
+    "verify:images": "npx tsx scripts/verify-images.ts",
+    "verify:all": "npm run build && npm run verify:urls && npm run verify:images",
+    "sync:upstream": "npx tsx scripts/sync-upstream.ts",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint --fix . && prettier --write .",
+    "test": "vitest",
+    "test:sandbox": "DISABLE_PAGEFIND=1 vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:sandbox": "DISABLE_PAGEFIND=1 playwright test",
+    "lighthouse": "lhci autorun"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/starlight": "^0.41.5",
+    "astro": "^7.1.6",
+    "marked": "^18.0.7",
+    "sanitize-html": "^2.17.6",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.12.1",
+    "@eslint/js": "^10.0.1",
+    "@iconify-json/simple-icons": "^1.2.92",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.62.0",
+    "@types/sanitize-html": "^2.16.1",
+    "@unocss/astro": "^66.7.5",
+    "@unocss/eslint-config": "^66.7.5",
+    "@unocss/preset-icons": "^66.7.5",
+    "@unocss/preset-wind": "^66.7.5",
+    "chokidar": "^5.0.0",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-astro": "^3.0.1",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.65.0",
+    "unocss": "^66.7.5",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  }
+}

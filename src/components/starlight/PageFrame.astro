@@ -1,0 +1,236 @@
+---
+import MobileMenuToggle from '@astrojs/starlight/components/MobileMenuToggle.astro';
+import AnnouncementBanner from '../AnnouncementBanner.astro';
+import FooterContent from './FooterContent.astro';
+import DocsWidgets from '../docs-widgets/DocsWidgets.astro';
+import { mainNav } from '../../data/navigation';
+
+const { hasSidebar } = Astro.locals.starlightRoute;
+const currentPath = Astro.url.pathname;
+
+/* The docs pages carrying live editor-widget demos. Markdown cannot import an
+   Astro component, so the one page frame every docs route goes through is where
+   the demos' element definitions and styles get loaded, and only these routes
+   pay for them. `trailingSlash` is 'ignore', so both forms of the path reach
+   here and the trailing one is normalised away before the lookup.
+
+   Adding a demo to another page means adding its route here as well; a page with
+   an <nr-typed-input> and no entry renders nothing where the demo should be, and
+   says so in the console. */
+const WIDGET_PAGES = new Set([
+  '/docs/api/ui/typedInput',
+  '/docs/api/ui/autoComplete',
+  '/docs/creating-nodes/edit-dialog',
+]);
+const needsWidgets = WIDGET_PAGES.has(currentPath.replace(/\/$/, ''));
+---
+
+<div class="page sl-flex">
+  {
+    /*
+    A `div`, not Starlight's stock `header`. SiteHeader renders into the slot
+    below as its own `<header class="site-header">`, so a `header` here nested a
+    second banner landmark inside the first on every docs page: axe flagged
+    landmark-no-duplicate-banner, landmark-banner-is-top-level and
+    landmark-unique, and screen-reader users got two "banner" regions to choose
+    between. The marketing pages have only SiteHeader and were always correct;
+    this makes docs match them. Starlight's own styles target `.header` by
+    class, never the element, so the layout is unaffected.
+  */
+  }
+  <div class="header"><slot name="header" /></div>
+  {
+    /* In the page's flow rather than inside `.header`, which is the point: the
+       header is `position: fixed` and anything inside it is pinned, and the
+       announcement is meant to scroll away like it does on marketing pages. The
+       fixed navbar is cleared by `.page`'s padding-top below, not by this
+       element, so the reservation holds when no announcement is active. */
+  }
+  <AnnouncementBanner />
+  <div class="page-body">
+    {
+      hasSidebar && (
+        <nav class="sidebar print:hidden" aria-label={Astro.locals.t('sidebarNav.accessibleLabel')}>
+          <MobileMenuToggle />
+          <div id="starlight__sidebar" class="sidebar-pane">
+            <div class="sidebar-content sl-flex">
+              {/*
+								Main site nav at the top of the docs sidebar, for the widths
+								where that sidebar is a drawer rather than a rail. There the
+								SiteHeader hamburger is CSS-hidden in `starlight-custom.css`
+								so Starlight's drawer button is the only affordance, which
+								leaves this list as the way back to home/about/blog/etc.
+								without using the logo.
+
+								Visibility is gated in `starlight-custom.css` on
+								`max-width: 49.99rem`, the complement of Starlight's own
+								`min-width: 50rem` rail query, and NOT with Starlight's
+								`lg:sl-hidden` utility. That utility hides at 72rem (1152px)
+								while the sidebar becomes a persistent rail at 50rem (800px),
+								so from 800px to 1152px this list rendered as a SITE group at
+								the top of that rail, above GETTING STARTED: the top navbar's
+								links a second time, pushing the docs nav down by its own
+								height (measured at 1024px, display block, 338x492). Both
+								rules turn on the same breakpoint now, so the list appears
+								exactly when the sidebar is a drawer.
+							*/}
+              <nav class="docs-main-nav-mobile" aria-label="Main site navigation">
+                <p class="docs-main-nav-mobile-label">Site</p>
+                <ul>
+                  {mainNav.map((item) => {
+                    const active =
+                      !item.external &&
+                      (item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href));
+                    return (
+                      <li>
+                        <a
+                          href={item.href}
+                          class:list={['docs-main-nav-mobile-link', { 'is-active': active }]}
+                          {...(item.external
+                            ? { target: '_blank', rel: 'noopener noreferrer' }
+                            : {})}
+                        >
+                          {item.label}
+                        </a>
+                        {!item.external && item.submenu && (
+                          <ul class="docs-main-nav-mobile-sub">
+                            {item.submenu.map((sub) => (
+                              <li>
+                                <a href={sub.href} class="docs-main-nav-mobile-sublink">
+                                  {sub.label}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+              <slot name="sidebar" />
+            </div>
+          </div>
+        </nav>
+      )
+    }
+    <div class="main-frame">
+      <slot />
+    </div>
+  </div>
+  <FooterContent />
+</div>
+
+{
+  /* Renders no markup of its own, only the widget definitions and their styles,
+    so it sits outside the layout rather than inside `.page`. */
+}
+{needsWidgets && <DocsWidgets />}
+
+{
+  /* Every docs page, not just the widget pages above: any page with a code block
+    wide enough to scroll is affected. See the file for what it fixes and why it
+    cannot be done while rendering. */
+}
+<script>
+  import './code-region-labels.js';
+</script>
+
+<style>
+  @layer starlight.core {
+    .page {
+      flex-direction: column;
+      min-height: 100vh;
+      /* Clears the fixed navbar for everything in the page's flow, which is now
+         the announcement band as well as the body. This reservation used to live
+         on `.main-frame`, but the band sits above `.main-frame` and outside it,
+         so the space has to be owned by their common parent. `border-box` is
+         global, so this stays inside the 100vh above rather than adding to it. */
+      padding-top: var(--sl-nav-height);
+    }
+
+    /* Positioning only. SiteHeader, which renders into the slot above, owns
+       everything that paints: the 75px row, the surface, the inline gutters and
+       the 1px bottom border. So Starlight's stock declarations for this wrapper
+       are all gone rather than overridden:
+
+       - `padding: var(--sl-nav-pad-y) var(--sl-nav-pad-x)` (10px on phones,
+         16px above) is the inset Starlight's own bare header content needs.
+         Ours is a full-bleed band that carries its own gutters, so the inset
+         moved the whole navbar inboard: at 390px the white band sat at x=10
+         y=10 with 370px of width, page background showing on three sides, which
+         is the "it floats" the user reported, and the logo landed at 36,36
+         against 20,25.5 on marketing. `.site-header` and `.header-logo-img` are
+         paired across navigations by view-transition-name (nr-header,
+         nr-header-mark), so that offset played as a twitch on every
+         marketing-to-docs navigation rather than sitting unnoticed.
+       - the `[data-has-sidebar]` padding-inline-end, which reserved
+         nav-gap + nav-pad-x + menu-button-size on the wrapper so Starlight's
+         fixed drawer button would not sit on its header content. Ours would
+         have to reserve that inside `.header-inner`, where the navbar's own
+         chrome lives, so the reservation moved to starlight-custom.css next to
+         the rule that hides SiteHeader's hamburger at the same breakpoint.
+       - `background-color` and `border-bottom`, which would only ever paint in
+         a rounding sliver behind an opaque band that is exactly as tall.
+
+       Height stays on --sl-nav-height, which starlight-custom.css sets to the
+       band's real 76px, so `.main-frame`'s padding-top below reserves exactly
+       what the fixed band covers. */
+    .header {
+      z-index: var(--sl-z-index-navbar);
+      position: fixed;
+      inset-inline-start: 0;
+      inset-block-start: 0;
+      width: 100%;
+      height: var(--sl-nav-height);
+      padding: 0;
+    }
+
+    .sidebar-pane {
+      visibility: var(--sl-sidebar-visibility, hidden);
+      position: fixed;
+      z-index: var(--sl-z-index-menu);
+      inset-block: var(--sl-nav-height) 0;
+      inset-inline-start: 0;
+      width: 100%;
+      background-color: var(--sl-color-black);
+      overflow-y: auto;
+    }
+
+    :global([aria-expanded='true']) ~ .sidebar-pane {
+      --sl-sidebar-visibility: visible;
+    }
+
+    .sidebar-content {
+      height: 100%;
+      min-height: max-content;
+      padding: 1rem var(--sl-sidebar-pad-x) 0;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    @media (min-width: 50rem) {
+      .sidebar-content::after {
+        content: '';
+        padding-bottom: 1px;
+      }
+    }
+
+    .main-frame {
+      /* The navbar's own height moved up to `.page`, so only the mobile TOC is
+         reserved here. That term is forced to 0rem in starlight-custom.css, since
+         the docs pages suppress Starlight's pinned mobile TOC bar. */
+      padding-top: var(--sl-mobile-toc-height);
+      padding-inline-start: var(--sl-content-inline-start);
+    }
+
+    @media (min-width: 50rem) {
+      .sidebar-pane {
+        --sl-sidebar-visibility: visible;
+        width: var(--sl-sidebar-width);
+        background-color: var(--sl-color-bg-sidebar);
+        border-inline-end: 1px solid var(--sl-color-hairline-shade);
+      }
+    }
+  }
+</style>

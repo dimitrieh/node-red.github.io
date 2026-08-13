@@ -1,0 +1,137 @@
+---
+/**
+ * The site-wide announcement band. Content comes from src/data/announcement.ts.
+ *
+ * It occupies the slot, and reuses the look, of the red breadcrumb band that
+ * /about/, /blog/ and /releases/ used to carry: directly under the navbar, full
+ * bleed, --nr-red-hover, 48px, with its text starting on the content's left edge.
+ * Those pages no longer render breadcrumbs; this replaced them, and the band is
+ * now on every page rather than a third of them.
+ *
+ * WHERE IT RENDERS. In the page's normal flow on both halves of the site, always
+ * directly below the navbar, so it scrolls up under the navbar and out of view
+ * while the navbar stays. Marketing pages render it from BaseLayout after
+ * `.site-header`, which is `position: sticky; top: 0`. Docs render it from the
+ * PageFrame override, between the fixed `.header` and `.page-body`.
+ *
+ * WHY NOT INSIDE THE DOCS HEADER. That is where it started, and it is why an
+ * earlier revision needed a `--nr-announce-h` token: `.header` is
+ * `position: fixed`, so anything inside it is pinned rather than scrolling, and
+ * every docs offset had to grow by the band's height, which meant the band's
+ * height had to be a measured constant. Moving it into the flow deleted that
+ * token, the arithmetic and the measurement, and let the band be as tall as its
+ * text needs. `.page` owns the padding that clears the fixed navbar now, so the
+ * reservation is right whether or not an announcement is active.
+ *
+ * `id="nr-vt-band"` is load-bearing: BaseLayout's `<link rel="expect"
+ * blocking="render">` points at it on the pages that pass `vtAnchor="#nr-vt-band"`,
+ * and it is now present on every page rather than only the ones with breadcrumbs.
+ */
+import { announcement } from '../data/announcement';
+
+const { active, href, event, status, date, cta } = announcement;
+---
+
+{
+  active && (
+    <div class="nr-announce" id="nr-vt-band">
+      <div class="nr-announce-inner">
+        <a class="nr-announce-link" href={href}>
+          <strong class="nr-announce-status">{status}!</strong>
+          <span class="nr-announce-detail">
+            {event} · {date} · {cta}
+            <span class="nr-announce-arrow" aria-hidden="true">
+              »
+            </span>
+          </span>
+        </a>
+      </div>
+    </div>
+  )
+}
+
+<style>
+  /* The same red as the breadcrumb band this replaced, via the same token rather
+     than a matching hex.
+
+     Theme-independent, which matters here. --nr-red-hover is declared identically
+     in design-tokens.css and starlight-custom.css and redefined in neither dark
+     block. --nr-black is NOT: it flips to #fafafa under /docs/ in dark mode.
+     Nothing about this strip should follow the theme, or the white text lands on
+     a light fill on half the site.
+
+     No bottom border, matching the band it replaced: the navbar above owns the
+     hairline between them. */
+  .nr-announce {
+    background: var(--nr-red-hover);
+    /* min-height, not height: the text wraps to two lines on a phone and the band
+       grows with it. Nothing measures this any more, so it is free to. */
+    min-height: 48px;
+    padding: 8px var(--grid-padding);
+    display: flex;
+    align-items: center;
+  }
+
+  .nr-announce-inner {
+    /* Content width, not chrome width, so the announcement starts on the same
+       left edge as everything below it. Copied from .breadcrumb-list, which had
+       the same job in this slot. */
+    max-width: var(--nr-content-max-width);
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .nr-announce-link {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 8px;
+    /* Literal white for the same reason as the background: --nr-text-* follows
+       the theme and would resolve near-black on a brand fill in light mode.
+       Measured 7.2:1 on #b30000, comfortably past AA at this size. */
+    color: #fff;
+    font-family: var(--font-sans, system-ui, sans-serif);
+    font-size: var(--text-body-sm);
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+
+  .nr-announce-link:hover .nr-announce-detail,
+  .nr-announce-link:focus-visible .nr-announce-detail {
+    text-decoration: underline;
+  }
+
+  .nr-announce-link:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+
+  .nr-announce-status {
+    font-weight: 600;
+  }
+
+  .nr-announce-detail {
+    /* A step quieter than the lead, which this red has the headroom for: 5.77:1
+       here, against white's 7.2:1. On the brighter --nr-red the same value
+       measured 4.23:1 and failed AA, because that red sits mid-luminance and
+       leaves no dimming direction at all. Not a --nr-text token, which would flip
+       with the theme. */
+    color: #e6e6e6;
+  }
+
+  .nr-announce-arrow {
+    margin-inline-start: 6px;
+  }
+
+  /* Two deliberate lines rather than free wrapping, so the height the docs chrome
+     reserves is a number that can be measured. Left-aligned, like the row it
+     stacks from. */
+  @media (max-width: 599px) {
+    .nr-announce-link {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+  }
+</style>

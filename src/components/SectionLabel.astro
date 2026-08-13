@@ -1,0 +1,23 @@
+---
+/**
+ * Section header lockup — a display heading on the left, optional action
+ * ("All posts →", "See all platforms →") slotted on the right.
+ *
+ * The heading matches the Install section's .dl-title treatment so every
+ * homepage section is introduced the same way, one step down the type scale
+ * (--text-h2 against Install's --text-h1) since Install is the page's
+ * primary call to action.
+ */
+interface Props {
+  label: string;
+  /** Heading level — homepage sections all sit at h2 under the hero's h1. */
+  level?: 2 | 3;
+}
+const { label, level = 2 } = Astro.props;
+const Heading = `h${level}` as 'h2' | 'h3';
+---
+
+<div class="nr-col-full nr-section-header">
+  <Heading class="nr-section-title"><span class="nr-label-marker">/</span> {label}</Heading>
+  <slot />
+</div>

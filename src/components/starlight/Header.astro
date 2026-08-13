@@ -1,0 +1,119 @@
+---
+/**
+ * Starlight Header override that delegates to the shared SiteHeader so the
+ * docs navbar matches the marketing navbar pixel-for-pixel. Starlight's
+ * own Search component (Pagefind-backed) is passed via the `search` named
+ * slot — that's the one functional difference docs gets on top of the
+ * shared chrome.
+ *
+ * Theme switching: SiteHeader renders our shared ThemeToggle, which writes
+ * to the same `localStorage['starlight-theme']` key that Starlight's
+ * ThemeProvider reads pre-paint. So toggling on docs and on marketing is
+ * the same control with the same persistence semantics.
+ */
+import type { Props } from '@astrojs/starlight/props';
+import Search from '@astrojs/starlight/components/Search.astro';
+import SiteHeader from '../SiteHeader.astro';
+
+// Re-export the prop type to keep the override contract with Starlight
+// and silence the unused-import warning on `Props`.
+export type StarlightHeaderProps = Props;
+---
+
+<SiteHeader>
+  <Search slot="search" />
+</SiteHeader>
+
+<script>
+  /**
+   * Open the search dialog when arriving at #search.
+   *
+   * The marketing header's Search control cannot search: Pagefind is built by
+   * Starlight and only exists on docs routes, so that control is a link to
+   * /docs/#search. This is the other half of it, and it only loads on docs.
+   *
+   * Driving Starlight's own [data-open-modal] button rather than touching the
+   * <dialog> directly, so the modal's focus handling, Pagefind's lazy init and the
+   * close behaviour all run exactly as they do for a normal click.
+   *
+   * The hash is then cleared with replaceState. It has served its purpose on
+   * arrival, and leaving it would reopen the dialog on every reload and put a URL
+   * in the reader's history that means "open a dialog" rather than a place on the
+   * page.
+   */
+  const openSearchFromHash = () => {
+    if (location.hash !== '#search') return;
+    const button = document.querySelector<HTMLButtonElement>('site-search button[data-open-modal]');
+    if (!button) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    button.click();
+  };
+
+  openSearchFromHash();
+
+  // Cross-document view transitions still run a full document load, so the call
+  // above covers navigation from marketing. This covers the same-document case of
+  // the hash being set while already on a docs page.
+  window.addEventListener('hashchange', openSearchFromHash);
+</script>
+
+<style>
+  /* Starlight's Search button paints inside the SiteHeader chrome on the
+     dark navbar. The defaults assume a content-area surface, so retune
+     the button colours to match our navbar treatment (same as the old
+     bespoke override that lived in this file). */
+  /* Same theme-aware tokens as the marketing .search-placeholder, deliberately,
+     not the translucent whites this used to hardcode.
+
+     Those whites assumed a permanently dark navbar. The navbar takes
+     --nr-surface, which is white in light mode, so a 6%-white fill with a
+     12%-white border on white made the docs search button all but invisible in
+     light mode. In dark mode it was still wrong in a subtler way: it resolved
+     lighter than the navbar while the marketing control resolved darker, so the
+     two sat on opposite sides of the surface they shared.
+
+     That also matters now the header morphs between page types: with the two
+     controls paired by view-transition-name, any difference between them plays as
+     a jump mid-navigation rather than sitting unnoticed on separate pages. Sharing
+     the tokens is what makes the morph invisible, and it retires a duplicated set
+     of values that had already drifted once.
+
+     Height stays pinned rather than min-height, since Starlight's own padding
+     pushes the natural height to 40px. */
+  :global(site-search button) {
+    background: var(--nr-surface-alt);
+    border: 1px solid var(--nr-border);
+    color: var(--nr-text-muted);
+    border-radius: 6px;
+    padding: 6px 10px;
+    height: 32px;
+    line-height: 1;
+    font: 500 13px/1 var(--font-sans, system-ui, sans-serif);
+    transition:
+      border-color 150ms ease,
+      color 150ms ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Hover matches .search-placeholder:hover for the same reason as the rest state. */
+  :global(site-search button:hover),
+  :global(site-search button:focus-visible) {
+    background: var(--nr-surface-elevated);
+    border-color: var(--nr-border-strong);
+    color: var(--nr-text-strong);
+  }
+
+  :global(site-search) {
+    --sl-search-result-highlight-bg: #da0000;
+  }
+
+  /* The Ctrl/Cmd K kbd hint inside the search button is hidden — the
+     shortcut doesn't actually trigger anything in this app, and Cmd+F
+     covers the use case. Removing it keeps the search button compact
+     and avoids a broken affordance. */
+  :global(site-search button kbd) {
+    display: none;
+  }
+</style>

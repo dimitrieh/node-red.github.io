@@ -1,0 +1,345 @@
+{
+  "42flows.jpeg": {
+    "tone": "color",
+    "meanLuma": 127.5,
+    "meanSat": 0.44,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.06
+  },
+  "a4bee.png": {
+    "tone": "dark",
+    "meanLuma": 66.8,
+    "meanSat": 0.17,
+    "transparentPct": 0.59,
+    "whiteOpaquePct": 0
+  },
+  "agilit-e.png": {
+    "tone": "boxed",
+    "meanLuma": 230.2,
+    "meanSat": 0.07,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.78
+  },
+  "aiomeet.png": {
+    "tone": "boxed",
+    "meanLuma": 204.1,
+    "meanSat": 0.03,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.74
+  },
+  "bitpool.png": {
+    "tone": "color",
+    "meanLuma": 89.7,
+    "meanSat": 0.63,
+    "transparentPct": 0.64,
+    "whiteOpaquePct": 0
+  },
+  "broadsens.png": {
+    "tone": "color",
+    "meanLuma": 132.2,
+    "meanSat": 0.72,
+    "transparentPct": 0.65,
+    "whiteOpaquePct": 0
+  },
+  "cgignite.png": {
+    "tone": "color",
+    "meanLuma": 124.7,
+    "meanSat": 0.85,
+    "transparentPct": 0.52,
+    "whiteOpaquePct": 0
+  },
+  "charge_unix.png": {
+    "tone": "color",
+    "meanLuma": 85.3,
+    "meanSat": 0.82,
+    "transparentPct": 0.59,
+    "whiteOpaquePct": 0
+  },
+  "chatbots-studio.png": {
+    "tone": "boxed",
+    "meanLuma": 199.7,
+    "meanSat": 0.28,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.43
+  },
+  "connect.png": {
+    "tone": "color",
+    "meanLuma": 103.5,
+    "meanSat": 0,
+    "transparentPct": 0.56,
+    "whiteOpaquePct": 0
+  },
+  "cosmo.png": {
+    "tone": "color",
+    "meanLuma": 111,
+    "meanSat": 0.62,
+    "transparentPct": 0.64,
+    "whiteOpaquePct": 0
+  },
+  "dialog.svg": {
+    "tone": "color",
+    "meanLuma": 137.2,
+    "meanSat": 1,
+    "transparentPct": 0.55,
+    "whiteOpaquePct": 0
+  },
+  "echo-unify-systems.png": {
+    "tone": "dark",
+    "meanLuma": 57.8,
+    "meanSat": 0.41,
+    "transparentPct": 0.62,
+    "whiteOpaquePct": 0
+  },
+  "enebular.svg": {
+    "tone": "dark",
+    "meanLuma": 34.1,
+    "meanSat": 0.11,
+    "transparentPct": 0.6,
+    "whiteOpaquePct": 0
+  },
+  "entelligently.png": {
+    "tone": "boxed",
+    "meanLuma": 221.5,
+    "meanSat": 0.08,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.67
+  },
+  "ff-logo--wordmark--light.svg": {
+    "tone": "color",
+    "meanLuma": 106.8,
+    "meanSat": 0.86,
+    "transparentPct": 0.51,
+    "whiteOpaquePct": 0.04
+  },
+  "flowake.png": {
+    "tone": "dark",
+    "meanLuma": 0,
+    "meanSat": 0,
+    "transparentPct": 0.75,
+    "whiteOpaquePct": 0
+  },
+  "flowfuse.png": {
+    "tone": "color",
+    "meanLuma": 132.1,
+    "meanSat": 0.44,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.23
+  },
+  "flowfuse.svg": {
+    "tone": "color",
+    "meanLuma": 114,
+    "meanSat": 0.81,
+    "transparentPct": 0.67,
+    "whiteOpaquePct": 0.04
+  },
+  "go-iot.png": {
+    "tone": "boxed",
+    "meanLuma": 179.5,
+    "meanSat": 0.17,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.59
+  },
+  "handyai.svg": {
+    "tone": "dark",
+    "meanLuma": 91.5,
+    "meanSat": 0.24,
+    "transparentPct": 0.73,
+    "whiteOpaquePct": 0
+  },
+  "hitachi.svg": {
+    "tone": "dark",
+    "meanLuma": 0,
+    "meanSat": 0,
+    "transparentPct": 0.43,
+    "whiteOpaquePct": 0
+  },
+  "iaconnects.png": {
+    "tone": "dark",
+    "meanLuma": 57.4,
+    "meanSat": 0.53,
+    "transparentPct": 0.39,
+    "whiteOpaquePct": 0
+  },
+  "iniationware.jpg": {
+    "tone": "boxed",
+    "meanLuma": 215.6,
+    "meanSat": 0.13,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.7
+  },
+  "kontron.svg": {
+    "tone": "color",
+    "meanLuma": 72.3,
+    "meanSat": 0.98,
+    "transparentPct": 0.57,
+    "whiteOpaquePct": 0
+  },
+  "litmus.png": {
+    "tone": "dark",
+    "meanLuma": 25.8,
+    "meanSat": 0.08,
+    "transparentPct": 0.75,
+    "whiteOpaquePct": 0
+  },
+  "multitech.png": {
+    "tone": "color",
+    "meanLuma": 71.2,
+    "meanSat": 0.63,
+    "transparentPct": 0.57,
+    "whiteOpaquePct": 0
+  },
+  "openiap.png": {
+    "tone": "color",
+    "meanLuma": 187.6,
+    "meanSat": 0.77,
+    "transparentPct": 0.41,
+    "whiteOpaquePct": 0
+  },
+  "opto22.png": {
+    "tone": "dark",
+    "meanLuma": 56.9,
+    "meanSat": 0.87,
+    "transparentPct": 0.34,
+    "whiteOpaquePct": 0
+  },
+  "overviewai.jpg": {
+    "tone": "boxed",
+    "meanLuma": 216.6,
+    "meanSat": 0.08,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.7
+  },
+  "p4nr.png": {
+    "tone": "color",
+    "meanLuma": 62,
+    "meanSat": 0.75,
+    "transparentPct": 0.55,
+    "whiteOpaquePct": 0
+  },
+  "pdi-logo.png": {
+    "tone": "color",
+    "meanLuma": 108.6,
+    "meanSat": 0.9,
+    "transparentPct": 0.58,
+    "whiteOpaquePct": 0.02
+  },
+  "plathome.png": {
+    "tone": "dark",
+    "meanLuma": 4.2,
+    "meanSat": 0.03,
+    "transparentPct": 0.61,
+    "whiteOpaquePct": 0
+  },
+  "qbee.png.webp": {
+    "tone": "dark",
+    "meanLuma": 36.1,
+    "meanSat": 0.38,
+    "transparentPct": 0.81,
+    "whiteOpaquePct": 0
+  },
+  "sensetecnic.png": {
+    "tone": "boxed",
+    "meanLuma": 203.9,
+    "meanSat": 0.08,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.64
+  },
+  "simoco.svg": {
+    "tone": "color",
+    "meanLuma": 104.6,
+    "meanSat": 0.88,
+    "transparentPct": 0.64,
+    "whiteOpaquePct": 0
+  },
+  "simplehw.png": {
+    "tone": "color",
+    "meanLuma": 108.9,
+    "meanSat": 0.94,
+    "transparentPct": 0.34,
+    "whiteOpaquePct": 0
+  },
+  "smartlight.png": {
+    "tone": "color",
+    "meanLuma": 152.5,
+    "meanSat": 0.24,
+    "transparentPct": 0.51,
+    "whiteOpaquePct": 0
+  },
+  "spiritai.png": {
+    "tone": "color",
+    "meanLuma": 111,
+    "meanSat": 0.53,
+    "transparentPct": 0.6,
+    "whiteOpaquePct": 0.02
+  },
+  "st-one.svg": {
+    "tone": "dark",
+    "meanLuma": 37.7,
+    "meanSat": 0,
+    "transparentPct": 0.7,
+    "whiteOpaquePct": 0
+  },
+  "thingtrack.svg": {
+    "tone": "color",
+    "meanLuma": 123.3,
+    "meanSat": 0.49,
+    "transparentPct": 0.8,
+    "whiteOpaquePct": 0
+  },
+  "tulip.png": {
+    "tone": "dark",
+    "meanLuma": 27.5,
+    "meanSat": 0.61,
+    "transparentPct": 0.68,
+    "whiteOpaquePct": 0
+  },
+  "ubos.svg": {
+    "tone": "color",
+    "meanLuma": 125.7,
+    "meanSat": 1,
+    "transparentPct": 0.67,
+    "whiteOpaquePct": 0
+  },
+  "united-manufacturing-hub.png": {
+    "tone": "dark",
+    "meanLuma": 22.7,
+    "meanSat": 0.05,
+    "transparentPct": 0.78,
+    "whiteOpaquePct": 0
+  },
+  "veritone.svg": {
+    "tone": "dark",
+    "meanLuma": 37.8,
+    "meanSat": 0,
+    "transparentPct": 0.58,
+    "whiteOpaquePct": 0
+  },
+  "victron.svg": {
+    "tone": "dark",
+    "meanLuma": 37.6,
+    "meanSat": 0,
+    "transparentPct": 0.62,
+    "whiteOpaquePct": 0
+  },
+  "vigilent.png": {
+    "tone": "boxed",
+    "meanLuma": 211,
+    "meanSat": 0.28,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.54
+  },
+  "yellaUmbrella.svg": {
+    "tone": "color",
+    "meanLuma": 129.7,
+    "meanSat": 0.54,
+    "transparentPct": 0.84,
+    "whiteOpaquePct": 0
+  },
+  "zenzium.jpg": {
+    "tone": "boxed",
+    "meanLuma": 224.5,
+    "meanSat": 0.09,
+    "transparentPct": 0,
+    "whiteOpaquePct": 0.73
+  }
+}

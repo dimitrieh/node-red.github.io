@@ -1,0 +1,363 @@
+---
+/**
+ * "Get Node-RED" download hero — latest stable version plus npm / Docker /
+ * source-zip install methods. Shared by the /releases page (as the page
+ * hero, level 1) and the homepage "Get Node-RED" section (level 2).
+ *
+ * The version + zip update live via the nav VersionBadge refresh script,
+ * which patches every [data-nr-latest] / [data-nr-latest-zip] on the page.
+ */
+import { getReleaseData } from '../lib/releases';
+
+interface Props {
+  /** Heading level — 1 for the releases page hero, 2 for a homepage section. */
+  level?: 1 | 2;
+  /** Heading text — the homepage section calls itself "Install". */
+  heading?: string;
+}
+const { level = 1, heading = 'Get Node-RED' } = Astro.props;
+const Heading = `h${level}` as 'h1' | 'h2';
+
+const { releases, latestStable } = await getReleaseData();
+const latest = latestStable ?? releases[0]!;
+
+const installMethods = [
+  {
+    label: 'npm',
+    // Node-RED 5 declares `engines.node: ">=22.9"`. This said 18+, which was
+    // node-red 4.x's floor (">=18.5") and has been wrong since 5.0, on the same
+    // page that advertises 5.x as the current release. Stated as 22.9 rather than
+    // 22 because 22.0 through 22.8 do not satisfy it.
+    hint: 'Install globally with Node.js 22.9+',
+    command: 'npm install -g node-red',
+  },
+  {
+    label: 'Docker',
+    hint: 'Run the official image',
+    command: 'docker run -it -p 1880:1880 -v node_red_data:/data nodered/node-red',
+  },
+];
+---
+
+<div class="dl-hero">
+  <p class="dl-eyebrow">Download</p>
+  <Heading class="dl-title">{heading}</Heading>
+  <p class="dl-lede">
+    The latest stable release is
+    <a class="dl-latest-chip" href={latest.htmlUrl} target="_blank" rel="noopener noreferrer">
+      v<span data-nr-latest>{latest.tag}</span>
+    </a>. Install with npm or Docker, or download the source archive below.
+  </p>
+  <p class="dl-stale" data-nr-stale-notice hidden>
+    A newer release is available — showing the latest version.
+  </p>
+
+  <div class="install-grid">
+    {
+      installMethods.map((m) => (
+        <div class="install-card">
+          <div class="install-card-head">
+            <span class="install-card-label">{m.label}</span>
+            <span class="install-card-hint">{m.hint}</span>
+          </div>
+          <div class="install-cmd">
+            {/*
+              tabindex so the snippet's horizontal scroll is reachable by
+              keyboard. `overflow-x: auto` below plus `white-space: nowrap`
+              makes this a scroll region on narrow screens (436px of command in
+              a 191px box at 390px wide) with nothing focusable inside it, which
+              is axe's scrollable-region-focusable violation. Only bites on
+              mobile, so a desktop-width audit does not see it.
+            */}
+            <code tabindex="0">{m.command}</code>
+            <button
+              type="button"
+              class="copy-btn"
+              data-copy={m.command}
+              aria-label={`Copy ${m.label} command`}
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span class="copy-btn-label">Copy</span>
+            </button>
+          </div>
+        </div>
+      ))
+    }
+
+    <div class="install-card install-card--download">
+      <div class="install-card-head">
+        <span class="install-card-label">Source</span>
+        <span class="install-card-hint">Zip archive of the latest tag</span>
+      </div>
+      <div class="install-cmd install-cmd--download">
+        <a class="download-btn" href={latest.zipUrl} data-nr-latest-zip download>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download .zip
+        </a>
+        <a class="download-assets" href={latest.htmlUrl} target="_blank" rel="noopener noreferrer">
+          All assets &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .dl-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    /* Red *text* at 12px, so it needs the AA-safe per-theme token: --nr-red
+       measured 3.11:1 against the dark surface. 600 weight at 12px is still
+       "normal text" for WCAG (bold only relaxes at 14pt/18.66px), so the
+       4.5:1 threshold applies rather than 3:1. */
+    color: var(--nr-text-link);
+    margin-bottom: var(--space-2);
+  }
+  .dl-title {
+    font-size: var(--text-h1);
+    letter-spacing: -0.03em;
+    margin-bottom: var(--space-3);
+  }
+  .dl-lede {
+    font-size: var(--text-body-lg, 1.125rem);
+    color: var(--nr-text-muted);
+    max-width: 60ch;
+    line-height: 1.6;
+  }
+  .dl-latest-chip {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    /* Red text: --nr-red is 3.36:1 on the dark surface, --nr-text-link is
+       per-theme and safe. */
+    color: var(--nr-text-link);
+    text-decoration: none;
+    white-space: nowrap;
+    /* Standalone version chip, not a link inside prose, so it needs 24px. It
+       measured 18px. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
+  .dl-latest-chip:hover {
+    text-decoration: underline;
+  }
+  .dl-stale {
+    margin-top: var(--space-3);
+    font-size: var(--text-body-sm);
+    color: var(--nr-text-faint);
+  }
+
+  .install-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+  }
+  .install-card {
+    border: 1px solid var(--nr-border);
+    border-radius: var(--radius-md);
+    background: var(--nr-surface-elevated);
+    padding: var(--space-4) var(--space-5);
+    /* As a grid item this defaults to min-width:auto, so the track floors at
+       the card's min-content width. The longest command ("docker run -it -p
+       …") is nowrap, which floored it around 595px and pushed the whole page
+       into horizontal scroll on a 390px viewport. Zeroing the automatic
+       minimum lets the track follow the grid instead, and the code element's
+       own overflow-x:auto takes over scrolling the command. */
+    min-width: 0;
+  }
+  .install-card--download {
+    grid-column: 1 / -1;
+  }
+  .install-card-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  .install-card-label {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--nr-text-strong);
+  }
+  .install-card-hint {
+    font-size: 12px;
+    color: var(--nr-text-faint);
+  }
+
+  .install-cmd {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: var(--nr-bg-dark);
+    border: 1px solid var(--nr-code-border, #2d2d2d);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .install-cmd code {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    background: none;
+    color: #e4e4e7;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 0;
+  }
+  .install-cmd--download {
+    background: none;
+    border: 0;
+    padding: 0;
+    flex-wrap: wrap;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    color: #d4d4d8;
+    border-radius: var(--radius-sm);
+    padding: 5px 9px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      color 150ms,
+      border-color 150ms;
+  }
+  .copy-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+  .copy-btn.is-copied {
+    border-color: var(--nr-red);
+    color: #fff;
+    background: var(--nr-red);
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--nr-red);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .download-btn:hover {
+    background: var(--nr-red-hover);
+    color: #fff;
+    text-decoration: none;
+  }
+  .download-assets {
+    font-size: 13px;
+    color: var(--nr-text-muted);
+    text-decoration: none;
+    /* Standalone "All assets" link below the download grid, measured 22.1px. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
+  .download-assets:hover {
+    color: var(--nr-text-link);
+    text-decoration: underline;
+  }
+
+  @media (max-width: 600px) {
+    .install-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  // Copy-to-clipboard for the install command cards.
+  //
+  // navigator.clipboard exists only in a secure context. The production site is
+  // one; a dev server reached over a plain-http LAN or Tailnet address is not,
+  // and there the whole `clipboard` object is undefined. This used to call it
+  // unconditionally inside a try/catch that swallowed the resulting TypeError,
+  // so in dev the button did nothing whatsoever and the page gave no hint why.
+  //
+  // The textarea + execCommand path is how this was done before the Clipboard
+  // API and it still works on an insecure origin, so it covers dev without
+  // changing production behaviour. A genuine failure now shows on the button
+  // instead of being hidden.
+  const writeToClipboard = async (text: string) => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    // Off-screen rather than hidden: execCommand('copy') copies the document's
+    // selection, and an element that is not rendered cannot hold one.
+    ta.style.cssText = 'position:fixed;top:-1000px;left:0;opacity:0';
+    document.body.append(ta);
+    ta.select();
+    const copied = document.execCommand('copy');
+    ta.remove();
+    if (!copied) throw new Error('execCommand("copy") was rejected');
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('.copy-btn[data-copy]').forEach((btn) => {
+    const label = btn.querySelector('.copy-btn-label');
+    const original = label?.textContent ?? 'Copy';
+    let reset: ReturnType<typeof setTimeout>;
+    btn.addEventListener('click', async () => {
+      let state = 'Copied';
+      try {
+        await writeToClipboard(btn.dataset.copy ?? '');
+        btn.classList.add('is-copied');
+      } catch {
+        state = 'Copy failed';
+      }
+      if (label) label.textContent = state;
+      clearTimeout(reset);
+      reset = setTimeout(() => {
+        btn.classList.remove('is-copied');
+        if (label) label.textContent = original;
+      }, 1600);
+    });
+  });
+</script>

@@ -1,0 +1,40 @@
+/* The framed box a live widget demo sits in on the docs pages.
+ *
+ * It replaces the `.red-ui-editor { background: white; border: 1px solid #564848 }`
+ * rule that each of those pages carried in its own inline <style> block. Two
+ * things were wrong with that rule and both are fixed by moving it here:
+ *
+ *   - `background: white` is a hard-coded colour, so in the site's dark theme the
+ *     demos were white rectangles with dark text nowhere near them. Everything
+ *     below is a token, so the frame follows the theme.
+ *   - `.red-ui-editor` is the class name of the editor's own root element. Using
+ *     it for a documentation frame implies the editor stylesheet is loaded and
+ *     that this is a piece of the editor, which is the confusion these
+ *     replacements exist to end. The frame is ours, so it gets a name of ours.
+ *
+ * Deliberately not scoped to a tag the way the two widget stylesheets are: this
+ * is a wrapper the markdown author writes by hand, so it has to be addressable
+ * as a plain class. It is a single class with one nested rule, and both are
+ * prefixed, so the leak surface is one name.
+ */
+
+.nr-widget-demo {
+  border: 1px solid var(--nr-border-strong);
+  border-radius: 2px;
+  background: var(--nr-surface-alt);
+  padding: 28px 20px;
+  margin: 1.5rem 0;
+}
+
+/* The autoComplete page labels each of its demos with a paragraph ("Pick an
+   animal") inside the frame. Tighten it up so the label reads as part of the
+   control rather than as body copy that happens to be boxed. */
+.nr-widget-demo > p {
+  margin: 0 0 0.5rem;
+  font-size: var(--text-body-sm, 0.9375rem);
+  color: var(--nr-text-muted);
+}
+
+.nr-widget-demo > *:last-child {
+  margin-bottom: 0;
+}

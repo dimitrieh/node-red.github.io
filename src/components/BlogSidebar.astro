@@ -1,0 +1,42 @@
+---
+/**
+ * Recent-posts rail for a blog post page. A thin wrapper that feeds
+ * SectionRail.astro, which owns the behaviour and styling shared with the
+ * About rail.
+ *
+ * Unlike About, the blog is not a fixed set of pages: it is 52 posts and
+ * grows with every release, so the rail lists only the most recent
+ * RECENT_POST_COUNT and hands the rest to /blog/ via the footer link. When
+ * the post being read is older than that window it simply has no entry in
+ * the rail, which is why the pager below the article carries the exact
+ * neighbours (see BlogPostPager.astro).
+ */
+import SectionRail from './SectionRail.astro';
+import { formatBlogDate } from '../utils/blog';
+
+interface Props {
+  /** Date-sorted, newest first. Already trimmed by the caller. */
+  posts: { title: string; href: string; date: Date }[];
+  /** `Astro.url.pathname` of the post being rendered. */
+  currentPath: string;
+}
+
+const { posts, currentPath } = Astro.props;
+
+const items = posts.map((post) => ({
+  label: post.title,
+  href: post.href,
+  meta: formatBlogDate(post.date),
+}));
+---
+
+<SectionRail
+  class="blog-rail"
+  items={items}
+  currentPath={currentPath}
+  navLabel="Recent blog posts"
+  eyebrow="Blog"
+  listHeading="Recent posts"
+  fallbackLabel="Archive"
+  footerLink={{ label: 'All posts', href: '/blog/' }}
+/>

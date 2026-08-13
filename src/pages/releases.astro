@@ -1,0 +1,174 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DownloadHero from '../components/DownloadHero.astro';
+import { getReleaseData } from '../lib/releases';
+
+const { releases } = await getReleaseData();
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+const fmtDate = (iso: string) => dateFmt.format(new Date(iso));
+---
+
+<BaseLayout
+  title="Releases"
+  description="Download Node-RED and browse the full release history with notes for every version."
+  vtAnchor="#nr-vt-band"
+>
+  <div class="releases-layout">
+    <header class="releases-hero">
+      <DownloadHero level={1} />
+    </header>
+
+    <section class="changelog" aria-label="Release history">
+      <h2 class="changelog-title">Release history</h2>
+      <ol class="changelog-list">
+        {
+          releases.map((r) => (
+            <li class="release" id={`v${r.tag}`}>
+              <div class="release-head">
+                <div class="release-head-main">
+                  <a class="release-tag" href={r.htmlUrl} target="_blank" rel="noopener noreferrer">
+                    {r.name}
+                  </a>
+                  {r.prerelease && <span class="release-pill release-pill--pre">Pre-release</span>}
+                </div>
+                <div class="release-head-meta">
+                  <time datetime={r.date}>{fmtDate(r.date)}</time>
+                  <a class="release-zip" href={r.zipUrl} download>
+                    .zip
+                  </a>
+                </div>
+              </div>
+              <div class="release-notes" set:html={r.notesHtml} />
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .releases-layout {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: var(--space-7) var(--grid-padding) var(--space-9);
+  }
+  .releases-hero {
+    margin-bottom: var(--space-8);
+  }
+
+  /* ── Changelog ── */
+  .changelog-title {
+    font-size: var(--text-h3);
+    letter-spacing: -0.02em;
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--nr-border);
+    margin-bottom: var(--space-5);
+  }
+  .changelog-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+  .release {
+    scroll-margin-top: 90px;
+  }
+  .release-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin-bottom: var(--space-3);
+  }
+  .release-head-main {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  .release-tag {
+    font-size: var(--text-h4);
+    font-weight: 600;
+    color: var(--nr-text-strong);
+    letter-spacing: -0.015em;
+    text-decoration: none;
+  }
+  .release-tag:hover {
+    color: var(--nr-red);
+  }
+  .release-pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .release-pill--pre {
+    background: var(--nr-red-light, rgba(218, 0, 0, 0.1));
+    color: var(--nr-red);
+  }
+  .release-head-meta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+    font-size: var(--text-body-sm);
+    color: var(--nr-text-faint);
+  }
+  .release-head-meta time {
+    font-family: var(--font-mono);
+  }
+  .release-zip {
+    font-family: var(--font-mono);
+    color: var(--nr-text-muted);
+    text-decoration: none;
+  }
+  .release-zip:hover {
+    color: var(--nr-red);
+    text-decoration: underline;
+  }
+
+  .release-notes {
+    color: var(--nr-text-body);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .release-notes :global(h3) {
+    font-size: 15px;
+    font-weight: 600;
+    margin: var(--space-4) 0 var(--space-2);
+    color: var(--nr-text-strong);
+  }
+  .release-notes :global(ul),
+  .release-notes :global(ol) {
+    margin: var(--space-2) 0;
+    padding-left: 22px;
+  }
+  .release-notes :global(li) {
+    margin: 4px 0;
+  }
+  .release-notes :global(a) {
+    color: var(--nr-text-link, var(--nr-red));
+  }
+  .release-notes :global(code) {
+    font-size: 0.875em;
+  }
+  .release-notes :global(p) {
+    margin: var(--space-2) 0;
+  }
+  .release-notes-empty,
+  .release-notes :global(.release-notes-empty) {
+    color: var(--nr-text-faint);
+    font-style: italic;
+  }
+</style>

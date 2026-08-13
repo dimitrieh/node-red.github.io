@@ -1,0 +1,353 @@
+---
+import { readFileSync } from 'node:fs';
+import { footerLinks } from '../data/navigation';
+
+// Official Node-RED logo SVG — inlined and recoloured (#8f0000 → #DA0000)
+// so the footer uses the canonical mark rather than the raw PNG.
+const footerLogoSrc = readFileSync('./public/about/media/node-red-icon.svg', 'utf8');
+const footerLogoMatch = footerLogoSrc.match(/<\/metadata>([\s\S]*)<\/svg>/);
+const footerLogoBody = (footerLogoMatch?.[1] ?? '').trim().replace(/#8f0000/gi, '#DA0000');
+
+// OpenJS Foundation logo — swap hardcoded `fill="#fff"` to `currentColor`
+// so the wordmark is readable in both light and dark themes.
+const openjsSrc = readFileSync('./public/images/openjs_foundation-logo.svg', 'utf8');
+const openjsBody = openjsSrc.replace(/fill="#fff"/gi, 'fill="currentColor"');
+---
+
+<footer class="site-footer" aria-label="Site footer">
+  <div class="footer-main">
+    <a href="/" class="footer-logo inline-flex items-center" aria-label="Node-RED home">
+      <svg class="footer-logo-img" viewBox="0 0 480 480" width="48" height="48" aria-hidden="true">
+        <Fragment set:html={footerLogoBody} />
+      </svg>
+    </a>
+
+    <nav class="footer-columns" aria-label="Footer navigation">
+      {
+        footerLinks.map((section) => (
+          <div class="footer-column">
+            <p class="footer-column-title">{section.title}</p>
+            <ul class="footer-column-list">
+              {section.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </nav>
+  </div>
+
+  <div class="footer-openjs">
+    <div class="footer-openjs-inner">
+      <div class="footer-openjs-logo inline-flex items-center">
+        <a
+          href="https://openjsf.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="OpenJS Foundation"
+        >
+          <Fragment set:html={openjsBody} />
+        </a>
+      </div>
+      <div class="footer-openjs-text">
+        <p>
+          Copyright <a href="https://openjsf.org">OpenJS Foundation</a> and Node-RED contributors. All
+          rights reserved. The
+          <a href="https://openjsf.org">OpenJS Foundation</a> has registered trademarks and uses trademarks.
+          For a list of trademarks of the
+          <a href="https://openjsf.org">OpenJS Foundation</a>, please see our
+          <a href="https://trademark-policy.openjsf.org">Trademark Policy</a> and
+          <a href="https://trademark-list.openjsf.org">Trademark List</a>. Trademarks and logos not
+          indicated on the
+          <a href="https://trademark-list.openjsf.org">list of OpenJS Foundation trademarks</a>
+          are trademarks&trade; or registered&reg; trademarks of their respective holders. Use of them
+          does not imply any affiliation with or endorsement by them.
+        </p>
+        <p class="footer-openjs-links">
+          <a href="https://openjsf.org">The OpenJS Foundation</a> |
+          <a href="https://terms-of-use.openjsf.org">Terms of Use</a> |
+          <a href="https://privacy-policy.openjsf.org">Privacy Policy</a> |
+          <a href="https://bylaws.openjsf.org">OpenJS Foundation Bylaws</a> |
+          <a href="https://trademark-policy.openjsf.org">Trademark Policy</a> |
+          <a href="https://trademark-list.openjsf.org">Trademark List</a> |
+          <a href="https://www.linuxfoundation.org/cookies">Cookie Policy</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* ===================================================================
+     FOOTER — tailscale.com-inspired
+     Theme-aware surface (--nr-surface flips with light/dark mode),
+     icon-only logo lockup on the left, four columns of links on the
+     right, each with a small uppercase header. OpenJS copyright row
+     sits in a separate band beneath, divided by a hairline.
+     =================================================================== */
+  .site-footer {
+    background: var(--nr-surface);
+    color: var(--nr-text-body);
+    margin-top: auto;
+    border-top: 1px solid var(--nr-border);
+  }
+
+  /* Content width, not the wider chrome width. The footer's own hairlines and
+     background still span the viewport, so the edgeless treatment is intact;
+     only the columns line up with the page content above them, and with the
+     homepage drawing that sets the 1280px cap.
+     Box-width token, because this container carries its own gutter padding:
+     with border-box, capping at 1280px would squeeze the columns to 1184px. */
+  .footer-main {
+    max-width: var(--nr-content-box-width);
+    margin: 0 auto;
+    padding: var(--space-7) var(--grid-padding);
+    display: grid;
+    /* Shared with the about / blog rail, see --nr-rail-columns. */
+    grid-template-columns: var(--nr-rail-columns);
+    gap: var(--nr-rail-gap);
+    align-items: start;
+  }
+
+  .footer-logo {
+    text-decoration: none;
+  }
+
+  /* Grayscale at rest, brand red on interaction.
+     The SVG is already recoloured to #DA0000 in the frontmatter above, the same
+     value the header uses, so the mark only has to be desaturated rather than
+     recoloured: dropping the filter reveals exactly the header's red, and the two
+     lockups cannot drift apart.
+
+     Only the filter animates. There used to be an opacity fade to 0.75 on hover,
+     which now works against the intent, since dimming the mark at the moment it
+     gains its colour is what stops it reading as red. */
+  .footer-logo-img {
+    filter: grayscale(1);
+    transition: filter var(--duration-fast) var(--ease-standard);
+  }
+
+  .footer-logo:hover .footer-logo-img,
+  .footer-logo:focus-visible .footer-logo-img {
+    filter: grayscale(0);
+  }
+
+  /* Four equal tracks, on docs and marketing alike: the column widths are meant
+     to match each other, so the row is a regular grid rather than one fitted to
+     the labels.
+
+     This was previously `repeat(4, max-content)` with space-between, which put
+     the first column on the left edge and the last column's text on the right
+     edge and pushed the slack into the three gutters. That distributes more
+     evenly, but the tracks then differ in width, which is the thing being
+     avoided here. The known cost of equal tracks is accepted: the labels are
+     short (Blog, Slack, License) so each cell carries only ~110-140px of text,
+     and since the leftover sits at the right of every cell it pools after the
+     last column, making the row read as leaning left. Do not "fix" that lean by
+     going back to content-sized tracks.
+
+     minmax(0, 1fr) rather than a bare 1fr, whose implicit auto minimum floors
+     each track at its min-content width and lets a long label push the row wider
+     than its container. */
+  .footer-columns {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-6);
+  }
+
+  .footer-column-title {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--nr-text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 var(--space-3);
+  }
+
+  .footer-column-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .footer-column-list li {
+    margin: 0;
+  }
+
+  /* Tailscale-style hover: pill bg + text slides right via padding-left.
+     Negative left margin keeps default alignment with the column header.
+
+     The horizontal padding totals 28px in BOTH states: at rest it is 10 left /
+     18 right, on hover 18 left / 10 right, so the text slides without the box
+     growing. This began as a layout fix, when the tracks were max-content and
+     spread with space-between and an 8px growth in a column's widest link
+     re-laid-out the whole row under the cursor. Fixed tracks mean it no longer
+     has to hold the row still, but it is kept: it also stops the pill itself
+     changing width mid-transition. The hovered pill is unchanged, since only the
+     resting right padding is new and no pill is painted at rest. */
+  .footer-column-list a {
+    display: block;
+    padding: 7px 18px 7px 10px;
+    margin-left: -10px;
+    border-radius: 6px;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--nr-text-body);
+    text-decoration: none;
+    transition:
+      color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      padding-left 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      padding-right 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .footer-column-list a:hover,
+  .footer-column-list a:focus-visible {
+    background: var(--nr-red-subtle);
+    color: var(--nr-red);
+    padding-left: 18px;
+    padding-right: 10px;
+    text-decoration: none;
+  }
+
+  /* OpenJS Foundation block: 1/4-width logo column + 3/4 prose column.
+     Grid mirrors .footer-main so columns align vertically. */
+  .footer-openjs {
+    border-top: 1px solid var(--nr-border);
+    background: var(--nr-surface);
+  }
+  .footer-openjs-inner {
+    /* Same content cap as .footer-main above, so the two rows share a left
+       edge and the grids below stay aligned column for column. */
+    max-width: var(--nr-content-box-width);
+    margin: 0 auto;
+    padding: var(--space-6) var(--grid-padding);
+    display: grid;
+    /* Same split as .footer-main above, so the two rows' columns line up. */
+    grid-template-columns: var(--nr-rail-columns);
+    gap: var(--nr-rail-gap);
+    align-items: center;
+  }
+  .footer-openjs-logo {
+    color: var(--nr-text-strong);
+  }
+  .footer-openjs-logo a {
+    display: inline-flex;
+    width: clamp(140px, 14vw, 200px);
+    color: var(--nr-text-strong);
+  }
+  /* Hover turns the whole lockup red, mark included. The wordmark already
+     follows currentColor (the build swaps its hardcoded white for it above);
+     the mark carries a gradient as a presentation attribute, and a CSS `fill`
+     outranks a presentation attribute, so naming it here is what reaches it.
+
+     The mark stays legible as a mark rather than becoming a red slab because
+     its path is the union of the hexagon minus its facets: the facets are
+     wound against the outer boundary, so they punch out and only the seams
+     between them are ever filled. Whatever colour it is given, it is line art.
+
+     No transition on purpose. A gradient paint cannot interpolate to a flat
+     colour, so the mark would snap while the wordmark faded, and the two
+     halves of one logo would arrive at different times. Both switch at once
+     instead. */
+  .footer-openjs-logo a:hover,
+  .footer-openjs-logo a:focus-visible {
+    color: var(--nr-red);
+  }
+  /* :global() on the path, and it is required, not tidiness. The svg arrives
+     through `set:html`, so its children never get the `.astro-*` scoping class
+     Astro adds to this component's markup. A plain `path` selector compiles to
+     `path:where(.astro-nns7i3if)`, which cannot match an injected element, so
+     the mark silently kept its gradient while the wordmark alone turned red.
+     Verified against the compiled rule, not assumed. */
+  .footer-openjs-logo a:hover :global(path),
+  .footer-openjs-logo a:focus-visible :global(path) {
+    fill: currentColor;
+  }
+  .footer-openjs-logo svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .footer-openjs-text p {
+    margin: 0 0 var(--space-3);
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--nr-text-muted);
+  }
+  .footer-openjs-text p:last-child {
+    margin-bottom: 0;
+  }
+
+  .footer-openjs-text a {
+    color: var(--nr-text-muted);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .footer-openjs-text a:hover,
+  .footer-openjs-text a:focus-visible {
+    color: var(--nr-red);
+  }
+
+  /* This row is a list of destinations separated by pipes, not prose, so WCAG
+     2.5.8's inline exemption does not cover it and its links have to clear 24px.
+     They measured 15px. The paragraph above is left alone on purpose: those
+     links ARE inline in a sentence, which the criterion exempts, and padding
+     them would only make the sentence's lines collide.
+
+     inline-block + padding rather than a stretched ::after pseudo, because the
+     row wraps to three lines on a phone and overlapping pseudo hit areas would
+     let one line steal taps from the next. The taller line-height keeps the
+     enlarged boxes from touching once they wrap. */
+  .footer-openjs-links {
+    line-height: 2.4;
+  }
+
+  .footer-openjs-links a {
+    white-space: nowrap;
+    display: inline-block;
+    /* Pinned to 1 so the box is exactly 12px of text + 2 x 6px = 24px. Left
+       inheriting, it would pick up the 2.4 above and overshoot to ~41px. The
+       row's own 2.4 still spaces the wrapped lines 28.8px apart, which clears
+       these 24px boxes. */
+    line-height: 1;
+    padding-block: 6px;
+  }
+
+  @media (max-width: 950px) {
+    .footer-main {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+    .footer-columns {
+      grid-template-columns: repeat(2, 1fr);
+      row-gap: var(--space-5);
+    }
+    .footer-openjs-inner {
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+  }
+
+  @media (max-width: 500px) {
+    .footer-main {
+      padding: var(--space-7) var(--grid-padding) var(--space-5);
+    }
+    .footer-columns {
+      grid-template-columns: 1fr;
+    }
+    .footer-openjs-inner {
+      padding: var(--space-5) var(--grid-padding);
+    }
+  }
+</style>

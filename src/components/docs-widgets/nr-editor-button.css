@@ -1,0 +1,165 @@
+/* The editor's `red-ui-button` as the edit-dialog docs page illustrates it.
+ *
+ * That page tells node authors to write `<button class="red-ui-button">` and
+ * then renders five live examples of it. Nothing styled the class, so every one
+ * of them drew as a native browser button (2px outset border on grey), which
+ * documented the opposite of what the surrounding prose claims. This file makes
+ * the examples look like the control they describe.
+ *
+ * GEOMETRY is the editor's, verbatim, from editor-client's editor.scss:
+ * `a.red-ui-button, button.red-ui-button` sets height 34 / line-height 32 /
+ * font-size 13 / radius 2 / padding 0 10, and `.red-ui-button-small` sets
+ * 20 / 18 / 10 / 2 / 0 5. The button-group border collapsing and the toggle
+ * underline come from the `workspace-button` and `workspace-button-toggle`
+ * mixins in mixins.scss. Keeping these exact is what makes the illustration
+ * honest, so they are the numbers to check if the editor ever moves.
+ *
+ * COLOUR is deliberately NOT the editor's. demo-frame.css already made this
+ * call for the widget frame and the reasoning holds here: the editor's palette
+ * is hard-coded light (#fff on #cecece with #646464 text), so reproducing it
+ * would put white buttons on a dark page in the site's dark theme. Every colour
+ * below is a site token with the editor's original in a trailing comment, which
+ * is the same mapping style nr-typed-input.css uses. All five states were
+ * checked against WCAG AA in both themes; the lowest is 5.33:1.
+ *
+ * Scoped to `.sl-markdown-content` because `red-ui-button` is the editor's class
+ * name rather than ours. We cannot rename it (the docs teach that exact string),
+ * so the scope is what keeps it from becoming a site-wide selector.
+ */
+
+.sl-markdown-content {
+  --nr-eb-bg: var(--nr-surface); /* $secondary-background          #fff    */
+  --nr-eb-text: var(--nr-text-muted); /* $secondary-text-color          #646464 */
+  --nr-eb-border: var(--nr-border-strong); /* $tertiary-border-color         #cecece */
+  --nr-eb-hover-bg: var(--nr-gray-200); /* $secondary-background-hover    #e8e8e8 */
+  --nr-eb-active-bg: var(--nr-gray-300); /* $secondary-background-selected         */
+  --nr-eb-selected-bg: var(--nr-gray-500); /* $workspace-button-background-selected  */
+  --nr-eb-selected-text: var(--nr-white); /* $workspace-button-color-selected #fff  */
+  --nr-eb-underline: var(--nr-gray-500); /* $form-input-border-selected-color #aaa */
+}
+
+/* Dark theme needs its own values, not the light ones: only --nr-gray-500 is
+   remapped for dark in design-tokens.css, so --nr-gray-100/200/300 would still
+   resolve to their near-white light values and give a white hover on a dark
+   button.
+   The selected pair is written as literals on purpose. starlight-custom.css
+   inverts the whole grey ramp under /docs/ in dark mode, so --nr-black there
+   means "strong text for this theme" and resolves to #fafafa, not to black:
+   pairing it with a light chip produced #fafafa on #a8a8a8, 2.27:1. Since the
+   point of these two values is a specific measured contrast against each other
+   rather than a role in the ramp, naming them directly is what keeps them
+   correct on both sides of that flip. #fafafa on #52525b is 7.41:1, and it keeps
+   the light theme's direction (filled chip, light label). */
+:root[data-theme='dark'] .sl-markdown-content {
+  --nr-eb-bg: var(--nr-surface-elevated);
+  --nr-eb-text: var(--nr-text-body);
+  --nr-eb-hover-bg: var(--nr-border);
+  --nr-eb-active-bg: var(--nr-border-strong);
+  --nr-eb-selected-bg: #52525b;
+  --nr-eb-selected-text: #fafafa;
+  --nr-eb-underline: var(--nr-gray-400);
+}
+
+.sl-markdown-content button.red-ui-button,
+.sl-markdown-content a.red-ui-button {
+  box-sizing: border-box;
+  display: inline-block;
+  height: 34px;
+  line-height: 32px;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 0 10px;
+  margin: 0;
+  border: 1px solid var(--nr-eb-border);
+  border-radius: 2px;
+  background: var(--nr-eb-bg);
+  color: var(--nr-eb-text);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  /* The editor disables selection on its buttons; the toggle group below is
+     click-to-select, and dragging across it should not highlight the labels. */
+  user-select: none;
+}
+
+.sl-markdown-content button.red-ui-button:hover,
+.sl-markdown-content a.red-ui-button:hover {
+  background: var(--nr-eb-hover-bg);
+  color: var(--nr-eb-text);
+}
+
+.sl-markdown-content button.red-ui-button:active,
+.sl-markdown-content a.red-ui-button:active {
+  background: var(--nr-eb-active-bg);
+}
+
+.sl-markdown-content button.red-ui-button:focus-visible,
+.sl-markdown-content a.red-ui-button:focus-visible {
+  outline: 2px solid var(--nr-focus);
+  outline-offset: 1px;
+}
+
+.sl-markdown-content button.red-ui-button-small,
+.sl-markdown-content a.red-ui-button-small {
+  height: 20px;
+  min-width: 20px;
+  line-height: 18px;
+  font-size: 10px;
+  padding: 0 5px;
+}
+
+/* Selected state, shared by the toggle group and any button carrying the class,
+   matching the editor's `&.selected:not(.disabled):not(:disabled)`. */
+.sl-markdown-content button.red-ui-button.selected:not(:disabled),
+.sl-markdown-content a.red-ui-button.selected {
+  background: var(--nr-eb-selected-bg);
+  border-color: var(--nr-eb-selected-bg);
+  color: var(--nr-eb-selected-text);
+}
+
+/* Toggle group: the editor collapses the shared borders so a run of buttons
+   reads as one segmented control, and marks the active one with a 2px bottom
+   border. The 1px margin dance keeps every button the same overall height
+   whether or not it is selected, so the row does not jump on click. */
+.sl-markdown-content .button-group {
+  display: inline-block;
+  vertical-align: middle;
+  /* The collapsed shared borders only read as one segmented control while the
+     run stays on a single line. The example sits in a narrow table column, and
+     without this the three buttons wrapped into a vertical stack whose
+     square-cornered middle button looked like a rendering fault. */
+  white-space: nowrap;
+}
+
+.sl-markdown-content .button-group:not(:last-child) {
+  margin-right: 4px;
+}
+
+.sl-markdown-content .button-group button.red-ui-button:not(:first-child) {
+  border-left: none;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.sl-markdown-content .button-group button.red-ui-button:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.sl-markdown-content button.red-ui-button.toggle:not(.single) {
+  margin-bottom: 1px;
+}
+
+.sl-markdown-content button.red-ui-button.toggle:not(.single).selected:not(:disabled) {
+  border-bottom-width: 2px;
+  border-bottom-color: var(--nr-eb-underline);
+  margin-bottom: 0;
+  cursor: default;
+}
+
+.sl-markdown-content button.red-ui-button.toggle:not(.single):not(.selected) {
+  margin-top: 1px;
+}

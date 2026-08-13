@@ -1,0 +1,3903 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionLabel from '../components/SectionLabel.astro';
+import DownloadHero from '../components/DownloadHero.astro';
+import { users } from '../data/users';
+import { announcement } from '../data/announcement';
+import { getCollection } from 'astro:content';
+import { parseBlogPosts, sortBlogPosts, formatBlogDate, blogPostUrl } from '../utils/blog';
+import { readFileSync } from 'node:fs';
+// Editor illustration — generated from the Figma export by
+// `scripts/build-editor-svg.mjs`. The script extracts the two flow nodes
+// + wire into a pannable group and injects an SVG <pattern> for the grid
+// (the Figma export omits canvas grid because of overflow:hidden). Run
+// `node scripts/build-editor-svg.mjs` after re-exporting from Figma.
+const editorSvg = readFileSync('./public/images/editor-mock/editor.svg', 'utf8');
+// Per-logo tone classification (dark/light/color/boxed) produced by
+// scripts/audit-logo-tones.mjs. Drives a per-logo CSS class in the
+// trusted-by wall so dark mode can apply targeted treatments rather
+// than one filter that breaks half the set. Re-run the script when
+// new logos are added to public/users/ and check the file in.
+import logoTones from '../data/logo-tones.json';
+const logoTone = (logo: string): string => {
+  const entry = (logoTones as Record<string, { tone?: string }>)[logo];
+  return entry?.tone ?? 'color';
+};
+
+// Latest blog posts for the homepage "On the blog" feed.
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const latestPosts = sortBlogPosts(parseBlogPosts(allPosts)).slice(0, 5);
+
+// "Who's using Node-RED" — render the full set (matches old Jekyll
+// behaviour where every entry in users.yml was rendered). The old site
+// also shuffled on page load via inline jQuery; we shuffle once at
+// build time using a seeded LCG so the grid stays stable across
+// rebuilds from the same source.
+let s = users.length;
+const lcg = () => {
+  s = (s * 1664525 + 1013904223) >>> 0;
+  return s / 0x100000000;
+};
+const shuffledUsers = [...users].sort(() => lcg() - 0.5);
+
+// 47 logos × 6-up is a busy wall. Show the first INITIAL_TRUSTED in the
+// baseline view; the rest are rendered in the DOM (so JS-disabled or SEO
+// crawlers still see the full list) but hidden via CSS until the user
+// expands with the "Show all" toggle. 18 = 3 rows of 6, a clean baseline.
+const INITIAL_TRUSTED = 18;
+
+// Get Started platforms — the first INITIAL_PLATFORMS render immediately; the
+// rest are present in the DOM but hidden, revealed by the "See all platforms"
+// toggle. Each row is a link straight to that platform's guide. It used to be a
+// disclosure that opened a panel with an intro line and a one-liner install
+// command, which meant two clicks to reach a guide that says the same thing more
+// fully, so the panel is gone and the row navigates. URLs match the docs
+// structure; keep in sync with docs/getting-started/index.md.
+type Platform = { href: string; img: string; name: string; desc: string };
+
+const PLATFORMS: Platform[] = [
+  {
+    href: '/docs/getting-started/local/',
+    img: '/images/platform-local.png',
+    name: 'Run locally',
+    desc: 'Install Node-RED on your machine with npm.',
+  },
+  {
+    href: '/docs/getting-started/docker/',
+    img: '/images/platform-local-docker.png',
+    name: 'Docker',
+    desc: 'Run in a container for easy deployment.',
+  },
+  {
+    href: '/docs/getting-started/raspberrypi/',
+    img: '/images/platform-device-pi.png',
+    name: 'Raspberry Pi',
+    desc: 'Perfect for IoT and edge computing projects.',
+  },
+  {
+    href: '/docs/getting-started/development/',
+    img: '/images/platform-local-dev.png',
+    name: 'Install from git',
+    desc: 'Build Node-RED from source and start contributing.',
+  },
+  {
+    href: '/docs/getting-started/beaglebone/',
+    img: '/images/platform-device.png',
+    name: 'BeagleBone',
+    desc: 'Run Node-RED on BeagleBone boards.',
+  },
+  {
+    href: '/docs/getting-started/android/',
+    img: '/images/platform-android.png',
+    name: 'Android',
+    desc: 'Experimental — runs on Android via Termux.',
+  },
+  {
+    href: '/docs/getting-started/flowfuse/',
+    img: '/images/platform-cloud.png',
+    name: 'FlowFuse',
+    desc: 'Multi-tenant Node-RED in the cloud.',
+  },
+  {
+    href: '/docs/getting-started/aws/',
+    img: '/images/platform-cloud.png',
+    name: 'AWS',
+    desc: 'Run on Elastic Beanstalk or EC2.',
+  },
+  {
+    href: '/docs/getting-started/azure/',
+    img: '/images/platform-cloud.png',
+    name: 'Microsoft Azure',
+    desc: 'Run on an Azure Virtual Machine.',
+  },
+];
+const INITIAL_PLATFORMS = 3;
+---
+
+<BaseLayout title="Home">
+  <!-- Hero Section — the interactive editor illustration IS the hero.
+       Single inline SVG transcribed from Figma node 5:900 (1390×849).
+       Geometry is identical to a Figma SVG export — same coordinates,
+       same fills, same strokes. Interactive layer adds:
+         · per-element hover highlight + tooltip via [data-label]
+         · click-and-drag panning on the canvas content (translates the
+           <g class="ed-canvas-pan"> group within a clipPath)
+         · an idle ghost cursor that occasionally pans the canvas until
+           the first real pointer interaction retires it
+       The viewBox does the responsive work — the SVG scales to whatever
+       container width is available, preserving the 1390:849 aspect.
+       Messaging sits above the drawing as its own block. -->
+  <section class="hero-editor">
+    <div class="nr-grid">
+      <div class="hero-intro nr-col-full">
+        <h1 class="hero-title">Programming you can see<span class="hero-accent">.</span></h1>
+        <p class="hero-subtitle">
+          Node-RED is a visual programming tool for event-driven systems. Wire hardware, APIs, and
+          online services into flows you can read at a glance, then deploy with a click.
+        </p>
+        <div class="hero-actions flex items-center gap-4">
+          <a href="#install" class="nr-btn nr-btn-primary">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              ></path>
+            </svg>
+            Install
+          </a>
+          <a href="/docs/" class="nr-btn nr-btn-secondary">
+            Documentation
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path
+                d="M1 6h10M7 2l4 4-4 4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div class="ed-wrap nr-col-full">
+        <div class="ed-stage">
+          <Fragment set:html={editorSvg} />
+          <div class="ed-ghost-cursor" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path
+                d="M4 2l7.07 16.97 2.51-7.39 7.39-2.51L4 2z"
+                fill="#111111"
+                stroke="#ffffff"
+                stroke-width="1.5"
+                stroke-linejoin="round"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Visual Programming — three benefit columns under the hero
+       carrying the visual-programming message in prose. -->
+  <section class="section-whyvisual nr-section">
+    <div class="nr-grid whyvisual-grid">
+      <div class="whyvisual-item nr-colspan-4">
+        <h2>See the whole system</h2>
+        <p>
+          Flows read like diagrams. Every input, transformation, and output sits on one canvas, so
+          the logic is its own documentation and the whole team can follow it.
+        </p>
+      </div>
+      <div class="whyvisual-item nr-colspan-4">
+        <h2>Change it live</h2>
+        <p>
+          Edit a node, hit deploy, and watch data move. There is no build step, restart, or release
+          pipeline between an idea and seeing it run.
+        </p>
+      </div>
+      <div class="whyvisual-item nr-colspan-4">
+        <h2>Build on 5,000+ nodes</h2>
+        <p>
+          Community nodes wrap the boilerplate for MQTT, HTTP, databases, dashboards, and hardware,
+          so wiring replaces plumbing code.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install Section — the same download hero as the top of the
+       /releases page: latest stable version + npm / Docker / source-zip.
+       The hero's primary CTA deep-links here via #install. -->
+  <section id="install" class="section-getnodered nr-section">
+    <div class="nr-grid">
+      <div class="nr-col-full">
+        <DownloadHero level={2} heading="Install" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Sponsor Section — FlowFuse
+       Nick founded FlowFuse in 2021 to drive Node-RED forward; the
+       company underwrites much of the upstream work. This block sits
+       directly below Install, so a reader who has just seen how to run
+       Node-RED themselves is offered the managed path next.
+
+       Layout: a 12-col card with a soft red-tinted gradient surface so
+       it reads as a featured spotlight, not a generic content card.
+       Inside, a 4-col logo lockup + 8-col copy/CTA pairing. -->
+  <section class="section-sponsor">
+    <div class="nr-grid">
+      <article class="sponsor-card nr-col-full">
+        <div class="sponsor-logo-frame flex flex-col items-center justify-center gap-4 text-center">
+          <p class="sponsor-eyebrow">Founding sponsor</p>
+          <!-- The mark is a link to flowfuse.com, same as every logo on the
+               trusted-by wall. A reader who recognises the mark reaches for it
+               before they read down to the CTA button below. -->
+          <a href="https://flowfuse.com" target="_blank" rel="noopener" class="sponsor-logo-link">
+            <img src="/users/flowfuse.svg" alt="FlowFuse" width="220" height="119" />
+          </a>
+          <p class="sponsor-since">supporting Node-RED since 2021</p>
+        </div>
+
+        <div class="sponsor-body flex flex-col gap-4">
+          <h2 class="sponsor-heading">Considering Node-RED for production?</h2>
+          <p class="sponsor-tagline">
+            <strong class="sponsor-brand">FlowFuse</strong> is the enterprise platform built around Node-RED
+            &mdash; by the Node-RED team. It adds authentication, team workspaces, deployment pipelines,
+            a hardened runtime and 24/7 support, and is the path most organisations follow when putting
+            Node-RED into production at scale.
+          </p>
+          <div class="sponsor-actions flex flex-wrap items-center gap-5">
+            <a
+              href="https://flowfuse.com"
+              target="_blank"
+              rel="noopener"
+              class="nr-btn nr-btn-primary sponsor-cta inline-flex items-center gap-2"
+            >
+              Visit flowfuse.com
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+            <!-- Straight to the History section, since that is the story this
+                 sponsor block refers to. /about/ opens on "About Node-RED" and the
+                 reader had to find History themselves. The id comes from the `##
+                 History` heading in the about content, and marketing pages already
+                 carry scroll-padding-top, so it lands clear of the sticky navbar. -->
+            <a href="/about/#history" class="sponsor-cta-secondary"> Read the story </a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Platforms Section
+       Three platform rows visible by default, all rendered in the DOM.
+       Clicking "See all platforms" expands the section to reveal the
+       rest in place — same pattern as Trusted By's "Show all" toggle.
+       Each row is a subgrid of the section's 12-col rails so icon /
+       name / description / arrow align vertically across all rows. -->
+  <section class="section-getstarted nr-section">
+    <div class="nr-grid">
+      <SectionLabel label="Platforms">
+        {
+          PLATFORMS.length > INITIAL_PLATFORMS && (
+            <button
+              type="button"
+              class="getstarted-all nr-link-btn"
+              data-getstarted-toggle
+              aria-expanded="false"
+              aria-controls="getstarted-row"
+            >
+              <span data-getstarted-toggle-label>See all platforms &rarr;</span>
+            </button>
+          )
+        }
+      </SectionLabel>
+      <div id="getstarted-row" class="getstarted-row nr-subgrid" data-getstarted-row>
+        {
+          PLATFORMS.map((p, i) => (
+            <div class:list={['platform-row', i >= INITIAL_PLATFORMS && 'platform-row--extra']}>
+              <a href={p.href} class="platform-trigger">
+                <span class="platform-icon flex items-center">
+                  <img src={p.img} alt="" width="48" height="48" />
+                </span>
+                <span class="platform-name">{p.name}</span>
+                <span class="platform-desc">{p.desc}</span>
+                <svg
+                  class="platform-toggle"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2 7h9M8 3.5 11.5 7 8 10.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </a>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Trusted By Section
+       The logo wall uses a column-subgrid so each logo tile snaps to 2
+       of the 12 parent tracks (6-up at desktop). Tiles inherit the same
+       gutter rhythm as the rest of the page rather than declaring their
+       own grid in isolation. -->
+  <section class="section-trusted nr-section nr-raster nr-raster-dots">
+    <div class="nr-grid">
+      <SectionLabel label="Trusted by">
+        {
+          shuffledUsers.length > INITIAL_TRUSTED && (
+            <button
+              type="button"
+              class="trusted-toggle nr-link-btn"
+              data-trusted-toggle
+              aria-expanded="false"
+              aria-controls="trusted-grid"
+            >
+              <span data-trusted-toggle-label>Show all &rarr;</span>
+            </button>
+          )
+        }
+      </SectionLabel>
+      <div class="trusted-viewport nr-col-full" data-trusted-viewport>
+        <div id="trusted-grid" class="trusted-grid" data-trusted-grid>
+          {
+            shuffledUsers.map((user) => (
+              <a
+                href={user.url}
+                target="_blank"
+                rel="noopener"
+                class:list={[
+                  'trusted-logo nr-colspan-2',
+                  `trusted-logo--tone-${logoTone(user.logo)}`,
+                ]}
+              >
+                <img src={`/users/${user.logo}`} alt={user.name} loading="lazy" />
+              </a>
+            ))
+          }
+        </div>
+      </div>
+      <p class="trusted-disclaimer nr-col-full" data-char-stagger>
+        {
+          (() => {
+            // Stripe.dev-style per-character reveal: each non-space char
+            // gets its own animatable span with a global incrementing
+            // delay index. Words are wrapped in nowrap containers so the
+            // character spans don't break mid-word at line ends.
+            const text =
+              'All logos used with permission. These links do not constitute an endorsement or approval by the Node-RED project of any of the products, services or opinions of the companies listed.';
+            let charIndex = 0;
+            return text.split(' ').map((word, w, words) => (
+              <>
+                <span class="trusted-disclaimer-word">
+                  {[...word].map((char) => {
+                    const i = charIndex++;
+                    return (
+                      <span class="trusted-disclaimer-char" style={`--char-i: ${i}`}>
+                        {char}
+                      </span>
+                    );
+                  })}
+                </span>
+                {w < words.length - 1 ? ' ' : ''}
+              </>
+            ));
+          })()
+        }
+      </p>
+      <p class="trusted-feature-link nr-col-full" id="trusted-feature-link">
+        <a class="trusted-info" href="/about/community/">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          Want to feature your product here?
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <!-- On the blog (latest posts) — restored from the old Jekyll
+       homepage where it shared a row with the Community section.
+       Each post row uses a column-subgrid so the date column lines up
+       on track 1-3 and the title on tracks 4-12, matching the rhythm
+       of the rest of the page rather than its own arbitrary `180px 1fr`. -->
+  <section class="section-blog nr-section">
+    <div class="nr-grid">
+      <SectionLabel label="On the blog">
+        <a href="/blog/" class="blog-feed-more nr-section-link">All posts &rarr;</a>
+      </SectionLabel>
+      <ul class="blog-feed-list nr-feed-list nr-col-full">
+        {
+          latestPosts.map((post) => (
+            <li class="blog-feed-item nr-feed-item">
+              <a href={blogPostUrl(post)} class="blog-feed-link nr-feed-link">
+                <time datetime={post.date.toISOString()} class="blog-feed-date nr-feed-date-col">
+                  {formatBlogDate(post.date)}
+                </time>
+                <span class="blog-feed-title">{post.data.title}</span>
+                <span class="blog-feed-cta nr-feed-cta-col" aria-hidden="true">
+                  &rarr;
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- On the forum (Discourse weekly highlights, diversified)
+       Mirrors .blog-feed-* row pattern. The server renders skeleton
+       placeholders so initial paint has no layout shift; a client-side
+       <script> fetches /top.json?period=weekly + /categories.json,
+       runs a soft-cap diversification pass (1 thread per category,
+       relaxed to 2 then unlimited only if the floor of 5 isn't met),
+       and shows up to 8 rows with a category chip on each.
+
+       CORS note: discourse.nodered.org currently emits no
+       Access-Control-Allow-Origin header for this site's origin, so
+       the live fetch will be blocked in production until either
+         (a) DISCOURSE_CORS_ORIGINS on the Discourse instance is
+             updated to include https://nodered.org, OR
+         (b) a small proxy (Cloudflare Worker / Netlify Function) is
+             put in front and the *_API constants below are pointed
+             at it.
+       In dev, the Astro/Vite server proxies /_forum-proxy/* to
+       Discourse (see astro.config.mjs), so the live data renders.
+       On any error the catch-block falls back to a single
+       "Browse the forum" link so the section degrades cleanly. -->
+  <section class="section-forum nr-section">
+    <div class="nr-grid">
+      <SectionLabel label="On the forum">
+        <a
+          href="https://discourse.nodered.org/latest"
+          class="forum-feed-more nr-section-link"
+          target="_blank"
+          rel="noopener"
+        >
+          All threads &rarr;
+        </a>
+      </SectionLabel>
+      <ul
+        class="forum-feed-list nr-feed-list nr-col-full"
+        data-forum-feed
+        aria-busy="true"
+        aria-live="polite"
+      >
+        {
+          Array.from({ length: 5 }).map(() => (
+            <li class="forum-feed-item nr-feed-item forum-feed-skeleton" aria-hidden="true">
+              <span class="forum-feed-link nr-feed-link">
+                <span class="forum-feed-date nr-feed-date-col">&nbsp;</span>
+                <span class="forum-feed-title">
+                  <span class="skeleton-bar" />
+                </span>
+                <span class="forum-feed-cta nr-feed-cta-col" aria-hidden="true">
+                  &rarr;
+                </span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+      <noscript>
+        <p class="forum-feed-fallback">
+          <a href="https://discourse.nodered.org/latest"
+            >Browse the latest discussions on the forum &rarr;</a
+          >
+        </p>
+      </noscript>
+    </div>
+  </section>
+
+  <!-- Open source (GitHub stats + contributor avatar wall)
+       Centred eyebrow / headline / tagline / 4 stat numbers, with a
+       grid of real contributor avatars from node-red/node-red as a
+       backdrop. Avatars are desaturated + low-opacity + radial-vignette
+       masked so the centre of the card stays legible for the numbers.
+       Stats fetched client-side from api.github.com (public CORS — no
+       proxy needed, unlike Discourse): orgs/node-red/repos for stars +
+       forks, repos/node-red/node-red/contributors for the count + the
+       avatars, search/issues for PRs-merged-last-month. -->
+  <section class="section-oss nr-section">
+    <div class="nr-grid">
+      <SectionLabel label="Open source">
+        <button
+          type="button"
+          class="oss-toggle nr-link-btn"
+          data-oss-toggle
+          aria-expanded="false"
+          aria-controls="data-oss-avatars"
+          hidden
+        >
+          <span data-oss-toggle-label>Show all contributors →</span>
+        </button>
+      </SectionLabel>
+      <ul class="oss-stat-row nr-col-full">
+        <li class="oss-stat">
+          <span class="oss-stat-num" data-oss-stat="years">—</span>
+          <span class="oss-stat-label">Years on GitHub</span>
+        </li>
+        <li class="oss-stat">
+          <span class="oss-stat-num" data-oss-stat="stars">—</span>
+          <span class="oss-stat-label">Stars</span>
+        </li>
+        <li class="oss-stat">
+          <span class="oss-stat-num" data-oss-stat="forks">—</span>
+          <span class="oss-stat-label">Forks</span>
+        </li>
+        <li class="oss-stat">
+          <span class="oss-stat-num" data-oss-stat="contributors">—</span>
+          <span class="oss-stat-label">Contributors</span>
+        </li>
+        <li class="oss-stat">
+          <span class="oss-stat-num" data-oss-stat="prs">—</span>
+          <span class="oss-stat-label">PRs merged last month</span>
+        </li>
+      </ul>
+      <!-- Avatar wall: same tile rhythm as `.trusted-grid` — sharp
+           square cells, hairline borders, no rounded corners. Clipped
+           to N rows by .oss-avatar-viewport; the grid auto-rotates one
+           row at a time on a slow timer so a new band of contributors
+           drifts in every ~10s.
+
+           Skeleton-first: we server-render 48 placeholder tiles so the
+           lattice + a band of pulsing circles is visible before the
+           client fetch resolves, and stays visible if it fails (e.g.
+           GitHub rate-limit). On success the loader REPLACES this set
+           with real anchor tiles. Mirrors the forum/issues feed
+           skeleton-row pattern. -->
+      <div class="oss-avatar-viewport nr-col-full" data-oss-viewport>
+        {
+          /*
+            No `aria-hidden` on this container. The loader replaces the
+            skeleton with real anchor tiles and gives each one an
+            `aria-label` of "@login on GitHub" precisely so screen readers
+            announce the contributor; hiding the container cancelled every
+            one of those labels while leaving the anchors keyboard-focusable,
+            which is the aria-hidden-focus violation axe reports. The
+            skeleton tiles below carry their own `aria-hidden`, so the
+            pre-load state stays silent without it.
+        */
+        }
+        <div class="oss-avatar-grid" data-oss-avatars>
+          {
+            Array.from({ length: 48 }).map(() => (
+              <div class="oss-avatar-tile oss-avatar-tile--skeleton" aria-hidden="true">
+                <span class="oss-avatar-skel" />
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Top GitHub issues (live feed)
+       Mirrors the .forum-feed-* visual rhythm exactly — same subgrid
+       row, same date column, same chip pattern, same skeleton, same
+       fallback. Endpoint: api.github.com/search/issues sorted by
+       recently-updated, scoped to the whole node-red org. Diversified
+       by repo (same soft-cap algorithm as forum: 1 → 2 → uncapped). -->
+  <section class="section-issues nr-section">
+    <div class="nr-grid">
+      <SectionLabel label="Top issues this week">
+        <a
+          href="https://github.com/issues?q=org%3Anode-red+is%3Aissue+is%3Aopen+sort%3Aupdated-desc"
+          class="forum-feed-more nr-section-link"
+          target="_blank"
+          rel="noopener"
+        >
+          All issues &rarr;
+        </a>
+      </SectionLabel>
+      <ul
+        class="forum-feed-list nr-feed-list nr-col-full"
+        data-issues-feed
+        aria-busy="true"
+        aria-live="polite"
+      >
+        {
+          Array.from({ length: 5 }).map(() => (
+            <li class="forum-feed-item nr-feed-item forum-feed-skeleton" aria-hidden="true">
+              <span class="forum-feed-link nr-feed-link">
+                <span class="forum-feed-date nr-feed-date-col">&nbsp;</span>
+                <span class="forum-feed-title">
+                  <span class="skeleton-bar" />
+                </span>
+                <span class="forum-feed-cta nr-feed-cta-col" aria-hidden="true">
+                  &rarr;
+                </span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+      <noscript>
+        <p class="forum-feed-fallback">
+          <a href="https://github.com/node-red/node-red/issues"
+            >Browse open issues on GitHub &rarr;</a
+          >
+        </p>
+      </noscript>
+    </div>
+  </section>
+
+  <!-- Community Section
+       Table-style list, same row pattern as the blog feed: a small
+       mono-cap "kind" column on the left followed by a name + short
+       description, with a chevron at the row end. -->
+  <section class="section-community">
+    <div class="nr-grid">
+      <SectionLabel label="Community" />
+      {
+        /* Conference card, above the community links exactly as the Jekyll
+           site's `conference-banner` sits above its Forum/Slack/GitHub list. It
+           reads the same src/data/announcement.ts entry as the announcement bar,
+           so the two cannot disagree, and both disappear together when the entry
+           goes inactive. */
+      }
+      {
+        announcement.active && (
+          <a class="conference-card nr-col-full" href={announcement.href}>
+            <span class="conference-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <rect
+                  x="2.75"
+                  y="4.75"
+                  width="14.5"
+                  height="12.5"
+                  rx="1.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M2.75 8.5h14.5M6.5 2.75v3M13.5 2.75v3"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            <span class="conference-body">
+              <span class="conference-event">{announcement.event}</span>
+              <span class="conference-detail">
+                {announcement.date} · {announcement.status} · {announcement.cta}
+              </span>
+            </span>
+            <span class="conference-cta nr-feed-cta-col" aria-hidden="true">
+              →
+            </span>
+          </a>
+        )
+      }
+      <ul class="community-list nr-feed-list nr-col-full">
+        <li class="community-item nr-feed-item">
+          <a
+            href="https://discourse.nodered.org"
+            class="community-link nr-feed-link"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="community-kind nr-feed-date-col">Forum</span>
+            <span class="community-title"
+              >Discourse — get help, share ideas and discuss Node-RED with the community.</span
+            >
+            <span class="community-cta nr-feed-cta-col" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li class="community-item nr-feed-item">
+          <a href="/about/community/slack/" class="community-link nr-feed-link">
+            <span class="community-kind nr-feed-date-col">Slack</span>
+            <span class="community-title"
+              >Real-time chat with developers in the Node-RED workspace.</span
+            >
+            <span class="community-cta nr-feed-cta-col" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li class="community-item nr-feed-item">
+          <a
+            href="https://github.com/node-red"
+            class="community-link nr-feed-link"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="community-kind nr-feed-date-col">GitHub</span>
+            <span class="community-title"
+              >Contribute to the project, file issues, browse the source.</span
+            >
+            <span class="community-cta nr-feed-cta-col" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li class="community-item nr-feed-item">
+          <a
+            href="https://flows.nodered.org"
+            class="community-link nr-feed-link"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="community-kind nr-feed-date-col">Flows</span>
+            <span class="community-title"
+              >Discover and share flows, nodes, and collections in the Flow Library.</span
+            >
+            <span class="community-cta nr-feed-cta-col" aria-hidden="true">→</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <noscript>
+    <style>
+      /* JS off: lift the viewport's max-height clip and hide the
+         toggle/auto-rotate machinery (it's purely a JS affordance). The
+         DOM already contains all 47 entries so this is a pure CSS unmask. */
+      .trusted-viewport {
+        max-height: none !important;
+      }
+      .trusted-grid {
+        transform: none !important;
+      }
+      .trusted-toggle {
+        display: none;
+      }
+    </style>
+  </noscript>
+
+  <script>
+    /* Trusted-by carousel + expand toggle.
+     *
+     * Endless scroll without a flash: every ROTATE_INTERVAL ms we
+     * animate translateY(-rowHeight), and once the transition lands
+     * we MOVE the first row's tiles to the end of the grid in DOM
+     * order and snap transform back to 0. The visible pixels at
+     * "translated by -1 row, original DOM" equal "translated by 0,
+     * first row appended to end" — so the snap is invisible. No row
+     * is ever skipped, no flash on wrap.
+     *
+     * Expanded state: rotation halts; we restore the cached original
+     * DOM order so "Show all" always shows the same starting set the
+     * user first saw on page load. The viewport max-height lifts so
+     * every row is visible.
+     *
+     * Pauses while the user hovers or focuses inside the viewport.
+     * Under `prefers-reduced-motion: reduce` the slide animation is
+     * suppressed (rows snap stepwise) but rotation still runs — every
+     * logo still gets a turn in view.
+     */
+    const VISIBLE_ROWS = 3;
+    const ROTATE_INTERVAL = 3_000;
+    const TRANSITION_MS = 1_000;
+
+    const viewport = document.querySelector<HTMLElement>('[data-trusted-viewport]');
+    const grid = document.querySelector<HTMLElement>('[data-trusted-grid]');
+    const toggle = document.querySelector<HTMLButtonElement>('[data-trusted-toggle]');
+    const label = document.querySelector<HTMLElement>('[data-trusted-toggle-label]');
+    // Snapshot the server-rendered order ONCE so we can restore it on
+    // expand even after the rotation has shuffled the DOM around.
+    const originalOrder = grid
+      ? Array.from(grid.querySelectorAll<HTMLElement>('.trusted-logo'))
+      : [];
+    const collapsedLabel = 'Show all →';
+
+    let rotateTimer: ReturnType<typeof setInterval> | null = null;
+    let rotateAfter: ReturnType<typeof setTimeout> | null = null;
+    // Watch the media query live so a user toggling Reduce Motion mid-session
+    // doesn't have to reload to take effect.
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let prefersReducedMotion = motionQuery.matches;
+    motionQuery.addEventListener?.('change', (e) => {
+      prefersReducedMotion = e.matches;
+    });
+
+    function getItemsPerRow() {
+      if (!grid) return 1;
+      const first = grid.firstElementChild as HTMLElement | null;
+      if (!first) return 1;
+      const firstTop = first.offsetTop;
+      let n = 0;
+      let current: HTMLElement | null = first;
+      while (current && Math.abs(current.offsetTop - firstTop) < 1) {
+        n++;
+        current = current.nextElementSibling as HTMLElement | null;
+      }
+      return Math.max(n, 1);
+    }
+    function getRowHeight() {
+      const first = grid?.firstElementChild as HTMLElement | null;
+      return first?.offsetHeight ?? 96;
+    }
+
+    function syncViewportHeight() {
+      if (!viewport) return;
+      const h = getRowHeight() * VISIBLE_ROWS;
+      viewport.style.setProperty('--trusted-viewport-height', `${h}px`);
+    }
+
+    function setTransform(translateRows: number, animate: boolean) {
+      if (!grid) return;
+      const wantAnim = animate && !prefersReducedMotion;
+      grid.style.transition = wantAnim ? '' : 'none';
+      grid.style.transform =
+        translateRows === 0 ? 'translateY(0)' : `translateY(-${translateRows * getRowHeight()}px)`;
+      if (!wantAnim) {
+        // Restore the CSS transition on the next paint so the FOLLOWING
+        // tick (which wants animation) doesn't inherit transition: none.
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            grid.style.transition = '';
+          }),
+        );
+      }
+    }
+
+    /** Move the first row's tiles (cols-per-row of them) to the end
+     *  of the grid in DOM order. Combined with snapping translateY
+     *  back to 0, this advances the visible window by one row without
+     *  any pixel jump.
+     */
+    function rotateFirstRowToEnd() {
+      if (!grid) return;
+      const cols = getItemsPerRow();
+      for (let i = 0; i < cols; i++) {
+        const first = grid.firstElementChild;
+        if (!first) break;
+        grid.appendChild(first);
+      }
+    }
+
+    function tick() {
+      if (!viewport || !grid) return;
+      if (viewport.hasAttribute('data-expanded')) return;
+      // Step 1: animate one row up.
+      setTransform(1, true);
+      // Step 2: after the transition completes, shuffle the DOM so the
+      // tile group that just scrolled off the top is now at the bottom,
+      // then snap transform back to 0. To the user, the wall just kept
+      // moving — there's no perceptible wrap.
+      if (rotateAfter) clearTimeout(rotateAfter);
+      const delay = prefersReducedMotion ? 0 : TRANSITION_MS + 40;
+      rotateAfter = setTimeout(() => {
+        if (!viewport || !grid) return;
+        if (viewport.hasAttribute('data-expanded')) return;
+        rotateFirstRowToEnd();
+        setTransform(0, false);
+      }, delay);
+    }
+
+    function startRotation() {
+      stopRotation();
+      if (originalOrder.length <= getItemsPerRow() * VISIBLE_ROWS) return;
+      rotateTimer = setInterval(tick, ROTATE_INTERVAL);
+    }
+    function stopRotation() {
+      if (rotateTimer) {
+        clearInterval(rotateTimer);
+        rotateTimer = null;
+      }
+      if (rotateAfter) {
+        clearTimeout(rotateAfter);
+        rotateAfter = null;
+      }
+    }
+
+    /** Put every cached logo back in the grid in its original order
+     *  (used when expanding so "Show all" always shows the same
+     *  starting set the user first saw, regardless of how far the
+     *  rotation had rearranged the DOM). */
+    function restoreOriginalOrder() {
+      if (!grid) return;
+      for (const el of originalOrder) grid.appendChild(el);
+    }
+
+    /** Add invisible filler cells to complete the last row when
+     *  expanded. Keeps the lattice's bottom hairline continuous
+     *  across the full row width instead of stopping short at the
+     *  last logo. Count is computed at the current breakpoint's
+     *  items-per-row, so the math is correct on desktop/tablet/mobile. */
+    function addExpandFillers() {
+      if (!grid) return;
+      const cols = getItemsPerRow();
+      const remainder = originalOrder.length % cols;
+      if (remainder === 0) return;
+      const need = cols - remainder;
+      for (let i = 0; i < need; i++) {
+        const filler = document.createElement('div');
+        filler.className = 'trusted-logo trusted-logo--filler nr-colspan-2';
+        filler.setAttribute('aria-hidden', 'true');
+        grid.appendChild(filler);
+      }
+    }
+
+    function removeExpandFillers() {
+      if (!grid) return;
+      grid.querySelectorAll('.trusted-logo--filler').forEach((f) => f.remove());
+    }
+
+    function setExpanded(next: boolean) {
+      if (!viewport || !grid || !toggle) return;
+      toggle.setAttribute('aria-expanded', String(next));
+      if (next) {
+        stopRotation();
+        restoreOriginalOrder();
+        addExpandFillers();
+        setTransform(0, false);
+        viewport.setAttribute('data-expanded', '');
+        if (label) label.textContent = 'Show fewer';
+      } else {
+        removeExpandFillers();
+        viewport.removeAttribute('data-expanded');
+        if (label) label.textContent = collapsedLabel;
+        setTransform(0, false);
+        startRotation();
+        toggle.closest('.section-trusted')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    if (viewport && grid) {
+      // Compute viewport height after the first paint so we measure real row heights
+      requestAnimationFrame(syncViewportHeight);
+      // Recompute on resize (breakpoint shifts change items-per-row)
+      let resizeFrame: number | null = null;
+      window.addEventListener('resize', () => {
+        if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(syncViewportHeight);
+      });
+      // Pause auto-rotate while the user engages with the wall
+      const pause = () => {
+        if (!viewport.hasAttribute('data-expanded')) stopRotation();
+      };
+      const resume = () => {
+        if (!viewport.hasAttribute('data-expanded')) startRotation();
+      };
+      viewport.addEventListener('pointerenter', pause);
+      viewport.addEventListener('pointerleave', resume);
+      viewport.addEventListener('focusin', pause);
+      viewport.addEventListener('focusout', () => {
+        if (!viewport.contains(document.activeElement)) resume();
+      });
+      // Also pause when the page tab isn't visible — saves cycles + avoids weird jumps on return
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopRotation();
+        else resume();
+      });
+
+      startRotation();
+    }
+
+    toggle?.addEventListener('click', () => {
+      setExpanded(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+  </script>
+
+  <script>
+    /* Latest-in-the-forum live feed.
+     *
+     * Runs after initial paint (Astro defers <script> modules), fetches
+     * Discourse's public /latest.json, and replaces the skeleton rows
+     * with real threads. Falls back to a single forum link on any
+     * error — the most likely error today is the browser blocking the
+     * fetch because discourse.nodered.org doesn't include this site's
+     * origin in DISCOURSE_CORS_ORIGINS. The user-facing degradation is
+     * the same in either case: the section still ends in a working
+     * link, never in a broken-looking spinner.
+     *
+     * XSS posture: every string from Discourse (titles, slugs,
+     * usernames) is treated as untrusted. We build DOM with
+     * createElement + textContent and assemble URLs with
+     * encodeURIComponent. No innerHTML, no template strings into HTML.
+     */
+    // In dev, route the JSON fetches through the Astro dev server so
+    // the browser sees same-origin requests and skips the CORS gate.
+    // The proxy is configured in astro.config.mjs (vite.server.proxy).
+    // In production the script fetches Discourse directly, which will
+    // succeed once DISCOURSE_CORS_ORIGINS includes this site (or a CDN
+    // proxy is put in place).
+    const DEV = import.meta.env.DEV;
+    const TOP_API = DEV
+      ? '/_forum-proxy/top.json?period=weekly'
+      : 'https://discourse.nodered.org/top.json?period=weekly';
+    // site.json (not categories.json) — Discourse's /categories.json
+    // returns only top-level categories. Threads with a subcategory ID
+    // (e.g. cat 13 "Feature Requests" → child of Core Development)
+    // would render without a chip. site.json includes the full flat
+    // category list with parent_category_id, so subcategories resolve
+    // to their own (more specific) name.
+    const CATS_API = DEV ? '/_forum-proxy/site.json' : 'https://discourse.nodered.org/site.json';
+    const FORUM_BASE = 'https://discourse.nodered.org';
+    // Soft-cap diversification: prefer 1 thread per category, fall back
+    // to 2 and then uncapped only if the floor isn't met. Ceiling caps
+    // the visual wall on mobile (8 rows ≈ one full mobile screen).
+    const FLOOR = 5;
+    const CEIL = 8;
+
+    // Short labels for the category chip — Discourse names like
+    // "Share Your Projects" are visually noisy when uppercased into a
+    // chip. Hand-mapped overrides keep the chips compact; anything not
+    // listed falls through to the upstream name.
+    const CAT_LABEL_OVERRIDES: Record<string, string> = {
+      'Share Your Projects': 'Projects',
+      'Share Your Nodes': 'Nodes',
+      'Developing Nodes': 'Dev',
+      'Core Development': 'Core',
+    };
+
+    // Astro scopes <style> by appending an `astro-<hash>` class to every
+    // element in the template. Elements we build at runtime with
+    // createElement have no hash, so scoped rules silently skip them.
+    // We read the scope class once from the (server-rendered) list and
+    // re-apply it to every dynamic node so .forum-feed-* styles match.
+    let scopeClass = '';
+
+    function el<K extends keyof HTMLElementTagNameMap>(
+      tag: K,
+      className: string,
+    ): HTMLElementTagNameMap[K] {
+      const e = document.createElement(tag);
+      e.className = scopeClass ? `${className} ${scopeClass}` : className;
+      return e;
+    }
+
+    function relativeTime(iso: string | undefined): string {
+      if (!iso) return '';
+      const t = new Date(iso).getTime();
+      if (!Number.isFinite(t)) return '';
+      const diff = (t - Date.now()) / 1000;
+      const abs = Math.abs(diff);
+      const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+      if (abs < 60) return rtf.format(Math.round(diff), 'second');
+      if (abs < 3600) return rtf.format(Math.round(diff / 60), 'minute');
+      if (abs < 86400) return rtf.format(Math.round(diff / 3600), 'hour');
+      if (abs < 86400 * 7) return rtf.format(Math.round(diff / 86400), 'day');
+      return new Date(t).toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    }
+
+    function topicUrl(id: unknown, slug: unknown): string {
+      // Defensive: ids should be integers, slugs lowercase URL words.
+      // encodeURIComponent both anyway to neutralise anything weird.
+      const safeId = encodeURIComponent(String(id ?? ''));
+      const safeSlug = encodeURIComponent(String(slug ?? 'topic'));
+      return `${FORUM_BASE}/t/${safeSlug}/${safeId}`;
+    }
+
+    function categoryLabel(name: string): string {
+      return CAT_LABEL_OVERRIDES[name] ?? name;
+    }
+
+    /** Walk an engagement-ranked topic list, prefer 1 row per category,
+     * relax the cap only if we'd otherwise come in under the floor.
+     * Three passes:
+     *   1. cap = 1/cat → fill up to CEIL
+     *   2. if rows < FLOOR, cap = 2/cat → fill up to FLOOR
+     *   3. if still under FLOOR, no cap → fill up to FLOOR
+     * This keeps diversity preferred but never undersizes the section.
+     */
+    function diversify(topics: Array<Record<string, any>>): Array<Record<string, any>> {
+      const counts = new Map<number, number>();
+      const out: Array<Record<string, any>> = [];
+      const picked = new Set<number>();
+
+      const tryAdd = (t: Record<string, any>, cap: number) => {
+        if (picked.has(t.id)) return;
+        const c = Number(t.category_id);
+        const n = counts.get(c) ?? 0;
+        if (n >= cap) return;
+        counts.set(c, n + 1);
+        picked.add(t.id);
+        out.push(t);
+      };
+
+      for (const t of topics) {
+        if (out.length >= CEIL) break;
+        tryAdd(t, 1);
+      }
+      if (out.length < FLOOR) {
+        for (const t of topics) {
+          if (out.length >= FLOOR) break;
+          tryAdd(t, 2);
+        }
+      }
+      if (out.length < FLOOR) {
+        for (const t of topics) {
+          if (out.length >= FLOOR) break;
+          tryAdd(t, Infinity);
+        }
+      }
+      return out;
+    }
+
+    function buildRow(topic: Record<string, any>, catMap: Map<number, string>): HTMLLIElement {
+      const li = el('li', 'forum-feed-item nr-feed-item');
+
+      const a = el('a', 'forum-feed-link nr-feed-link');
+      a.href = topicUrl(topic.id, topic.slug);
+      a.target = '_blank';
+      a.rel = 'noopener';
+
+      const when = topic.bumped_at ?? topic.last_posted_at ?? topic.created_at;
+      const date = el('time', 'forum-feed-date nr-feed-date-col');
+      if (typeof when === 'string') date.dateTime = when;
+      date.textContent = relativeTime(when);
+
+      // Title cell holds only the title text now. The category chip
+      // lives in its own dedicated grid column (a sibling of the title
+      // cell) so chips align vertically across rows the way the date
+      // column does — see the row's grid template in CSS.
+      const titleCell = el('span', 'forum-feed-title');
+      const titleText = el('span', 'forum-feed-title-text');
+      titleText.textContent = String(topic.title ?? '(untitled thread)');
+      titleCell.append(titleText);
+      const catId = Number(topic.category_id);
+      const catName = catMap.get(catId);
+      let chip: HTMLElement | null = null;
+      if (catName) {
+        chip = el('span', 'forum-feed-cat');
+        chip.textContent = categoryLabel(catName);
+      }
+
+      const replyCount = Math.max(0, Number(topic.posts_count ?? 1) - 1);
+      const replies = el('span', 'forum-feed-replies');
+      replies.textContent =
+        replyCount === 0 ? 'new' : `${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`;
+
+      const cta = el('span', 'forum-feed-cta nr-feed-cta-col');
+      cta.setAttribute('aria-hidden', 'true');
+      cta.textContent = '→';
+
+      // Chip column sits between title and replies. When the row has no
+      // category, append an empty placeholder so the column still
+      // exists and rows stay vertically aligned. The class itself only
+      // styles a populated chip; an empty span renders as zero-height
+      // dead space which CSS grid then fills with whitespace.
+      const chipCell = chip ?? el('span', 'forum-feed-cat forum-feed-cat--empty');
+      a.append(date, titleCell, chipCell, replies, cta);
+      li.append(a);
+      return li;
+    }
+
+    function buildFallback(): HTMLLIElement {
+      const li = el('li', 'forum-feed-item nr-feed-item');
+      const a = el('a', 'forum-feed-link nr-feed-link forum-feed-fallback-link');
+      a.href = `${FORUM_BASE}/latest`;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      const title = el('span', 'forum-feed-title');
+      // Fallback row is a single message instead of date/title/replies/cta.
+      // Stretch the title across all the column tracks that the normal row
+      // splits up so it reads as one continuous line, leaving only the
+      // chevron at the end.
+      title.style.gridColumn = '1 / -2';
+      title.style.whiteSpace = 'normal';
+      title.textContent =
+        'Live thread list unavailable — browse the latest discussions on discourse.nodered.org';
+      const cta = el('span', 'forum-feed-cta nr-feed-cta-col');
+      cta.setAttribute('aria-hidden', 'true');
+      cta.textContent = '→';
+      a.append(title, cta);
+      li.append(a);
+      return li;
+    }
+
+    async function loadForumFeed(): Promise<void> {
+      const list = document.querySelector<HTMLUListElement>('[data-forum-feed]');
+      if (!list) return;
+      scopeClass = Array.from(list.classList).find((c) => c.startsWith('astro-')) ?? '';
+      try {
+        // Both endpoints in parallel — they're independent and the
+        // category labels are non-critical (rows still work without
+        // them, the chip just won't show).
+        const init = { headers: { Accept: 'application/json' }, credentials: 'omit' as const };
+        const [topRes, catsRes] = await Promise.all([
+          fetch(TOP_API, init),
+          fetch(CATS_API, init).catch(() => null),
+        ]);
+        if (!topRes.ok) throw new Error(`Forum API responded ${topRes.status}`);
+        const topData = await topRes.json();
+        const rawTopics = topData?.topic_list?.topics;
+        if (!Array.isArray(rawTopics) || rawTopics.length === 0) {
+          throw new Error('Forum API returned no topics');
+        }
+
+        // Build category id → display name map from /site.json's flat
+        // categories[] array (includes subcategories). If the request
+        // failed (network or shape), fall through with an empty map —
+        // rows still render, just without the chip.
+        const catMap = new Map<number, string>();
+        if (catsRes && catsRes.ok) {
+          const catData = await catsRes.json();
+          const cats = catData?.categories;
+          if (Array.isArray(cats)) {
+            for (const c of cats) {
+              if (typeof c?.id === 'number' && typeof c?.name === 'string') {
+                catMap.set(c.id, c.name);
+              }
+            }
+          }
+        }
+
+        // Discourse marks site-wide pinned topics ("About this category",
+        // permanent stickies) with pinned_globally. They're noise on a
+        // homepage feed — drop them. Per-category pinned threads
+        // (pinned: true but not pinned_globally) are kept because they
+        // can be genuine "important right now" announcements.
+        const topics = rawTopics.filter((t: Record<string, any>) => !t.pinned_globally);
+
+        const chosen = diversify(topics);
+        if (chosen.length === 0) throw new Error('Diversification produced no rows');
+
+        const frag = document.createDocumentFragment();
+        for (const t of chosen) frag.append(buildRow(t, catMap));
+        list.replaceChildren(frag);
+        list.removeAttribute('aria-busy');
+      } catch (err) {
+        console.warn('[forum feed] falling back:', err);
+        list.replaceChildren(buildFallback());
+        list.removeAttribute('aria-busy');
+      }
+    }
+
+    loadForumFeed();
+  </script>
+
+  <script>
+    /* Open-source stats + contributor avatar wall.
+     *
+     * Fetches, each one cached in localStorage for an hour by
+     * src/lib/api-cache.ts:
+     *   1. /orgs/node-red/repos?per_page=100   → sum stars + forks
+     *   2. /repos/node-red/node-red/contributors?per_page=100, walking
+     *      the pages advertised by the `Link: …rel="last"` header
+     *         → avatar URLs for the backdrop, plus the contributor total
+     *   3. /search/issues?q=org:node-red+is:pr+is:merged+merged:>{30d}
+     *         → total_count of PRs merged in the last 30 days
+     *
+     * No proxy needed: api.github.com emits permissive CORS headers for
+     * public endpoints. Each stat slot fails independently, so if one
+     * fetch errors the others still render and the failed slot keeps its
+     * placeholder glyph. XSS posture matches the forum feed: every
+     * dynamic value goes through textContent or encodeURIComponent, on
+     * the way back out of the cache exactly as on the way in off the
+     * wire.
+     *
+     * Why the cache. Unauthenticated GitHub counts per originating IP,
+     * not per page: 60 requests/hour on the core endpoints, and only
+     * 10/hour on /search. Uncached, this section walked several core
+     * pages plus one search query on every single page view, so a few
+     * homepage loads from one IP exhausted the search allowance and the
+     * search-backed stat fell back to its placeholder. The allowance is
+     * shared by everyone behind the same address (corporate NAT, VPN,
+     * campus, mobile CGNAT), which is where it actually bit. Cached, the
+     * whole section costs that once an hour per visitor. Failures are
+     * never cached, so a rate-limited visitor retries on the next view.
+     */
+    import { cached, isRecord, HOUR_MS } from '../lib/api-cache';
+
+    const GH_API = 'https://api.github.com';
+    const GH_INIT: RequestInit = {
+      headers: { Accept: 'application/vnd.github+json' },
+      credentials: 'omit',
+    };
+    // An hour is short enough that a visitor who leaves the tab open all
+    // day still sees the numbers move, and long enough that reading a few
+    // pages costs one round of requests instead of one per view.
+    const GH_TTL = HOUR_MS;
+
+    function formatStat(n: number): string {
+      if (!Number.isFinite(n) || n < 0) return '—';
+      if (n >= 10_000) {
+        const k = n / 1000;
+        // Round to 1 decimal, strip trailing .0 so 84000 → "84k", 83500 → "83.5k"
+        return `${k.toFixed(1).replace(/\.0$/, '')}k`;
+      }
+      return n.toLocaleString('en-US');
+    }
+
+    function setStat(key: string, value: number) {
+      const el = document.querySelector<HTMLElement>(`[data-oss-stat="${key}"]`);
+      if (el) el.textContent = formatStat(value);
+    }
+
+    /* Star / fork totals. Only the two summed numbers are cached, not the
+     * repo list they came from: that response is a few hundred kilobytes
+     * of metadata this page never looks at again, and localStorage is one
+     * budget of a few megabytes for the whole origin. */
+    interface OrgTotals {
+      stars: number;
+      forks: number;
+    }
+
+    function isOrgTotals(value: unknown): value is OrgTotals {
+      return (
+        isRecord(value) &&
+        typeof value['stars'] === 'number' &&
+        Number.isFinite(value['stars']) &&
+        typeof value['forks'] === 'number' &&
+        Number.isFinite(value['forks'])
+      );
+    }
+
+    async function fetchOrgTotals(): Promise<OrgTotals> {
+      // /orgs/{org}/repos returns up to 100 repos per page sorted by
+      // pushed date by default. node-red's public repo count fits in one
+      // page; if the org ever grows past 100 we'd need to walk the Link
+      // header, but the headline cap will hold long before.
+      const res = await fetch(`${GH_API}/orgs/node-red/repos?per_page=100&type=public`, GH_INIT);
+      if (!res.ok) throw new Error(`repos ${res.status}`);
+      const repos = await res.json();
+      if (!Array.isArray(repos)) throw new Error('repos shape');
+      let stars = 0;
+      let forks = 0;
+      for (const r of repos) {
+        stars += Number(r?.stargazers_count) || 0;
+        forks += Number(r?.forks_count) || 0;
+      }
+      return { stars, forks };
+    }
+
+    async function loadOrgStars(): Promise<void> {
+      const { stars, forks } = await cached('org-totals', GH_TTL, fetchOrgTotals, isOrgTotals);
+      setStat('stars', stars);
+      setStat('forks', forks);
+    }
+
+    /** Fetch the FIRST page of contributors and parse its `Link`
+     *  header to derive how many more pages exist. Returns the
+     *  page-1 array and the total page count so the avatar loader
+     *  can spawn parallel requests for pages 2..N. The contributors
+     *  stat is set later (in loadAvatarGrid) once we know the actual
+     *  total — page 1 alone can't tell us the partial last page's
+     *  count without fetching it. */
+    async function fetchContributorsPage1(): Promise<{
+      page1: any[];
+      totalPages: number;
+    }> {
+      const url =
+        `${GH_API}/repos/node-red/node-red/contributors` + '?per_page=100&anon=false&page=1';
+      const res = await fetch(url, GH_INIT);
+      if (!res.ok) throw new Error(`contributors-p1 ${res.status}`);
+      const body = await res.json();
+      const page1 = Array.isArray(body) ? body : [];
+      const link = res.headers.get('Link') || '';
+      const m = link.match(/[?&]page=(\d+)[^>]*>;\s*rel="last"/);
+      // Cap to 10 pages = 1000 contributors. node-red has ~233 so we
+      // hit cap on page 3; the cap protects against future runaway
+      // pagination if the repo grows huge or the API misbehaves.
+      const totalPages = m ? Math.min(Number(m[1]), 10) : 1;
+      return { page1, totalPages };
+    }
+
+    async function fetchContributorsPage(page: number): Promise<any[]> {
+      const url =
+        `${GH_API}/repos/node-red/node-red/contributors` + `?per_page=100&anon=false&page=${page}`;
+      const res = await fetch(url, GH_INIT);
+      if (!res.ok) return [];
+      const body = await res.json();
+      return Array.isArray(body) ? body : [];
+    }
+
+    /* Contributors, cached as one entry covering the whole page walk.
+     * This is the section's most expensive read by request count (the
+     * repo needs several pages at the API's 100-per-page maximum, one
+     * request each) against a core allowance of 60/hour per IP, so a
+     * warm cache is worth the most here.
+     *
+     * Only the three fields the wall renders are stored, under their
+     * upstream names, so the render loop below is the same code on a warm
+     * read as on a cold one: the URL allowlist regexes it applies are
+     * therefore applied to cached values too, which matters because
+     * anything coming back out of localStorage is untrusted. Keeping the
+     * full contributor objects would mean storing hundreds of kilobytes
+     * of fields nobody reads.
+     *
+     * `total` is captured before any filtering so the Contributors stat
+     * means the same thing warm or cold. */
+    interface ContributorSet {
+      total: number;
+      people: Array<Record<string, unknown>>;
+    }
+
+    function isContributorSet(value: unknown): value is ContributorSet {
+      return (
+        isRecord(value) &&
+        typeof value['total'] === 'number' &&
+        Number.isFinite(value['total']) &&
+        Array.isArray(value['people']) &&
+        value['people'].every(isRecord)
+      );
+    }
+
+    async function fetchContributors(): Promise<ContributorSet> {
+      // Page 1's Link header tells us how many more pages exist; pages
+      // 2..N fire in parallel. Failures on individual pages drop those
+      // contributors rather than blowing up the whole wall.
+      const { page1, totalPages } = await fetchContributorsPage1();
+      let list: any[] = page1;
+      if (totalPages > 1) {
+        const rest = await Promise.all(
+          Array.from({ length: totalPages - 1 }, (_, i) => fetchContributorsPage(i + 2)),
+        );
+        list = list.concat(...rest);
+      }
+      return {
+        total: list.length,
+        people: list.map((c) => ({
+          login: typeof c?.login === 'string' ? c.login : '',
+          avatar_url: typeof c?.avatar_url === 'string' ? c.avatar_url : '',
+          html_url: typeof c?.html_url === 'string' ? c.html_url : '',
+        })),
+      };
+    }
+
+    /* PRs merged in the last 30 days. This is one of the page's two
+     * /search reads, and /search allows only 10 requests/hour per IP
+     * against the core endpoints' 60, which is what made an uncached
+     * homepage fragile: a handful of views from one address emptied it.
+     *
+     * The query carries a rolling `merged:>{date}` bound, and the cache
+     * key deliberately does not: a window that lags by up to the TTL
+     * cannot move a 30-day count enough to see, and dating the key would
+     * mint a new entry every day and leave the old ones behind. */
+    interface PrsMerged {
+      count: number;
+    }
+
+    function isPrsMerged(value: unknown): value is PrsMerged {
+      if (!isRecord(value)) return false;
+      return typeof value['count'] === 'number' && Number.isFinite(value['count']);
+    }
+
+    async function fetchPrsMerged(): Promise<PrsMerged> {
+      const since = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
+      const q = `org:node-red is:pr is:merged merged:>${since}`;
+      const url = `${GH_API}/search/issues?q=${encodeURIComponent(q)}&per_page=1`;
+      const res = await fetch(url, GH_INIT);
+      if (!res.ok) throw new Error(`prs ${res.status}`);
+      const data = await res.json();
+      const n = Number(data?.total_count);
+      if (!Number.isFinite(n)) throw new Error('prs shape');
+      return { count: n };
+    }
+
+    async function loadPrsMerged(): Promise<void> {
+      const { count } = await cached('prs-merged', GH_TTL, fetchPrsMerged, isPrsMerged);
+      setStat('prs', count);
+    }
+
+    /** Years-on-GitHub stat. Anchor = Node-RED's first public commit
+     *  (Sept 11 2013); whole years since now. */
+    function setProjectYears(): void {
+      const el = document.querySelector<HTMLElement>('[data-oss-stat="years"]');
+      if (!el) return;
+      const START = new Date('2013-09-11T00:00:00Z');
+      const now = new Date();
+      let years = now.getUTCFullYear() - START.getUTCFullYear();
+      const anniversaryReached =
+        now.getUTCMonth() > START.getUTCMonth() ||
+        (now.getUTCMonth() === START.getUTCMonth() && now.getUTCDate() >= START.getUTCDate());
+      if (!anniversaryReached) years--;
+      el.textContent = String(years);
+    }
+
+    /** Avatar tile grid: pull ALL contributors (paginating beyond
+     *  GitHub's 100-per-page cap) and render them as square hairline-
+     *  bordered tiles (same visual rhythm as .trusted-grid). Failures
+     *  here are silent — the wall is decorative; the stats above
+     *  carry the message either way.
+     */
+    async function loadAvatarGrid(): Promise<void> {
+      const grid = document.querySelector<HTMLElement>('[data-oss-avatars]');
+      if (!grid) return;
+      // Astro adds `astro-<hash>` to scope styles. Server-rendered
+      // nodes already carry it; nodes we createElement() at runtime
+      // don't, so scoped rules like `.oss-avatar-tile { ... }` would
+      // silently skip our <div>s. Re-apply the grid's hash so the
+      // tile rule matches.
+      const scope = Array.from(grid.classList).find((c) => c.startsWith('astro-')) ?? '';
+      try {
+        // One cache entry covers the whole multi-page walk, so a return
+        // visit inside the TTL renders the wall without spending any of
+        // the visitor's 60 core requests/hour. A cache miss pages through
+        // the API exactly as before.
+        const { total, people } = await cached(
+          'contributors',
+          GH_TTL,
+          fetchContributors,
+          isContributorSet,
+        );
+        if (people.length === 0) return;
+        // Set the contributors stat from the fetched count. Matches what
+        // the wall is about to render, so the number reads as "the wall is
+        // showing these people" rather than a separate estimate.
+        setStat('contributors', total);
+        const frag = document.createDocumentFragment();
+        for (const c of people) {
+          const avatarUrl = typeof c?.avatar_url === 'string' ? c.avatar_url : '';
+          // Only allow GitHub-hosted avatar URLs as <img src>.
+          if (!/^https:\/\/(?:avatars\.githubusercontent\.com|github\.com)\//.test(avatarUrl))
+            continue;
+          const login = typeof c?.login === 'string' ? c.login : '';
+          // Profile URL ships in the same `/contributors` payload, so
+          // making the tile clickable costs no extra API call. Only
+          // accept the URL if it actually starts with github.com/ —
+          // otherwise the tile renders inert (no href) rather than
+          // launching an arbitrary string we got back from the wire.
+          const profileUrl =
+            typeof c?.html_url === 'string' && /^https:\/\/github\.com\//.test(c.html_url)
+              ? c.html_url
+              : '';
+          // Tiles are anchors so users can jump to a contributor's
+          // profile from the wall. Wrapping the whole tile (vs just
+          // the avatar) gives a comfortable hit target without
+          // needing extra hover padding.
+          const tile = document.createElement('a');
+          tile.className = scope ? `oss-avatar-tile ${scope}` : 'oss-avatar-tile';
+          if (profileUrl) {
+            tile.href = profileUrl;
+            tile.target = '_blank';
+            tile.rel = 'noopener';
+          }
+          if (login) {
+            tile.title = `@${login}`;
+            // aria-label since the <img> intentionally has alt=""
+            // (decorative — the link's accessible name comes from
+            // here so screen readers announce the contributor's
+            // handle rather than skipping the empty alt).
+            tile.setAttribute('aria-label', `@${login} on GitHub`);
+          }
+          const img = document.createElement('img');
+          img.src = `${avatarUrl}${avatarUrl.includes('?') ? '&' : '?'}s=72`;
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          img.alt = '';
+          img.referrerPolicy = 'no-referrer';
+          img.width = 36;
+          img.height = 36;
+          img.className = scope ? `oss-avatar ${scope}` : 'oss-avatar';
+          tile.append(img);
+          frag.append(tile);
+        }
+        // replaceChildren (not append) so the server-rendered skeleton
+        // tiles get swapped out for real tiles. On failure the skeleton
+        // set stays in place, so the wall never reads as empty.
+        if (frag.childElementCount > 0) {
+          grid.replaceChildren(frag);
+          startAvatarScroll();
+          // Now that tiles exist, the Show all toggle becomes useful;
+          // make it visible. Don't write a count into the label — the
+          // wall renders only the first ~100 contributors that the
+          // /contributors endpoint returns (the actual project has
+          // hundreds; the contributors stat above already shows the
+          // real total). A specific number here would just mislead.
+          const toggle = document.querySelector<HTMLElement>('[data-oss-toggle]');
+          if (toggle) toggle.hidden = false;
+          wireOssExpandToggle();
+        }
+      } catch {
+        // Decorative — silent failure is fine. Skeleton tiles remain.
+      }
+    }
+
+    /** Avatar grid uses the same DOM-rotation pattern as the
+     *  trusted-by carousel: each tick animates translateY(-rowHeight),
+     *  then on transition end we move the first row's tiles to the END
+     *  of the grid in DOM order and snap transform back to 0. The
+     *  visible pixels at "translated -1 row, original DOM" equal
+     *  "translated 0, first row appended to end" — the snap is
+     *  invisible, no flash on wrap.
+     *
+     *  Pauses on hover / focus / tab-hidden, and on the expanded
+     *  state. Respects prefers-reduced-motion.
+     */
+    const OSS_VISIBLE_ROWS = 2;
+    const OSS_ROTATE_INTERVAL = 3_000;
+    const OSS_TRANSITION_MS = 800;
+
+    // Cached after fetch — lets expand restore the original
+    // contributor order regardless of how far rotation has shuffled
+    // the DOM.
+    let ossOriginalOrder: HTMLElement[] = [];
+    let ossRotateTimer: ReturnType<typeof setInterval> | null = null;
+    let ossRotateAfter: ReturnType<typeof setTimeout> | null = null;
+
+    function startAvatarScroll(): void {
+      const viewport = document.querySelector<HTMLElement>('[data-oss-viewport]');
+      const grid = document.querySelector<HTMLElement>('[data-oss-avatars]');
+      if (!viewport || !grid) return;
+      const tiles = grid.querySelectorAll<HTMLElement>('.oss-avatar-tile');
+      if (tiles.length === 0) return;
+      ossOriginalOrder = Array.from(tiles);
+
+      const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let reducedMotion = motion.matches;
+      motion.addEventListener?.('change', (e) => {
+        reducedMotion = e.matches;
+      });
+
+      const itemsPerRow = () => {
+        const first = grid.firstElementChild as HTMLElement | null;
+        if (!first) return 1;
+        const firstTop = first.offsetTop;
+        let n = 0;
+        let current: HTMLElement | null = first;
+        while (current && Math.abs(current.offsetTop - firstTop) < 1) {
+          n++;
+          current = current.nextElementSibling as HTMLElement | null;
+        }
+        return Math.max(n, 1);
+      };
+      const rowHeight = () => {
+        const first = grid.firstElementChild as HTMLElement | null;
+        return first?.offsetHeight ?? 56;
+      };
+
+      const syncViewport = () => {
+        viewport.style.setProperty('--oss-viewport-height', `${rowHeight() * OSS_VISIBLE_ROWS}px`);
+      };
+
+      const setTransform = (translateRows: number, animate: boolean) => {
+        const wantAnim = animate && !reducedMotion;
+        grid.style.transition = wantAnim ? '' : 'none';
+        grid.style.transform =
+          translateRows === 0 ? 'translateY(0)' : `translateY(-${translateRows * rowHeight()}px)`;
+        if (!wantAnim) {
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              grid.style.transition = '';
+            }),
+          );
+        }
+      };
+
+      const rotateFirstRowToEnd = () => {
+        const cols = itemsPerRow();
+        for (let i = 0; i < cols; i++) {
+          const first = grid.firstElementChild;
+          if (!first) break;
+          grid.appendChild(first);
+        }
+      };
+
+      const tick = () => {
+        if (viewport.hasAttribute('data-expanded')) return;
+        setTransform(1, true);
+        if (ossRotateAfter) clearTimeout(ossRotateAfter);
+        const delay = reducedMotion ? 0 : OSS_TRANSITION_MS + 40;
+        ossRotateAfter = setTimeout(() => {
+          if (viewport.hasAttribute('data-expanded')) return;
+          rotateFirstRowToEnd();
+          setTransform(0, false);
+        }, delay);
+      };
+
+      const start = () => {
+        stop();
+        if (ossOriginalOrder.length <= itemsPerRow() * OSS_VISIBLE_ROWS) return;
+        ossRotateTimer = setInterval(tick, OSS_ROTATE_INTERVAL);
+      };
+      const stop = () => {
+        if (ossRotateTimer) {
+          clearInterval(ossRotateTimer);
+          ossRotateTimer = null;
+        }
+        if (ossRotateAfter) {
+          clearTimeout(ossRotateAfter);
+          ossRotateAfter = null;
+        }
+      };
+
+      // Stash on the viewport for use by the expand toggle handler.
+      (viewport as any)._ossStart = start;
+      (viewport as any)._ossStop = stop;
+      (viewport as any)._ossSetTransform = setTransform;
+      (viewport as any)._ossItemsPerRow = itemsPerRow;
+
+      requestAnimationFrame(syncViewport);
+      let resizeFrame: number | null = null;
+      window.addEventListener('resize', () => {
+        if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(syncViewport);
+      });
+      viewport.addEventListener('pointerenter', stop);
+      viewport.addEventListener('pointerleave', () => {
+        if (!viewport.hasAttribute('data-expanded')) start();
+      });
+      viewport.addEventListener('focusin', stop);
+      viewport.addEventListener('focusout', () => {
+        if (!viewport.contains(document.activeElement) && !viewport.hasAttribute('data-expanded')) {
+          start();
+        }
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stop();
+        else if (!viewport.hasAttribute('data-expanded')) start();
+      });
+
+      start();
+    }
+
+    /** Wire up the Show all / Show fewer toggle for the OSS avatar
+     *  wall. On expand: stop rotation, restore the original
+     *  contributor order, pad the last row with invisible fillers so
+     *  the lattice's bottom hairline is continuous, lift the
+     *  viewport max-height. On collapse: undo, restart rotation. */
+    function wireOssExpandToggle(): void {
+      const viewport = document.querySelector<HTMLElement>('[data-oss-viewport]');
+      const grid = document.querySelector<HTMLElement>('[data-oss-avatars]');
+      const toggle = document.querySelector<HTMLButtonElement>('[data-oss-toggle]');
+      const labelEl = document.querySelector<HTMLElement>('[data-oss-toggle-label]');
+      if (!viewport || !grid || !toggle || (toggle as any)._wired) return;
+      (toggle as any)._wired = true;
+      // Cache the server-rendered "Show all contributors →" so the
+      // collapse handler can restore it without hard-coding the
+      // string in two places.
+      if (labelEl && !labelEl.dataset.collapsedLabel) {
+        labelEl.dataset.collapsedLabel = labelEl.textContent ?? '';
+      }
+
+      const restoreOriginalOrder = () => {
+        for (const el of ossOriginalOrder) grid.appendChild(el);
+      };
+      const addFillers = () => {
+        const itemsPerRow = (viewport as any)._ossItemsPerRow as () => number;
+        const scope = Array.from(grid.classList).find((c) => c.startsWith('astro-')) ?? '';
+        const cols = itemsPerRow();
+        const remainder = ossOriginalOrder.length % cols;
+        if (remainder === 0) return;
+        const need = cols - remainder;
+        for (let i = 0; i < need; i++) {
+          const filler = document.createElement('div');
+          filler.className = scope
+            ? `oss-avatar-tile oss-avatar-tile--filler ${scope}`
+            : 'oss-avatar-tile oss-avatar-tile--filler';
+          filler.setAttribute('aria-hidden', 'true');
+          grid.appendChild(filler);
+        }
+      };
+      const removeFillers = () => {
+        grid.querySelectorAll('.oss-avatar-tile--filler').forEach((f) => f.remove());
+      };
+
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        const next = !expanded;
+        toggle.setAttribute('aria-expanded', String(next));
+        const setTransform = (viewport as any)._ossSetTransform as (r: number, a: boolean) => void;
+        const start = (viewport as any)._ossStart as () => void;
+        const stop = (viewport as any)._ossStop as () => void;
+        if (next) {
+          stop();
+          restoreOriginalOrder();
+          addFillers();
+          setTransform(0, false);
+          viewport.setAttribute('data-expanded', '');
+          if (labelEl) labelEl.textContent = 'Show fewer';
+        } else {
+          removeFillers();
+          viewport.removeAttribute('data-expanded');
+          setTransform(0, false);
+          if (labelEl) {
+            const stash = labelEl.dataset.collapsedLabel;
+            labelEl.textContent = stash || 'Show all →';
+          }
+          start();
+        }
+      });
+    }
+
+    function loadOssStats(): void {
+      // Each catches independently so a single failure doesn't
+      // poison the others, and each reads through its own cache entry so
+      // one stat going stale or failing never invalidates another. The
+      // contributors stat is set inside loadAvatarGrid from the same
+      // payload that fills the wall, so it stays in sync with what's
+      // actually rendered.
+      setProjectYears();
+      loadOrgStars().catch((err) => console.warn('[oss] stars/forks:', err));
+      loadPrsMerged().catch((err) => console.warn('[oss] prs:', err));
+      loadAvatarGrid().catch((err) => console.warn('[oss] contributors:', err));
+    }
+
+    loadOssStats();
+  </script>
+
+  <script>
+    /* Top GitHub issues — live feed.
+     *
+     * Shares the .forum-feed-* DOM shape so the issues list visually
+     * mirrors the forum list one section above it. Endpoint:
+     * /search/issues sorted by `updated` across the whole node-red org,
+     * issues only (not PRs). Diversified by repo with the same soft-cap
+     * algorithm as the forum feed (1 → 2 → uncapped, floor 5 / ceil 8)
+     * so a single hot repo doesn't fill the wall.
+     *
+     * XSS posture identical to the forum loader: createElement +
+     * textContent, encodeURIComponent for URL parts, no innerHTML. That
+     * holds for rows read back out of the cache below as well, which is
+     * the point of caching the rows rather than any rendered markup.
+     *
+     * This is the page's second /search read, alongside the merged-PR
+     * stat in the open-source section. Unauthenticated /search allows
+     * only 10 requests/hour per originating IP (the core endpoints get
+     * 60), so uncached these two together put a handful of homepage views
+     * from one address over the limit, and the limit is shared by
+     * everyone behind that address. The two queries cannot be merged:
+     * this one lists open ISSUES by recent update, the other counts
+     * MERGED PULL REQUESTS in a date window, and /search returns one
+     * result set per query. Collapsing them would mean changing what one
+     * of the two reports, so instead each is cached for an hour, which
+     * takes the pair from a per-view cost to a per-hour one.
+     */
+    import { cached, isRecord, HOUR_MS } from '../lib/api-cache';
+
+    const ISSUES_API =
+      'https://api.github.com/search/issues?' +
+      encodeURI('q=org:node-red is:issue is:open sort:updated-desc') +
+      '&sort=updated&order=desc&per_page=30';
+    const ISSUES_FLOOR = 5;
+    const ISSUES_CEIL = 8;
+    const ISSUES_TTL = HOUR_MS;
+
+    // Short repo-chip labels — full repo names like
+    // "node-red-node-ui-table" are noisy in a chip column. Anything not
+    // listed falls through to the trimmed-prefix default.
+    const REPO_LABEL_OVERRIDES: Record<string, string> = {
+      'node-red': 'core',
+      'node-red-nodes': 'nodes',
+      'node-red-dashboard': 'dashboard',
+      'node-red-web-nodes': 'web',
+      'node-red.github.io': 'docs',
+    };
+
+    let issuesScopeClass = '';
+
+    function issuesEl<K extends keyof HTMLElementTagNameMap>(
+      tag: K,
+      className: string,
+    ): HTMLElementTagNameMap[K] {
+      const e = document.createElement(tag);
+      e.className = issuesScopeClass ? `${className} ${issuesScopeClass}` : className;
+      return e;
+    }
+
+    function issueRelativeTime(iso: string | undefined): string {
+      if (!iso) return '';
+      const t = new Date(iso).getTime();
+      if (!Number.isFinite(t)) return '';
+      const diff = (t - Date.now()) / 1000;
+      const abs = Math.abs(diff);
+      const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+      if (abs < 60) return rtf.format(Math.round(diff), 'second');
+      if (abs < 3600) return rtf.format(Math.round(diff / 60), 'minute');
+      if (abs < 86400) return rtf.format(Math.round(diff / 3600), 'hour');
+      if (abs < 86400 * 7) return rtf.format(Math.round(diff / 86400), 'day');
+      return new Date(t).toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    }
+
+    /** Extract "owner/repo" from a GitHub issue's repository_url
+     *  (https://api.github.com/repos/{owner}/{repo}). Returns just the
+     *  repo name. Falls back to '' so the chip is skipped on weird input.
+     */
+    function repoFromIssue(issue: Record<string, any>): string {
+      const url = typeof issue?.repository_url === 'string' ? issue.repository_url : '';
+      const m = url.match(/\/repos\/[^/]+\/([^/?#]+)/);
+      return m?.[1] ?? '';
+    }
+
+    function repoChipLabel(repo: string): string {
+      if (REPO_LABEL_OVERRIDES[repo]) return REPO_LABEL_OVERRIDES[repo];
+      // Trim a `node-red-` prefix so "node-red-contrib-foo" → "contrib-foo"
+      return repo.replace(/^node-red-?/, '') || repo;
+    }
+
+    /** Same diversification as the forum feed but keyed by repo name. */
+    function diversifyIssues(issues: Array<Record<string, any>>): Array<Record<string, any>> {
+      const counts = new Map<string, number>();
+      const picked = new Set<number>();
+      const out: Array<Record<string, any>> = [];
+
+      const tryAdd = (i: Record<string, any>, cap: number) => {
+        if (picked.has(i.id)) return;
+        const repo = repoFromIssue(i);
+        const n = counts.get(repo) ?? 0;
+        if (n >= cap) return;
+        counts.set(repo, n + 1);
+        picked.add(i.id);
+        out.push(i);
+      };
+
+      for (const i of issues) {
+        if (out.length >= ISSUES_CEIL) break;
+        tryAdd(i, 1);
+      }
+      if (out.length < ISSUES_FLOOR) {
+        for (const i of issues) {
+          if (out.length >= ISSUES_FLOOR) break;
+          tryAdd(i, 2);
+        }
+      }
+      if (out.length < ISSUES_FLOOR) {
+        for (const i of issues) {
+          if (out.length >= ISSUES_FLOOR) break;
+          tryAdd(i, Infinity);
+        }
+      }
+      return out;
+    }
+
+    function buildIssueRow(issue: Record<string, any>): HTMLLIElement {
+      const li = issuesEl('li', 'forum-feed-item nr-feed-item');
+
+      const a = issuesEl('a', 'forum-feed-link nr-feed-link');
+      // Trust GitHub's own `html_url`. Defensive: only set the href if
+      // it actually starts with https://github.com/, otherwise leave it
+      // unset so the row is inert rather than launching arbitrary URLs.
+      const href = typeof issue?.html_url === 'string' ? issue.html_url : '';
+      if (/^https:\/\/github\.com\//.test(href)) {
+        a.href = href;
+      }
+      a.target = '_blank';
+      a.rel = 'noopener';
+
+      const when = issue.updated_at ?? issue.created_at;
+      const date = issuesEl('time', 'forum-feed-date nr-feed-date-col');
+      if (typeof when === 'string') date.dateTime = when;
+      date.textContent = issueRelativeTime(when);
+
+      // Title cell holds only the title text. The repo chip lives in
+      // its own dedicated grid column (sibling of the title cell) so
+      // chips line up vertically across all rows.
+      const titleCell = issuesEl('span', 'forum-feed-title');
+      const titleText = issuesEl('span', 'forum-feed-title-text');
+      // `||`, not `??`: a row narrowed for the cache carries an empty
+      // string where the API sent no title, so the placeholder has to
+      // cover both the missing and the empty case.
+      titleText.textContent = String(issue.title || '(untitled issue)');
+      titleCell.append(titleText);
+      const repo = repoFromIssue(issue);
+      let chip: HTMLElement | null = null;
+      if (repo) {
+        chip = issuesEl('span', 'forum-feed-cat');
+        chip.textContent = repoChipLabel(repo);
+      }
+
+      const commentCount = Math.max(0, Number(issue.comments ?? 0));
+      const replies = issuesEl('span', 'forum-feed-replies');
+      replies.textContent =
+        commentCount === 0
+          ? 'new'
+          : `${commentCount} ${commentCount === 1 ? 'comment' : 'comments'}`;
+
+      const cta = issuesEl('span', 'forum-feed-cta nr-feed-cta-col');
+      cta.setAttribute('aria-hidden', 'true');
+      cta.textContent = '→';
+
+      // Chip column sits between title and replies. Empty placeholder
+      // when no repo is detected so rows stay aligned.
+      const chipCell = chip ?? issuesEl('span', 'forum-feed-cat forum-feed-cat--empty');
+      a.append(date, titleCell, chipCell, replies, cta);
+      li.append(a);
+      return li;
+    }
+
+    function buildIssueFallback(): HTMLLIElement {
+      const li = issuesEl('li', 'forum-feed-item nr-feed-item');
+      const a = issuesEl('a', 'forum-feed-link nr-feed-link forum-feed-fallback-link');
+      a.href = 'https://github.com/node-red/node-red/issues';
+      a.target = '_blank';
+      a.rel = 'noopener';
+      const title = issuesEl('span', 'forum-feed-title');
+      title.style.gridColumn = '1 / -2';
+      title.style.whiteSpace = 'normal';
+      title.textContent = 'Live issue list unavailable — browse open issues on github.com/node-red';
+      const cta = issuesEl('span', 'forum-feed-cta nr-feed-cta-col');
+      cta.setAttribute('aria-hidden', 'true');
+      cta.textContent = '→';
+      a.append(title, cta);
+      li.append(a);
+      return li;
+    }
+
+    /* What gets cached: the chosen rows, narrowed to the five fields the
+     * row builder reads, under the API's own field names.
+     *
+     * Narrowed, because the response is 30 full issue objects and each
+     * one carries kilobytes of labels, reactions, user objects and URL
+     * templates this feed never looks at, while localStorage is a budget
+     * of a few megabytes shared with everything else on the origin.
+     *
+     * Chosen rather than raw, because running the diversification pass
+     * before the store means a warm read renders exactly the rows a cold
+     * read rendered, instead of re-deriving them from a stale sample.
+     *
+     * Under the API's own field names, because then buildIssueRow is
+     * literally the same code on both paths: the github.com href
+     * allowlist and the textContent construction apply to a value that
+     * came back out of localStorage exactly as they do to one off the
+     * wire, and there is no second render path to audit. */
+    type CachedIssue = {
+      title: string;
+      html_url: string;
+      repository_url: string;
+      comments: number;
+      updated_at: string;
+    };
+
+    function isCachedIssue(value: unknown): value is CachedIssue {
+      return (
+        isRecord(value) &&
+        typeof value['title'] === 'string' &&
+        typeof value['html_url'] === 'string' &&
+        typeof value['repository_url'] === 'string' &&
+        typeof value['comments'] === 'number' &&
+        typeof value['updated_at'] === 'string'
+      );
+    }
+
+    /** Reject an empty list too: the fetch path throws rather than
+     *  storing one, so an empty array can only be a damaged entry, and
+     *  rendering it would blank the section instead of falling back. */
+    function isCachedIssueList(value: unknown): value is CachedIssue[] {
+      return Array.isArray(value) && value.length > 0 && value.every(isCachedIssue);
+    }
+
+    function toCachedIssue(issue: Record<string, unknown>): CachedIssue {
+      const str = (value: unknown): string => (typeof value === 'string' ? value : '');
+      return {
+        title: str(issue['title']),
+        html_url: str(issue['html_url']),
+        repository_url: str(issue['repository_url']),
+        comments: Number(issue['comments']) || 0,
+        updated_at: str(issue['updated_at']),
+      };
+    }
+
+    async function fetchIssueRows(): Promise<CachedIssue[]> {
+      const res = await fetch(ISSUES_API, {
+        headers: { Accept: 'application/vnd.github+json' },
+        credentials: 'omit',
+      });
+      if (!res.ok) throw new Error(`issues ${res.status}`);
+      const data = await res.json();
+      const raw = data?.items;
+      if (!Array.isArray(raw) || raw.length === 0) {
+        throw new Error('no issues');
+      }
+      // search/issues returns BOTH issues and PRs by default even with
+      // is:issue in the query (the server-side filter is mostly
+      // honoured, but defensive double-check protects us if anything
+      // about that changes).
+      const issues = raw.filter((i: Record<string, any>) => i && !i.pull_request);
+      const chosen = diversifyIssues(issues);
+      if (chosen.length === 0) throw new Error('no rows after diversify');
+      return chosen.map(toCachedIssue);
+    }
+
+    async function loadIssuesFeed(): Promise<void> {
+      const list = document.querySelector<HTMLUListElement>('[data-issues-feed]');
+      if (!list) return;
+      issuesScopeClass = Array.from(list.classList).find((c) => c.startsWith('astro-')) ?? '';
+      try {
+        const rows = await cached('issues-feed', ISSUES_TTL, fetchIssueRows, isCachedIssueList);
+        const frag = document.createDocumentFragment();
+        for (const row of rows) frag.append(buildIssueRow(row));
+        list.replaceChildren(frag);
+        list.removeAttribute('aria-busy');
+      } catch (err) {
+        console.warn('[issues feed] falling back:', err);
+        list.replaceChildren(buildIssueFallback());
+        list.removeAttribute('aria-busy');
+      }
+    }
+
+    loadIssuesFeed();
+  </script>
+
+  <script>
+    /* Editor illustration — group-hover legend + canvas drag-to-pan.
+     *
+     * Hover: any SVG element carrying [data-label] activates the in-SVG
+     * .ed-svg-legend pill (rect + text, anchored at lower-centre of the
+     * SVG). The pill is hidden by default and only fades in when the
+     * cursor enters a labelled region — the empty canvas itself has no
+     * [data-label], so panning around the grid never triggers the pill.
+     * [data-hover-group="X"] adds .is-group-hover to every overlay
+     * sharing that group key (so all four side panels highlight together
+     * when you hover any one of them, etc.).
+     *
+     * Drag-pan: mousedown / touchstart on .ed-canvas-root starts a pan
+     * gesture. We translate the .ed-canvas-pan <g> via its `transform`
+     * attribute (in SVG user units). The mouse delta is converted to
+     * SVG units via the SVG element's `getScreenCTM().inverse()` so
+     * the pan tracks 1:1 with the cursor regardless of viewport scale.
+     * Movement is clamped so panned content never leaves the canvas
+     * clipping rect entirely (you can always pull it back).
+     */
+    const stageWrap = document.querySelector('.ed-wrap.nr-col-full');
+    const stage = stageWrap?.querySelector('.ed-stage') as HTMLDivElement | null;
+    if (stage) {
+      const svg = stage.querySelector('.ed-svg') as SVGSVGElement;
+      const legend = svg.querySelector('.ed-svg-legend') as SVGGElement;
+      const legendText = legend.querySelector('.ed-svg-legend-text') as SVGTextElement;
+      const canvasRoot = svg.querySelector('.ed-canvas-root') as SVGGElement;
+      const panGroup = svg.querySelector('.ed-canvas-pan') as SVGGElement;
+
+      /* ── Group hover + legend ── */
+      const clearGroup = () => {
+        svg
+          .querySelectorAll('.is-group-hover')
+          .forEach((el) => el.classList.remove('is-group-hover'));
+      };
+      const setActive = (target: SVGElement | null) => {
+        clearGroup();
+        if (!target) {
+          legend.classList.remove('is-active');
+          return;
+        }
+        const label = target.getAttribute('data-label') || '';
+        const group = target.getAttribute('data-hover-group');
+        legendText.textContent = label;
+        legend.classList.add('is-active');
+        if (group) {
+          svg.querySelectorAll(`[data-hover-group="${group}"]`).forEach((el) => {
+            el.classList.add('is-group-hover');
+          });
+        }
+      };
+      /* `mouseover` (not `mouseenter`) bubbles, so one listener on the SVG
+       * root covers every [data-label] descendant. Always call setActive
+       * — passing null when there's no [data-label] ancestor clears stale
+       * legend state when the cursor crosses onto the empty canvas. */
+      svg.addEventListener('mouseover', (e: MouseEvent) => {
+        const target = (e.target as Element).closest('[data-label]') as SVGElement | null;
+        setActive(target);
+      });
+      svg.addEventListener('mouseleave', () => setActive(null));
+
+      /* ── Drag pan ──
+       * Pan offset is stored in SVG user units. The transform is set on
+       * .ed-canvas-pan as `translate(tx, ty)`. We clamp tx ∈ [-883, 883]
+       * and ty ∈ [-801, 801] so the content can swing a full canvas in
+       * either direction but cannot disappear forever.
+       */
+      const PAN_X_MAX = 883;
+      const PAN_Y_MAX = 801;
+      let panX = 0;
+      let panY = 0;
+      let dragging = false;
+      let startClientX = 0;
+      let startClientY = 0;
+      let startPanX = 0;
+      let startPanY = 0;
+
+      const setPan = (tx: number, ty: number) => {
+        panX = Math.max(-PAN_X_MAX, Math.min(PAN_X_MAX, tx));
+        panY = Math.max(-PAN_Y_MAX, Math.min(PAN_Y_MAX, ty));
+        panGroup.setAttribute('transform', `translate(${panX} ${panY})`);
+      };
+
+      /* Convert a screen-space delta into SVG user-unit delta using the
+       * current screen CTM. This makes the pan track the cursor at every
+       * viewport scale. */
+      const screenDeltaToSvg = (dxScreen: number, dyScreen: number) => {
+        const ctm = svg.getScreenCTM();
+        if (!ctm) return { dx: dxScreen, dy: dyScreen };
+        /* Inverse: 1 screen px → (1/a) SVG units (assuming no skew). */
+        return { dx: dxScreen / ctm.a, dy: dyScreen / ctm.d };
+      };
+
+      const onPointerDown = (clientX: number, clientY: number) => {
+        dragging = true;
+        startClientX = clientX;
+        startClientY = clientY;
+        startPanX = panX;
+        startPanY = panY;
+        canvasRoot.classList.add('is-panning');
+        setActive(null);
+      };
+      const onPointerMove = (clientX: number, clientY: number) => {
+        if (!dragging) return;
+        const { dx, dy } = screenDeltaToSvg(clientX - startClientX, clientY - startClientY);
+        setPan(startPanX + dx, startPanY + dy);
+      };
+      const onPointerUp = () => {
+        if (!dragging) return;
+        dragging = false;
+        canvasRoot.classList.remove('is-panning');
+      };
+
+      /* Pan handler is on .ed-canvas-root so it captures mousedown from any
+       * child (grid image, hit rect, etc). Flow elements (nodes + wire) opt
+       * out via .ed-flow-el so clicking a node doesn't start a pan — matches
+       * Node-RED's real "drag empty canvas to pan, drag node to move" UX. */
+      canvasRoot.addEventListener('mousedown', (e: MouseEvent) => {
+        if ((e.target as Element).closest('.ed-flow-el')) return;
+        e.preventDefault();
+        onPointerDown(e.clientX, e.clientY);
+      });
+      window.addEventListener('mousemove', (e: MouseEvent) => onPointerMove(e.clientX, e.clientY));
+      window.addEventListener('mouseup', onPointerUp);
+
+      /* Touch */
+      canvasRoot.addEventListener(
+        'touchstart',
+        (e: TouchEvent) => {
+          const t = e.touches[0];
+          if (e.touches.length !== 1 || !t) return;
+          if ((e.target as Element).closest('.ed-flow-el')) return;
+          e.preventDefault();
+          onPointerDown(t.clientX, t.clientY);
+        },
+        { passive: false },
+      );
+      window.addEventListener(
+        'touchmove',
+        (e: TouchEvent) => {
+          const t = e.touches[0];
+          if (!dragging || e.touches.length !== 1 || !t) return;
+          onPointerMove(t.clientX, t.clientY);
+        },
+        { passive: true },
+      );
+      window.addEventListener('touchend', onPointerUp);
+      window.addEventListener('touchcancel', onPointerUp);
+
+      /* ── Idle ghost cursor ──
+       * Until the visitor touches the drawing, a ghost cursor fades in
+       * every few seconds and drags the canvas a short distance, hinting
+       * that the canvas is pannable. The first real pointer interaction
+       * with the stage retires it permanently. Skipped on touch-first
+       * devices and under prefers-reduced-motion. */
+      const ghost = stage.querySelector('.ed-ghost-cursor') as HTMLDivElement | null;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+      if (ghost && !reducedMotion && !coarsePointer) {
+        let retired = false;
+        let rafId = 0;
+        let timerId = 0;
+        const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+
+        const setGhost = (x: number, y: number) => {
+          ghost.style.transform = `translate(${x}px, ${y}px)`;
+        };
+
+        const glide = () => {
+          if (retired) return;
+          const rect = stage.getBoundingClientRect();
+          const scale = svg.getScreenCTM()?.a ?? rect.width / 1392;
+          /* Start somewhere in the canvas's middle band, clear of the
+           * chrome panels and the messaging overlay. */
+          const startX = rect.width * (0.35 + Math.random() * 0.3);
+          const startY = rect.height * (0.28 + Math.random() * 0.2);
+          /* Drag delta chosen so the pan target stays inside the clamps. */
+          const targetPanX = Math.max(
+            -PAN_X_MAX,
+            Math.min(PAN_X_MAX, panX + (Math.random() * 500 - 250)),
+          );
+          const targetPanY = Math.max(
+            -PAN_Y_MAX,
+            Math.min(PAN_Y_MAX, panY + (Math.random() * 260 - 130)),
+          );
+          const fromPanX = panX;
+          const fromPanY = panY;
+          /* Content follows the cursor 1:1, like a real drag. */
+          const dxPx = (targetPanX - fromPanX) * scale;
+          const dyPx = (targetPanY - fromPanY) * scale;
+          const duration = 2400;
+          let t0 = 0;
+          setGhost(startX, startY);
+          ghost.classList.add('is-active');
+          const step = (ts: number) => {
+            if (retired) return;
+            if (!t0) t0 = ts;
+            const t = Math.min(1, (ts - t0) / duration);
+            const e = easeInOut(t);
+            setPan(fromPanX + (targetPanX - fromPanX) * e, fromPanY + (targetPanY - fromPanY) * e);
+            setGhost(startX + dxPx * e, startY + dyPx * e);
+            if (t < 1) {
+              rafId = requestAnimationFrame(step);
+            } else {
+              ghost.classList.remove('is-active');
+              timerId = window.setTimeout(glide, 4500 + Math.random() * 3000);
+            }
+          };
+          rafId = requestAnimationFrame(step);
+        };
+
+        const retire = () => {
+          retired = true;
+          window.clearTimeout(timerId);
+          cancelAnimationFrame(rafId);
+          ghost.classList.remove('is-active');
+        };
+        stage.addEventListener('pointerenter', retire, { once: true });
+        stage.addEventListener('pointerdown', retire, { once: true });
+
+        timerId = window.setTimeout(glide, 3000);
+      }
+    }
+  </script>
+
+  <script>
+    /* Trusted-by disclaimer — stripe.dev-style per-character reveal.
+     * An IntersectionObserver flips .is-visible on the <p> when the
+     * line scrolls into view; the CSS transition + per-char stagger
+     * (transition-delay: calc(var(--char-i) * 12ms)) does the rest.
+     * `once` semantics — we unobserve after first reveal so the
+     * animation doesn't re-fire on scroll-up. */
+    const charStaggerEls = document.querySelectorAll('[data-char-stagger]');
+    if (charStaggerEls.length) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('is-visible');
+              obs.unobserve(e.target);
+            }
+          }
+        },
+        { threshold: 0.25 },
+      );
+      charStaggerEls.forEach((el) => obs.observe(el));
+    }
+  </script>
+
+  <script>
+    /* Get Started — "See all platforms" toggle. The extras are already
+     * in the DOM (rendered with .platform-row--extra), so toggling
+     * .is-expanded on the row container is enough to reveal them. We
+     * swap the label between collapsed and expanded states, and keep
+     * aria-expanded in sync for screen readers. */
+    const gsToggle = document.querySelector<HTMLButtonElement>('[data-getstarted-toggle]');
+    const gsRow = document.querySelector<HTMLElement>('[data-getstarted-row]');
+    const gsLabel = document.querySelector<HTMLElement>('[data-getstarted-toggle-label]');
+    if (gsToggle && gsRow && gsLabel) {
+      gsToggle.addEventListener('click', () => {
+        const expanded = gsRow.classList.toggle('is-expanded');
+        gsToggle.setAttribute('aria-expanded', String(expanded));
+        gsLabel.textContent = expanded ? 'Show fewer →' : 'See all platforms →';
+      });
+    }
+  </script>
+</BaseLayout>
+
+<style>
+  /* ===================================================================
+     HERO — EDITOR ILLUSTRATION
+     Wrapper rules only — the SVG itself ships its own <style> for the
+     elements inside it (.ed-el, .ed-flow-el, .ed-canvas-*), because
+     those elements live inside set:html content that bypasses Astro
+     per-component scoping.
+     =================================================================== */
+  .hero-editor {
+    padding: var(--space-6) 0 var(--space-8);
+    /* Light mode: #F0F0F0 (per design). Dark mode override below
+       pairs with the rest of the dark surface palette. */
+    background: var(--nr-section-bg, #f0f0f0);
+  }
+  /* Black, not the #505050 this used to be: that mid grey sat lighter than every
+     other dark surface on the page, so the band read as a panel floating on the
+     hero rather than part of it. The drawing's own palette carries the contrast. */
+  :global([data-theme='dark']) .hero-editor {
+    background: #000;
+  }
+
+  /* Messaging block above the drawing. */
+  .hero-intro {
+    padding: var(--space-4) 0 var(--space-7);
+  }
+
+  .hero-title {
+    font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    color: var(--nr-text-strong);
+    margin: 0 0 var(--space-3);
+  }
+
+  .hero-accent {
+    color: var(--nr-red);
+  }
+
+  .hero-subtitle {
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--nr-text-muted);
+    max-width: 560px;
+    margin: 0 0 var(--space-5);
+  }
+
+  /* .hero-actions flex layout → UnoCSS `flex items-center gap-4` on the element */
+
+  /* Idle ghost cursor — positioned by the pan script, shown only while
+     a glide is running. */
+  .ed-ghost-cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+    will-change: transform;
+  }
+  .ed-ghost-cursor.is-active {
+    opacity: 1;
+  }
+
+  /* ===================================================================
+     WHY VISUAL PROGRAMMING
+     =================================================================== */
+  /* No vertical padding on the section itself: it moves onto the items so
+     their dividers run the full height of the row, meeting the boundary
+     hairlines above and below edge-to-edge. Same reasoning as .sponsor-card,
+     where both columns stretch so the divider spans between the two
+     hairlines. */
+  .section-whyvisual {
+    padding: 0;
+    background: var(--nr-surface);
+  }
+  .whyvisual-grid {
+    row-gap: var(--space-6);
+  }
+  /* Cell-level dividers, matching .oss-stat and the trusted grid: a hairline
+     on each cell's inline end, reset on the last so the row does not close on
+     a redundant divider. The divider lands on the colspan-4 track edge, which
+     puts the grid gap between it and the next column's text. */
+  .whyvisual-item {
+    /* Half the channel the hairline sits in, declared once so both sides of it
+       stay equal. The trailing half is this padding; the leading half is the
+       grid gap plus whatever it still leaves to make up, taken by the next cell
+       below. The grid gap alone was the whole channel and read as too tight.
+
+       Outer edges stay flush: only cells that actually follow a divider get the
+       leading half, and the last cell drops the trailing half with its border.
+
+       Vertical and horizontal deliberately match at --space-7. The block padding
+       used to be --space-8 against a 32px inset, so the copy sat in a cell with
+       far more air above and below it than beside the hairline, which made the
+       channel read as tight even after it was widened once. Closing from both
+       ends, wider inset and shorter block padding, evens the cell out. */
+    --whyvisual-divider-inset: var(--space-7);
+    padding-block: var(--space-7);
+    padding-inline-end: var(--whyvisual-divider-inset);
+    border-inline-end: 1px solid var(--nr-border);
+  }
+  .whyvisual-item + .whyvisual-item {
+    padding-inline-start: calc(var(--whyvisual-divider-inset) - var(--grid-gap));
+  }
+  .whyvisual-item:last-child {
+    padding-inline-end: 0;
+    border-inline-end: 0;
+  }
+  .whyvisual-item h2 {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--nr-text-strong);
+    margin: 0 0 var(--space-3);
+  }
+  .whyvisual-item p {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--nr-text-muted);
+    margin: 0;
+  }
+
+  /* Stacked below 1024px (the tablet rule pushes each item to 1 / -1, and at
+     mobile a colspan-4 fills the 4-col grid anyway). Drop the dividers rather
+     than leave them dangling under full-width rows, as .oss-stat does on its
+     wrapped grid, and hand the vertical padding back to the section so
+     stacked items are not each carrying 64px top and bottom. */
+  @media (max-width: 1023px) {
+    .section-whyvisual {
+      padding-block: var(--space-8);
+    }
+    .whyvisual-item {
+      padding-block: 0;
+      padding-inline-end: 0;
+      padding-inline-start: 0;
+      border-inline-end: 0;
+    }
+  }
+
+  /* ── Editor SVG dark-mode adaptation ──────────────────────────────────
+     The SVG is injected via set:html so its elements have no Astro
+     scoping attribute. Selectors that mix :global(theme) + scoped classes
+     won't match. Wrapping the ENTIRE compound selector in :global() is
+     required for set:html content. */
+
+  :global([data-theme='dark'] .ed-svg) {
+    filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.5));
+  }
+  :global([data-theme='dark'] .ed-canvas-bg) {
+    fill: #1e1e1e;
+  }
+  :global([data-theme='dark'] #ed-grid path) {
+    stroke: #383838;
+  }
+  /* Chrome panel fills */
+  :global([data-theme='dark'] .ed-chrome rect[fill='white']) {
+    fill: #252525;
+  }
+  /* Active workspace tab */
+  :global([data-theme='dark'] .ed-chrome path[fill='black']) {
+    fill: #3a3a3a;
+  }
+  /* Chrome borders */
+  :global([data-theme='dark'] .ed-chrome rect[stroke='black']),
+  :global([data-theme='dark'] .ed-chrome path[stroke='black']),
+  :global([data-theme='dark'] .ed-chrome line[stroke='black']) {
+    stroke: #484848;
+  }
+  /* Canvas L-border drawn on top of chrome */
+  :global([data-theme='dark'] .ed-canvas-border) {
+    stroke: #484848;
+  }
+  /* Flow node bodies */
+  :global([data-theme='dark'] .ed-flow-el rect[fill='white']),
+  :global([data-theme='dark'] .ed-flow-el path[fill='white']) {
+    fill: #2c2c2c;
+  }
+  /* Flow node + wire outlines */
+  :global([data-theme='dark'] .ed-flow-el rect[stroke='black']),
+  :global([data-theme='dark'] .ed-flow-el path[stroke='black']) {
+    stroke: #757575;
+  }
+  /* Node port border technique uses fill="black" paths */
+  :global([data-theme='dark'] .ed-flow-el path[fill='black']) {
+    fill: #757575;
+  }
+  /* In-SVG legend */
+  :global([data-theme='dark'] .ed-svg-legend-bg) {
+    fill: #2c2c2c;
+    stroke: #484848;
+  }
+  :global([data-theme='dark'] .ed-svg-legend-text) {
+    fill: #d0d0d0;
+  }
+
+  .ed-wrap {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    /* Container so .ed-stage can express its corner radius in cqw and
+       track the SVG's viewBox-scaled rx at every width. */
+    container-type: inline-size;
+  }
+  .ed-stage {
+    position: relative;
+    width: 100%;
+    /* Corner radius proportional to the stage width, matching the SVG
+       frame's rx=12.5 in its 1392-unit viewBox — a fixed px radius
+       drifts from the scaling SVG corners as the drawing shrinks. */
+    background: #ffffff;
+    border-radius: calc(100cqw * 12.5 / 1392);
+    overflow: hidden;
+  }
+  :global([data-theme='dark']) .ed-stage {
+    background: #252525;
+  }
+  /* :global() because the SVG arrives via set:html and never gets the
+     Astro scope attribute — a scoped .ed-svg rule silently matches
+     nothing. display:block is what removes the inline-baseline gap that
+     otherwise leaves a white strip under the drawing. */
+  :global(.ed-svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* SVG default is overflow:visible — the oversized grid rect used for
+       panning can escape the viewBox into the gap created by the parent's
+       border-radius. Clip to viewBox to prevent corner bleed. */
+    overflow: hidden;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.08));
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ===================================================================
+     GET STARTED SECTION
+     =================================================================== */
+  /* Stripe-style stacked rows: each platform is a row with a
+     horizontal hairline above. The whole list reads as one continuous
+     band rather than three floating cards. */
+
+  /* .section-getstarted base padding/bg → nr-section (design-tokens.css) */
+  /* .getstarted-all link button styles → nr-link-btn (design-tokens.css) */
+
+  .getstarted-row {
+    column-gap: 0;
+    row-gap: 0;
+    border-top: 1px solid var(--nr-border);
+  }
+
+  /* Each platform row is a 2-element disclosure: a button-trigger that
+     looks like a row (icon / name / desc / arrow on the page's 12-col
+     rails) and a detail panel below that animates open on click. The
+     row's bottom border travels with the outer wrapper, so it stays
+     pinned to the bottom of the panel when expanded. */
+  .platform-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    border-bottom: 1px solid var(--nr-border);
+  }
+  .platform-row--extra {
+    display: none;
+  }
+  .getstarted-row.is-expanded .platform-row--extra {
+    display: grid;
+  }
+
+  /* The trigger is a real <button> so keyboard focus + Space/Enter work
+     for free. We zero its native chrome and re-grid the children into
+     the parent's subgrid so name/desc/arrow line up vertically across
+     rows like the prior <a> card did. */
+  .platform-trigger {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+    padding: var(--space-4) 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    /* Needed now this is an <a> and not a <button>. Without it the row picks up
+       the site's link underline and every platform name and description arrives
+       underlined. The row signals itself with its hover fill and trailing arrow. */
+    text-decoration: none;
+  }
+  .platform-trigger:hover,
+  .platform-trigger:focus-visible {
+    background: var(--nr-red-subtle);
+    outline: none;
+    text-decoration: none;
+  }
+  .platform-trigger:hover .platform-name,
+  .platform-trigger:focus-visible .platform-name,
+  .platform-trigger:hover .platform-toggle,
+  .platform-trigger:focus-visible .platform-toggle {
+    color: var(--nr-red);
+  }
+  /* The arrow leads slightly on hover, the usual nudge for a row that navigates. */
+  .platform-toggle {
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      transform var(--duration-fast) var(--ease-standard);
+  }
+  .platform-trigger:hover .platform-toggle,
+  .platform-trigger:focus-visible .platform-toggle {
+    transform: translateX(2px);
+  }
+
+  .platform-icon {
+    grid-column: 1 / 2;
+    width: 48px;
+    height: 48px;
+  }
+  .platform-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .platform-name {
+    grid-column: 2 / 5;
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--nr-text-strong);
+    margin: 0;
+    letter-spacing: -0.01em;
+    transition: color var(--duration-fast);
+  }
+  .platform-desc {
+    grid-column: 5 / -2;
+    font-size: var(--text-body-sm);
+    color: var(--nr-text-muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .platform-toggle {
+    grid-column: -2 / -1;
+    justify-self: end;
+    margin-right: 8px;
+    color: var(--nr-gray-400);
+    transition: color var(--duration-fast);
+  }
+
+  /* Mobile: --grid-columns drops to 4. Subgrid no longer has columns
+     2/5/-2 to anchor against, so reflow the trigger to a compact
+     icon + stacked-name/desc + arrow layout, and let the detail
+     content stretch full-width inside the row. */
+  @media (max-width: 767px) {
+    .platform-trigger {
+      grid-template-columns: 48px 1fr auto;
+      column-gap: var(--space-4);
+      row-gap: var(--space-1);
+    }
+    .platform-icon {
+      grid-column: 1;
+      grid-row: 1 / 3;
+    }
+    .platform-name {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .platform-desc {
+      grid-column: 2;
+      grid-row: 2;
+    }
+    .platform-toggle {
+      grid-column: 3;
+      grid-row: 1 / 3;
+      justify-self: end;
+      align-self: center;
+      margin-right: 4px;
+    }
+  }
+
+  /* ===================================================================
+     SPONSOR SECTION (FlowFuse)
+     A featured spotlight above Trusted-by. The card surface uses a soft
+     red-tinted gradient over our `--nr-surface-elevated` so it reads as
+     a sponsored highlight rather than a generic content card, without
+     ever feeling like a banner ad.
+     =================================================================== */
+  /* No vertical padding: it moves onto the two columns below, so the divider
+     between them spans the full section height and meets the boundary
+     hairlines at both ends. Same approach as .whyvisual-item. */
+  .section-sponsor {
+    padding: 0;
+    background: var(--nr-surface);
+  }
+
+  /* Two columns, logo block | copy block, split by one vertical hairline.
+     The card carries no borders of its own. It used to draw its own top and
+     bottom hairlines, but those stopped at the grid gutters and so read as a
+     second inset frame just inside the full-width section boundaries; the
+     boundary lines from `main > section + section` are the only horizontal
+     rules here now.
+     The eyebrow and heading still share a baseline because each column
+     flex-starts its own content. */
+  .sponsor-card {
+    grid-column: 1 / -1;
+    display: grid;
+    /* 4fr/8fr leaves the logo column a generous ~33% of the row width.
+       The right column gets the remaining ~67% for headline + body. */
+    grid-template-columns: 4fr 8fr;
+    /* Both columns stretch to the row height, so the divider runs from the
+       hairline above to the one below with no gap at either end. */
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+  }
+
+  .sponsor-logo-frame {
+    padding-block: var(--space-8);
+    padding-inline-end: var(--space-7);
+    border-inline-end: 1px solid var(--nr-border);
+  }
+
+  /* The anchor, not the img, carries the width cap: as a flex item it would
+     otherwise stretch to the column and leave a click target far wider than
+     the mark it wraps. `display: block` also drops the inline baseline gap
+     that would push the "supporting since" line off its 16px rhythm. */
+  .sponsor-logo-link {
+    display: block;
+    max-width: 180px;
+    width: 100%;
+    text-decoration: none;
+    transition: opacity var(--duration-fast, 150ms) var(--ease-standard, ease);
+  }
+
+  .sponsor-logo-link:hover,
+  .sponsor-logo-link:focus-visible {
+    opacity: 0.75;
+    text-decoration: none;
+  }
+
+  .sponsor-logo-frame img {
+    max-width: 180px;
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  :root[data-theme='dark'] .sponsor-logo-frame img {
+    filter: brightness(1.08);
+  }
+
+  .sponsor-eyebrow {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-overline, 11px);
+    font-weight: 600;
+    color: var(--nr-red-dark, #9f0000);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  :root[data-theme='dark'] .sponsor-eyebrow {
+    color: #ff6b6b;
+  }
+
+  .sponsor-since {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--nr-text-faint);
+    letter-spacing: -0.005em;
+    font-style: italic;
+  }
+
+  .sponsor-body {
+    padding-block: var(--space-8);
+    padding-inline-start: var(--space-7);
+  }
+
+  .sponsor-heading {
+    margin: 0;
+    font-size: clamp(1.5rem, 2.4vw, 1.875rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    color: var(--nr-text-strong);
+  }
+
+  .sponsor-brand {
+    color: var(--nr-red);
+  }
+
+  :root[data-theme='dark'] .sponsor-brand {
+    color: #ff6b6b;
+  }
+
+  .sponsor-tagline {
+    margin: 0;
+    color: var(--nr-text-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    max-width: 58ch;
+  }
+
+  .sponsor-actions {
+    margin-top: var(--space-2);
+  }
+
+  .sponsor-cta {
+    /* Inherits .nr-btn-primary visual styling. */
+  }
+
+  .sponsor-cta svg {
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+
+  .sponsor-cta:hover svg,
+  .sponsor-cta:focus-visible svg {
+    transform: translateX(3px);
+  }
+
+  .sponsor-cta-secondary {
+    color: var(--nr-text-muted);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    font-size: var(--text-body-sm, 14px);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+
+  .sponsor-cta-secondary:hover,
+  .sponsor-cta-secondary:focus-visible {
+    color: var(--nr-text-strong);
+    text-decoration-thickness: 2px;
+  }
+
+  /* ===================================================================
+     TRUSTED BY SECTION
+     =================================================================== */
+  /* .section-trusted base padding/bg → nr-section (design-tokens.css) */
+
+  /* Viewport wraps the grid and clips to the first VISIBLE_ROWS in the
+     unexpanded state. The grid translateY-rotates inside it on a 15s
+     timer (see <script> at the bottom of the markup), exposing each row
+     in turn. When the user clicks "Show all", `data-expanded` is added
+     and max-height lifts to reveal every row. The CSS var is set by JS
+     after first paint based on the actual measured row height; the
+     calc() fallback keeps SSR / no-JS users seeing 3 rows at the
+     designed minimum row height. */
+  .trusted-viewport {
+    overflow: hidden;
+    position: relative;
+    max-height: var(--trusted-viewport-height, calc(96px * 3));
+    transition: max-height 800ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* Top + bottom hairlines pinned to the viewport so the wall's
+       outer edges are always crisp regardless of where the rotation
+       has translated the grid. The grid's own per-tile borders form
+       the internal lattice; the viewport's borders form the frame.
+       Matches the OSS avatar viewport's border treatment. */
+    border-top: 1px solid var(--nr-border);
+    border-bottom: 1px solid var(--nr-border);
+  }
+
+  .trusted-viewport[data-expanded] {
+    /* 9999px is "tall enough" for any plausible row count; using
+       max-height instead of `none` keeps the expand animation working. */
+    max-height: 9999px;
+    /* When expanded, the last row's tile border-block-end already
+       sits at the wall's visual bottom edge — keeping the viewport
+       border-bottom in that state stacks them into a doubled
+       hairline. Drop it; the tile borders form the bottom edge. The
+       collapsed state still needs it (mid-tick the bottom slice is
+       partial, so the tile border isn't always at the viewport edge). */
+    border-bottom: 0;
+  }
+
+  /* Self-contained 12-col grid (matches `--grid-columns` token, which
+     drops to 8 on tablet and 4 on mobile so `.nr-colspan-2` reflows
+     correctly: 6-up → 4-up → 2-up). column-gap: 0 keeps the cells
+     flush so their hairline borders form a continuous wall. */
+  .trusted-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
+    row-gap: 0;
+    column-gap: 0;
+    /* Must stay in sync with the JS-side TRANSITION_MS constant —
+       the carousel waits TRANSITION_MS + 40 before doing the DOM
+       rotation snap, so a mismatch here would either snap mid-scroll
+       (visible jitter) or wait too long (visible pause). */
+    transition: transform 1000ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    /* The translateY(...) on this element creates a new stacking
+       context, which traps `mix-blend-mode: lighten` on tone-boxed
+       logos: the blend can only resolve against pixels painted inside
+       this stacking context, not against the page surface behind it. A
+       transparent grid background then makes the lighten op effectively
+       a no-op, so the inverted-white-bg of boxed PNGs reappears as a
+       dark sticker tile in dark mode. Fix: paint the grid in the page
+       surface colour so the blend has the right destination. Light
+       mode is unaffected (boxed logos render unfiltered there). */
+    background: var(--nr-surface);
+  }
+
+  /* .trusted-actions inline-flex layout → UnoCSS utilities on the element */
+  /* .trusted-toggle link button styles → nr-link-btn (design-tokens.css) */
+
+  /* "Want to feature your product here?" link below the disclaimer. */
+  .trusted-feature-link {
+    margin-top: var(--space-3);
+  }
+
+  .trusted-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: var(--text-caption);
+    color: var(--nr-text-faint);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-standard);
+    /* Standalone link under the logo wall, measured 22.1px. */
+    min-height: 24px;
+  }
+
+  .trusted-info:hover,
+  .trusted-info:focus-visible {
+    color: var(--nr-text-link);
+    text-decoration: none;
+  }
+
+  .trusted-info svg {
+    flex-shrink: 0;
+  }
+
+  /* Disclaimer along the bottom of the section. Quiet mono-cap rhythm
+     so it ties to the row of overlines used for the date columns
+     elsewhere on the page. Stripe.dev-style reveal: each character
+     lives in a .trusted-disclaimer-char span and fades when the
+     paragraph scrolls into view, staggered by --char-i so the line
+     reads as if being typed in. Words are kept in nowrap containers
+     so the character spans don't break mid-word at line ends. */
+  .trusted-disclaimer {
+    margin: var(--space-5) 0 0;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: var(--text-overline);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nr-text-faint);
+    line-height: 1.5;
+  }
+  .trusted-disclaimer-word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .trusted-disclaimer-char {
+    display: inline-block;
+    opacity: 0;
+    /* Stripe.dev keeps the transform subtle — a small upward slide of
+       a few px so the eye registers movement without distraction.
+       Tighter per-char stagger (25ms) so the wave finishes in ~4s for
+       this ~155-char sentence and reads as typing rather than waves. */
+    transform: translateY(2px);
+    transition:
+      opacity 320ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition-delay: calc(var(--char-i, 0) * 25ms);
+  }
+  .trusted-disclaimer.is-visible .trusted-disclaimer-char {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .trusted-disclaimer-char {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* ===================================================================
+     ON THE BLOG (latest posts feed)
+     =================================================================== */
+  /* .section-blog padding/bg → nr-section; boundary hairline → main > section + section (design-tokens.css) */
+  /* .blog-feed-more link styles → nr-section-link (design-tokens.css) */
+  /* .blog-feed-list/.blog-feed-item/.blog-feed-link → nr-feed-* (design-tokens.css) */
+  /* .blog-feed-date date col → nr-feed-date-col (design-tokens.css) */
+  /* .blog-feed-cta chevron → nr-feed-cta-col (design-tokens.css) */
+
+  .blog-feed-title {
+    grid-column: 3 / -2;
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--nr-text-strong);
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+  }
+
+  .blog-feed-link:hover .blog-feed-title {
+    color: var(--nr-red);
+  }
+
+  /* ===================================================================
+     LATEST IN THE FORUM (Discourse live feed)
+     Shares the .blog-feed-* visual rhythm — same subgrid columns, same
+     row borders, same hover wash. Skeleton placeholders pulse until the
+     client-side fetch swaps in real rows; if the fetch fails (e.g. CORS
+     not yet enabled), the script replaces the list with a single
+     fallback link so the section never reads as broken.
+     =================================================================== */
+  /* .section-forum padding/bg → nr-section; boundary hairline → main > section + section (design-tokens.css) */
+  /* .forum-feed-more link styles → nr-section-link (design-tokens.css) */
+  /* .forum-feed-list/.forum-feed-item/.forum-feed-link → nr-feed-* (design-tokens.css) */
+  /* .forum-feed-date date col → nr-feed-date-col (design-tokens.css) */
+  /* .forum-feed-cta chevron → nr-feed-cta-col (design-tokens.css) */
+
+  /* Title cell now holds only the title text — the category chip
+     lives in a dedicated column to its right. Kept as a flex container
+     so the existing `.forum-feed-title-text { min-width: 0 }` ellipsis
+     pattern still resolves (a non-flex/grid parent would let the
+     overflowing text push the row wider before clipping). */
+  .forum-feed-title {
+    grid-column: 3 / -5;
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    line-height: 1.4;
+  }
+
+  .forum-feed-title-text {
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--nr-text-strong);
+    letter-spacing: -0.01em;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Category chip: tight mono caps, hairline-bordered pill that picks
+     up the row's hover wash. Sized to align optically with the date
+     column's overline — same font-size, same letter-spacing, same
+     uppercase rhythm, just with a contained pill background instead of
+     bare type. Lives in its own subgrid column (cols -5 / -3) so chips
+     stack to the same x-position down the list rather than drifting
+     with title widths. */
+  .forum-feed-cat {
+    grid-column: -5 / -3;
+    justify-self: start;
+    /* The chip is an inline-flex pill so `padding` works and the
+       border doesn't stretch the cell's height. */
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 6px;
+    font-family: var(--font-mono);
+    font-size: var(--text-overline);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--nr-text-muted);
+    background: transparent;
+    border: 1px solid var(--nr-border);
+    border-radius: 3px;
+    line-height: 1.4;
+    /* Pull the chip up half a pixel so its visual centre lands on the
+       title's baseline rather than its descender. */
+    transform: translateY(-0.5px);
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Placeholder chip cell — exists to occupy the grid column when a
+     row has no category/repo so chips below it still align with the
+     populated chips above. Renders no visible chrome. */
+  .forum-feed-cat--empty {
+    border-color: transparent;
+    background: transparent;
+    color: transparent;
+    /* zero-width space keeps the cell at the same baseline as siblings
+       in case any sub-pixel issue creeps in; harmless if not. */
+  }
+
+  .forum-feed-replies {
+    grid-column: -3 / -2;
+    text-align: end;
+    font-family: var(--font-mono);
+    font-size: var(--text-overline);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nr-text-faint);
+  }
+
+  /* .forum-feed-cta chevron → nr-feed-cta-col (design-tokens.css) */
+  /* a.forum-feed-link:hover → nr-feed-link:hover (design-tokens.css) */
+  /* a.forum-feed-link:hover .forum-feed-cta → nr-feed-link:hover .nr-feed-cta-col */
+
+  a.forum-feed-link:hover .forum-feed-title-text {
+    color: var(--nr-red);
+  }
+
+  a.forum-feed-link:hover .forum-feed-cat {
+    border-color: var(--nr-red);
+    color: var(--nr-red);
+  }
+
+  /* Skeleton placeholders: a single hairline bar where the title goes,
+     pulsing gently. We deliberately keep the date column empty (nbsp)
+     so the row height matches a populated row exactly — swapping the
+     skeleton for the real DOM produces zero layout shift. */
+  .skeleton-bar {
+    display: inline-block;
+    width: min(40ch, 60%);
+    height: 1em;
+    border-radius: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--nr-border) 0%,
+      var(--nr-gray-100, var(--nr-border)) 50%,
+      var(--nr-border) 100%
+    );
+    background-size: 200% 100%;
+    animation: forum-skeleton-shimmer 1.6s ease-in-out infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes forum-skeleton-shimmer {
+    0% {
+      background-position: 100% 0;
+      opacity: 0.55;
+    }
+    50% {
+      background-position: 0 0;
+      opacity: 0.85;
+    }
+    100% {
+      background-position: -100% 0;
+      opacity: 0.55;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-bar {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
+
+  .forum-feed-fallback {
+    padding: var(--space-4) var(--space-2);
+    grid-column: 1 / -1;
+    font-size: var(--text-body);
+  }
+
+  /* ===================================================================
+     OPEN SOURCE — stat row + contributor tile wall
+     Mirrors the .trusted-grid family: a sharp 12-col wall of square
+     hairline-bordered tiles, plus the same slow row-by-row rotation
+     we already use for the logo carousel. The motion is intentionally
+     a long way from the previous continuous marquee — one row drifts
+     into view every ~12s, then sits still until the next tick.
+     =================================================================== */
+  /* .section-oss padding/bg → nr-section; boundary hairline → main > section + section (design-tokens.css) */
+  /* .oss-toggle link button styles → nr-link-btn (design-tokens.css) */
+
+  /* Stat row: 5 equal cells laid out as a self-managed sub-grid inside
+     the 12-col parent. Numbers are large monospace (same family as the
+     date columns in blog/forum/issues feeds) so the OSS section ties
+     back to the rest of the page rhythm without a new typeface. */
+  .oss-stat-row {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-6) 0;
+    border-top: 1px solid var(--nr-border);
+    /* No bottom border here — the avatar viewport directly below
+       owns its own top border. Two adjacent borders would double up
+       into a thicker line; keeping just one keeps the lattice rhythm
+       consistent with the stat row's vertical dividers. */
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-4) var(--space-3);
+  }
+
+  .oss-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    /* Hairline between cells (right border), reset on the last cell
+       so the row doesn't end on a redundant divider. Matches the
+       trusted-grid pattern of cell-level dividers. */
+    border-inline-end: 1px solid var(--nr-border);
+    padding-inline: var(--space-3);
+  }
+
+  .oss-stat:last-child {
+    border-inline-end: 0;
+  }
+
+  .oss-stat-num {
+    font-family: var(--font-mono);
+    font-size: clamp(1.625rem, 2.8vw, 2.25rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--nr-text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .oss-stat-label {
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    color: var(--nr-text-muted);
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  /* Avatar wall: same translateY-rotation pattern as .trusted-grid.
+     Viewport clips the wall to OSS_VISIBLE_ROWS row heights; the grid
+     translates up one row at a time inside it. column-gap and row-gap
+     are 0 so the hairline borders on tiles form a continuous lattice. */
+  /* .oss-toggle → nr-link-btn (design-tokens.css) */
+
+  .oss-avatar-viewport {
+    overflow: hidden;
+    position: relative;
+    /* Fallback height = 2 rows × ~56px (the tile minimum). The JS
+       overwrites the var with the measured row height after first
+       paint, so this only matters for SSR / pre-script paint. */
+    max-height: var(--oss-viewport-height, calc(56px * 2));
+    border-top: 1px solid var(--nr-border);
+    border-bottom: 1px solid var(--nr-border);
+    transition: max-height 800ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .oss-avatar-viewport[data-expanded] {
+    /* Lift the clip and drop the bottom border in expanded state —
+       the last row's tile border forms the wall's outer bottom edge
+       on its own; keeping the viewport border would double it. */
+    max-height: 9999px;
+    border-bottom: 0;
+  }
+
+  .oss-avatar-grid {
+    display: grid;
+    /* Auto-fill so the wall packs as many tiles as fit at any width
+       instead of being tied to the page's 12/8/4 column token. Yields
+       ~20 tiles per row at desktop, ~13 at tablet, ~7 at mobile. */
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    row-gap: 0;
+    column-gap: 0;
+    /* Stepped rotation, JS-driven: the script sets translateY in
+       row-height multiples, the transition animates the step. When
+       the seam is reached (currentRow === originalRows), the script
+       overrides transition to `none` for that one frame so the snap
+       back to row 0 is instant — and because the grid contains the
+       avatar set duplicated, row N visually equals row 0, so the
+       snap is invisible. */
+    transition: transform 800ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    background: var(--nr-surface);
+    /* Shift the grid 1px past the viewport's right edge so the
+       rightmost tile's `border-inline-end` falls outside the
+       overflow: hidden clip. With auto-fill the column count varies
+       per breakpoint, which would make a :nth-child(Nn) reset
+       brittle; the negative margin works at any column count. */
+    margin-inline-end: -1px;
+  }
+
+  /* Tile base — both skeleton <div>s (server-rendered) and live <a>
+     tiles (created at runtime) share the lattice shape. Hairline
+     borders on the right and bottom edges build the wall; the viewport
+     clip hides the outer rightmost border at the section gutter so no
+     per-row :nth-child resets are needed (the auto-fill column count
+     varies per breakpoint and would make those resets brittle). */
+  .oss-avatar-tile {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-inline-end: 1px solid var(--nr-border);
+    border-block-end: 1px solid var(--nr-border);
+    background: var(--nr-surface);
+  }
+
+  a.oss-avatar-tile {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Mirror .trusted-logo:hover — only the background tints, the
+     hairline border stays the surface colour so the lattice rhythm
+     isn't disrupted by a coloured outline running through the wall. */
+  a.oss-avatar-tile:hover,
+  a.oss-avatar-tile:focus-visible {
+    background: var(--nr-red-subtle);
+    text-decoration: none;
+  }
+
+  a.oss-avatar-tile:hover .oss-avatar,
+  a.oss-avatar-tile:focus-visible .oss-avatar {
+    /* Drop the desaturation on hover so the focused contributor
+       "lights up" against the muted wall. */
+    filter: saturate(1) brightness(1);
+  }
+
+  /* Invisible filler cells added at the end of the wall when
+     expanded, so the last row's lattice runs the full width — same
+     pattern as .trusted-logo--filler. */
+  .oss-avatar-tile--filler {
+    pointer-events: none;
+    cursor: default;
+  }
+  .oss-avatar-tile--filler:hover {
+    background: var(--nr-surface);
+  }
+
+  /* Skeleton circle inside a skeleton tile — pulses with the same
+     keyframe the forum/blog feed bars use, so the loading rhythm is
+     consistent across the page. */
+  .oss-avatar-skel {
+    width: 100%;
+    height: 100%;
+    max-width: 36px;
+    max-height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(
+      90deg,
+      var(--nr-border) 0%,
+      var(--nr-gray-100, var(--nr-border)) 50%,
+      var(--nr-border) 100%
+    );
+    background-size: 200% 100%;
+    animation: forum-skeleton-shimmer 1.6s ease-in-out infinite;
+  }
+
+  /* Dark mode: tone the skeleton gradient down so it doesn't compete
+     with the page surface. The gray-100 fallback is too bright; use
+     a transparent overlay over the elevated surface instead. */
+  :root[data-theme='dark'] .oss-avatar-skel {
+    background: linear-gradient(
+      90deg,
+      var(--nr-border) 0%,
+      rgba(255, 255, 255, 0.06) 50%,
+      var(--nr-border) 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  .oss-avatar {
+    /* Circular, small enough to read as portraits but tight in the
+       lattice. Slight saturation reduction so the wall reads as a
+       cohesive surface; hover restores full colour for affordance. */
+    width: 100%;
+    height: 100%;
+    max-width: 36px;
+    max-height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(0.85);
+    background: var(--nr-surface-alt);
+    transition: filter var(--duration-fast) var(--ease-standard);
+  }
+
+  :root[data-theme='dark'] .oss-avatar {
+    filter: saturate(0.65) brightness(0.9);
+  }
+
+  /* ===================================================================
+     TOP GITHUB ISSUES section
+     Reuses the .forum-feed-* visual rules so issues share the row
+     rhythm with the forum feed directly above; only the section frame
+     is unique (gap above + below + a contrasting surface to break it
+     from the forum section).
+     =================================================================== */
+  /* .section-issues padding/bg → nr-section; boundary hairline → main > section + section (design-tokens.css) */
+
+  /* Trusted-by logos: dense table-like grid, no boxes, no fading.
+     The hairlines on .trusted-viewport (top + bottom) frame the wall;
+     each tile's right + bottom borders form the inner lattice. */
+  .trusted-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    min-height: 96px;
+    border-right: 1px solid var(--nr-border);
+    border-bottom: 1px solid var(--nr-border);
+    background: transparent;
+    text-decoration: none;
+  }
+
+  /* The rightmost tile in each row sheds its right border so the wall
+     has a clean trailing edge. Which child is "rightmost" depends on
+     items-per-row, which changes with --grid-columns at each breakpoint:
+       desktop  ≥1024  → 12 cols → 6-up wall, 6n is rightmost
+       tablet   768-1023 → 8 cols → 4-up wall, 4n is rightmost
+       mobile   ≤767    → 4 cols → 2-up wall, 2n is rightmost
+     The carousel rotates whole rows at a time, so the rightmost-column
+     items keep their nth-child(Nn) position relative to N = items-per-row
+     even after DOM rotation. */
+  @media (min-width: 1024px) {
+    .trusted-logo:nth-child(6n) {
+      border-right: 0;
+    }
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .trusted-logo:nth-child(4n) {
+      border-right: 0;
+    }
+  }
+  @media (max-width: 767px) {
+    .trusted-logo:nth-child(2n) {
+      border-right: 0;
+    }
+  }
+
+  .trusted-logo:hover {
+    background: var(--nr-red-subtle);
+    text-decoration: none;
+  }
+
+  /* Invisible filler cells added at the end of the wall when
+     expanded, so the last row's lattice runs the full width.
+     Pointer-events: none keeps :hover from tinting the empty cell
+     and excludes it from tab focus / click targets. */
+  .trusted-logo--filler {
+    pointer-events: none;
+    cursor: default;
+  }
+  .trusted-logo--filler:hover {
+    background: transparent;
+  }
+
+  .trusted-logo img {
+    max-width: 100%;
+    max-height: 40px;
+    object-fit: contain;
+    /* No grayscale or opacity wash — keep logos legible at the default
+     state. Stripe.dev shows brand colour for partner logos; we follow
+     suit. */
+    opacity: 0.9;
+    transition: opacity var(--duration-fast);
+  }
+
+  /* Dark-mode logo treatments are split by `tone` (computed once at build
+     time by scripts/audit-logo-tones.mjs and serialised to
+     src/data/logo-tones.json). A single CSS filter can't make every raster
+     logo legible on a dark canvas — dark-on-transparent disappears,
+     white-backgrounded PNGs become bright tiles, colourful logos need
+     mild lift. So we classify and treat per-class:
+       - tone-dark   → dark mark on transparent bg. `brightness(0)
+                       invert(1)` turns it into a clean white silhouette.
+       - tone-color  → coloured artwork on transparent bg. A mild
+                       brightness lift keeps brand colour while
+                       compensating for reduced contrast on dark surface.
+       - tone-boxed  → has an opaque (white-ish) background. Filter
+                       transforms always tint the background too; the
+                       only correct fix is an asset swap. Until then we
+                       use invert + hue-rotate + lighten-blend to strip
+                       the white tile visually while keeping brand hue.
+       - tone-light  → light mark on transparent bg. No treatment needed.
+     Hover deliberately does NOT change the logo image — the cell gets a
+     subtle red wash for the affordance, but the mark itself stays in its
+     default tone treatment (no opacity bump, no filter reset, no
+     background swap). Changing the logo on hover felt unsteady. */
+  :root[data-theme='dark'] .trusted-logo--tone-dark img {
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
+  }
+
+  :root[data-theme='dark'] .trusted-logo--tone-color img {
+    filter: brightness(1.1) contrast(1.02);
+    opacity: 0.9;
+  }
+
+  :root[data-theme='dark'] .trusted-logo--tone-boxed img {
+    /* Boxed = PNG/JPG with an opaque white background baked into the
+       pixels. No CSS filter can selectively strip "background" from
+       "logo" because that information isn't in the image. The
+       invert + hue-rotate trick recovers most of what we want:
+       1. `invert(1)` flips luminance: white bg → black, and each logo
+          pixel's RGB → its complement (blue → yellow, red → cyan, etc.).
+       2. `hue-rotate(180deg)` reverses the chromaticity half of that
+          inversion. Hue is restored; luminance is still flipped. Net
+          effect: a dark blue logo on white bg becomes a light blue logo
+          on (visually) black bg.
+       3. `mix-blend-mode: lighten` discards anything darker than the
+          page surface — the inverted black background blends into the
+          dark page (effectively transparent), only the lit-up logo
+          shows through.
+       Saturation may shift slightly because hue-rotate-180 is not an
+       exact mathematical inverse of invert; close enough for most brand
+       palettes. The real fix is to ship transparent-bg SVG assets for the
+       logos still relying on this filter. */
+    filter: invert(1) hue-rotate(180deg);
+    mix-blend-mode: lighten;
+    opacity: 0.9;
+  }
+
+  :root[data-theme='dark'] .trusted-logo--tone-light img {
+    opacity: 0.9;
+  }
+
+  /* ===================================================================
+     COMMUNITY SECTION
+     =================================================================== */
+  /* Community: identical pattern to the blog feed below. Small mono-cap
+     "kind" column on the left (spans tracks 1-2), title spans 3 to -2,
+     a thin chevron in track -1. Hairline border on every row matches
+     blog-feed-item exactly. */
+  /* .community-list/.community-item/.community-link → nr-feed-* (design-tokens.css) */
+  /* .community-kind date col → nr-feed-date-col (design-tokens.css) */
+  /* .community-cta chevron → nr-feed-cta-col (design-tokens.css) */
+  .section-community {
+    padding: var(--space-9) 0 var(--space-10);
+    background: var(--nr-surface);
+  }
+
+  .community-title {
+    grid-column: 3 / -2;
+    font-size: var(--text-body);
+    font-weight: 500;
+    color: var(--nr-text-strong);
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+  }
+
+  .community-link:hover .community-title {
+    color: var(--nr-red);
+  }
+
+  /* Conference card. Deliberately not another .nr-feed-item row: the Jekyll site
+     gives the conference its own box above the community links, and flattening it
+     into the list would lose the one thing the box is for. It borrows the list's
+     hairline rhythm so it still reads as part of the section. */
+  .conference-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    /* Clear of the community rows below, rather than the hairline's own rhythm.
+       At 8px the card read as the first item in the list instead of a separate
+       block above it. */
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--nr-border);
+    background: var(--nr-surface-alt);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      border-color 150ms ease,
+      background 150ms ease;
+  }
+
+  .conference-card:hover,
+  .conference-card:focus-visible {
+    border-color: var(--nr-red);
+    background: var(--nr-surface-elevated);
+  }
+
+  .conference-icon {
+    display: flex;
+    flex: none;
+    color: var(--nr-red);
+  }
+
+  .conference-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .conference-event {
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--nr-text-strong);
+    letter-spacing: -0.01em;
+  }
+
+  .conference-detail {
+    font-size: var(--text-body-sm);
+    color: var(--nr-text-muted);
+    line-height: 1.4;
+  }
+
+  .conference-cta {
+    margin-inline-start: auto;
+    color: var(--nr-text-muted);
+  }
+
+  .conference-card:hover .conference-cta {
+    color: var(--nr-red);
+  }
+
+  /* ===================================================================
+     RESPONSIVE
+     The 12-col canonical grid drops to 8 cols on tablet and 4 on mobile
+     via the `--grid-columns` token. Most colspan classes therefore
+     reflow automatically (e.g. `.nr-colspan-4` becomes "half" on tablet
+     and "full" on mobile). Below we only handle the cases the token
+     system can't express on its own.
+     =================================================================== */
+
+  /* Tablet — 8-col grid. Features/get-started rows want 2-up rather
+     than 4-up that the colspan-4 default would give us... wait —
+     colspan-4 on an 8-col grid is exactly half, so it already produces
+     2-up. Same for community (colspan-3 on 8 → ~2.6 cards per row),
+     which we explicitly promote to colspan-4 for clean 2-up. */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    /* Tablet benefits: full-width rows read better than a cramped 3-up
+       on the 8-col grid. */
+    .whyvisual-item {
+      grid-column: 1 / -1;
+    }
+
+    /* Community cards now render as full-width rows on every viewport
+       (see desktop styles); the previous 2-up override is dropped. */
+
+    /* Trusted logos: 2-of-12 → 2-of-8 keeps 4-up which is what we want.
+       (No override needed; documented for posterity.) */
+
+    /* Sponsor card: keep the 2-up split but tighten the logo column at
+       tablet so the copy gets more room. The columns own all the padding
+       (inline via padding-inline-end/start, block via padding-block), which
+       is what lets the divider between them run the full section height. */
+    .sponsor-card {
+      grid-template-columns: minmax(140px, 1fr) 2fr;
+    }
+
+    .sponsor-logo-frame,
+    .sponsor-body {
+      padding-block: var(--space-7);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .hero-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .hero-actions .nr-btn {
+      justify-content: center;
+    }
+
+    /* Trusted logos: 2-of-4 → 2-up on mobile */
+    .trusted-grid .trusted-logo {
+      grid-column: span 2;
+    }
+
+    .section-getstarted,
+    .section-trusted,
+    .section-blog,
+    .section-forum,
+    .section-issues,
+    .section-oss,
+    .section-community,
+    .section-sponsor {
+      padding: var(--space-7) 0;
+    }
+
+    /* Sponsor stacks to one column here and the divider is dropped further
+       down, so there is no line that has to reach the boundary hairlines. The
+       columns hand their block padding back to the section, which is what
+       carries the mobile rhythm. */
+    .sponsor-logo-frame,
+    .sponsor-body {
+      padding-block: 0;
+    }
+
+    /* OSS stats: 5 → 2 cols on mobile (2-2-1 with the last cell taking
+       full width via the orphan rule below). Drop the inter-cell
+       hairlines since they get visually awkward on a wrapped grid. */
+    .oss-stat-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-5) 0;
+      padding: var(--space-4) 0;
+    }
+    .oss-stat {
+      border-inline-end: 0;
+      padding-inline: var(--space-2);
+    }
+    /* Orphan 5th stat — promote to full-width centred row. */
+    .oss-stat:nth-child(5):last-child {
+      grid-column: 1 / -1;
+    }
+
+    /* Avatar wall on mobile: --grid-columns already drops to 4 so the
+       grid reflows for free. Tighten the per-tile padding so the
+       avatars don't shrink into tokens at 4-up width. */
+    .oss-avatar-tile {
+      padding: 6px;
+    }
+
+    /* Mobile: abandon subgrid, stack date above title; hide replies
+       count + chevron so the row is a single tap target. Mirrors the
+       blog-feed mobile treatment exactly. */
+    .forum-feed-link {
+      grid-template-columns: 1fr;
+      grid-column: 1 / -1;
+      gap: 4px;
+      padding: var(--space-3) 0;
+    }
+
+    /* Mobile: each of date / chip / title gets its own full-width row
+       in the stack. Date at top (the row's lightest text), then chip
+       on its own line so the category is visible without being a
+       leading column on a narrow screen, then title across the bottom
+       in full. Replies + chevron are hidden so the row is a single
+       tap target. */
+    .forum-feed-date,
+    .forum-feed-cat,
+    .forum-feed-title {
+      grid-column: 1 / -1;
+    }
+
+    .forum-feed-title {
+      flex-wrap: wrap;
+    }
+
+    .forum-feed-title-text {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+
+    .forum-feed-cat {
+      justify-self: start;
+      max-width: max-content;
+    }
+
+    /* Mobile: hide the empty placeholder chip cell entirely so it
+       doesn't reserve a phantom row in the stack. */
+    .forum-feed-cat--empty {
+      display: none;
+    }
+
+    .forum-feed-replies,
+    .forum-feed-cta {
+      display: none;
+    }
+
+    /* Sponsor card stacks on mobile: logo above copy. Centre the logo
+       block since it no longer has a fixed left rail, and drop the
+       inline divider/padding the logo frame carried as the row's left
+       column on desktop. The body column also drops its inline-start
+       padding so its content is flush with the card's left edge. */
+    .sponsor-card {
+      grid-template-columns: 1fr;
+      padding: var(--space-5);
+      gap: var(--space-4);
+    }
+
+    .sponsor-logo-frame {
+      align-items: center;
+      text-align: center;
+      padding-inline-end: 0;
+      border-inline-end: 0;
+      padding-block-start: var(--space-2);
+    }
+
+    .sponsor-body {
+      padding-inline-start: 0;
+    }
+
+    /* On mobile, abandon the canonical subgrid for the row: stack
+       date above title with a tight gap. */
+    .blog-feed-link {
+      grid-template-columns: 1fr;
+      grid-column: 1 / -1;
+      gap: 4px;
+      padding: var(--space-3) 0;
+    }
+
+    .blog-feed-date,
+    .blog-feed-title {
+      grid-column: 1 / -1;
+    }
+
+    /* The desktop right-edge chevron has no home on the stacked mobile
+       row — the whole row is already a single tap target. Hide it so it
+       doesn't orphan below the title. */
+    .blog-feed-cta {
+      display: none;
+    }
+
+    .platform-card {
+      grid-template-columns: 44px 1fr 16px;
+      padding: var(--space-4) var(--space-5);
+    }
+
+    .community-card {
+      padding: var(--space-5);
+    }
+
+    .feature-card {
+      padding: var(--space-5);
+    }
+  }
+</style>

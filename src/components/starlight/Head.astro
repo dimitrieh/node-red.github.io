@@ -1,0 +1,36 @@
+---
+/**
+ * Docs-side counterpart of the two <Font /> calls in src/layouts/BaseLayout.astro.
+ * Both page types need the same font declarations, and they share no layout, so
+ * this file and BaseLayout have to be kept in step. The families themselves are
+ * declared once, in the `fonts` block in astro.config.mjs.
+ *
+ * Why an override rather than the `head` config option, which is where every
+ * other docs head tag lives: entries in `head` are HeadConfig objects
+ * ({ tag, attrs, content }) converted directly to HTML elements, bypassing
+ * Astro's script and style processing. They cannot render a component, and
+ * <Font /> is a component whose whole output (an inline <style> holding the
+ * generated @font-face rules, plus preload links pointing at hashed
+ * same-origin font files) is produced at build time from the config. Starlight
+ * documents this exact case: "If you need to import local assets like scripts,
+ * styles, or images, override the Head component."
+ *
+ * Rendering <Default /> first is not stylistic. Starlight's default Head is a
+ * one-liner that maps `starlightRoute.head` into tags, and that array leads with
+ * <meta charset>, which browsers only honour inside the document's first 1024
+ * bytes. The inlined @font-face CSS below is a few kilobytes, so emitting it
+ * ahead of the default would push the charset declaration out of range. Going
+ * second also means this file only ever adds: the title, canonical, og:* tags,
+ * the view-transition style and the render-blocking sidebar anchor all keep
+ * coming from Starlight and from the `head` array in astro.config.mjs.
+ *
+ * The preload choice is deliberate and is the same on both page types: see the
+ * comment on the marketing call site in BaseLayout.astro for the reasoning.
+ */
+import Default from '@astrojs/starlight/components/Head.astro';
+import { Font } from 'astro:assets';
+---
+
+<Default />
+<Font cssVariable="--font-google-sans-flex" preload={[{ subset: 'latin', style: 'normal' }]} />
+<Font cssVariable="--font-ubuntu-mono" />

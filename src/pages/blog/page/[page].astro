@@ -1,0 +1,157 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { parseBlogPosts, sortBlogPosts, formatBlogDate, blogPostUrl } from '../../../utils/blog';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const sortedPosts = sortBlogPosts(parseBlogPosts(posts));
+
+  const pageSize = 9;
+  const totalPages = Math.ceil(sortedPosts.length / pageSize);
+
+  // Generate pages 2 onwards (page 1 is handled by index.astro)
+  return Array.from({ length: totalPages - 1 }, (_, i) => {
+    const page = i + 2;
+    const start = (page - 1) * pageSize;
+    return {
+      params: { page: String(page) },
+      props: {
+        posts: sortedPosts.slice(start, start + pageSize),
+        currentPage: page,
+        totalPages,
+      },
+    };
+  });
+}
+
+const { posts, currentPage, totalPages } = Astro.props;
+---
+
+<BaseLayout title={`Blog - Page ${currentPage}`} vtAnchor="#nr-vt-band">
+  <div class="blog-container">
+    <h1 class="nr-page-heading text-[var(--text-h1)]">Blog &mdash; Page {currentPage}</h1>
+
+    <div class="blog-grid">
+      {
+        posts.map((post: any) => (
+          <article class="blog-card">
+            <a href={blogPostUrl(post)} class="blog-card-link">
+              <h2 class="blog-card-title">{post.data.title}</h2>
+              <time datetime={post.date.toISOString()} class="blog-card-date">
+                {formatBlogDate(post.date)}
+              </time>
+              {post.data.description && <p class="blog-card-excerpt">{post.data.description}</p>}
+            </a>
+          </article>
+        ))
+      }
+    </div>
+
+    <nav class="blog-pagination flex items-center justify-between" aria-label="Blog pagination">
+      {
+        currentPage > 1 && (
+          <a
+            href={currentPage === 2 ? '/blog/' : `/blog/page/${currentPage - 1}/`}
+            class="nr-btn nr-btn-secondary"
+          >
+            &larr; Newer posts
+          </a>
+        )
+      }
+      <span class="pagination-info">Page {currentPage} of {totalPages}</span>
+      {
+        currentPage < totalPages && (
+          <a href={`/blog/page/${currentPage + 1}/`} class="nr-btn nr-btn-primary">
+            Older posts &rarr;
+          </a>
+        )
+      }
+    </nav>
+  </div>
+</BaseLayout>
+
+<style>
+  .blog-container {
+    max-width: var(--nr-content-box-width);
+    margin: 0 auto;
+    padding: var(--space-6) var(--grid-padding) var(--space-8);
+  }
+
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--space-5);
+  }
+
+  .blog-card {
+    background: var(--nr-white);
+    border: 1px solid var(--nr-gray-200);
+    border-radius: var(--radius-md);
+    transition:
+      border-color var(--duration-normal) var(--ease-standard),
+      box-shadow var(--duration-normal) var(--ease-standard),
+      transform var(--duration-normal) var(--ease-standard);
+  }
+
+  .blog-card:hover {
+    border-color: rgba(218, 0, 0, 0.3);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+
+  .blog-card-link {
+    display: block;
+    padding: var(--space-6);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .blog-card-link:hover {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .blog-card-title {
+    font-size: var(--text-h3);
+    font-weight: 600;
+    color: var(--nr-black);
+    margin-bottom: var(--space-2);
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+  }
+
+  .blog-card-date {
+    display: block;
+    font-size: var(--text-caption);
+    color: var(--nr-gray-500);
+    margin-bottom: var(--space-3);
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+  }
+
+  .blog-card-excerpt {
+    font-size: var(--text-body-sm);
+    color: var(--nr-gray-700);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .blog-pagination {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--nr-gray-200);
+  }
+
+  .pagination-info {
+    color: var(--nr-gray-500);
+    font-size: var(--text-caption);
+    font-family: var(--font-mono);
+  }
+
+  @media (max-width: 767px) {
+    .blog-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,76 @@
+---
+/**
+ * Starlight `Footer` override.
+ *
+ * Starlight's stock Footer does two unrelated jobs: it draws the site footer
+ * chrome, and it draws the per-page article affordances (edit link, last-updated
+ * stamp, prev/next pagination). This site moved the footer chrome out to
+ * PageFrame.astro, outside `.main-frame`, so it spans the full page width
+ * instead of being inset to one document's content column.
+ *
+ * That move emptied this override entirely, which threw the per-page
+ * affordances out along with the chrome. The tell is in starlight-custom.css:
+ * it carries a `.pagination-links a` rule styling prev/next in brand red, for
+ * markup that had not rendered since. So this file exists to put back the part
+ * that belongs to the article, and nothing else.
+ *
+ * `LastUpdated` is deliberately absent. It reads git committer timestamps, and
+ * every file under src/content/docs shares the single Jekyll-to-Astro migration
+ * commit's date, so it would print one identical wrong date on every page.
+ * `lastUpdated` is correspondingly left unset in astro.config.mjs, with the
+ * same reasoning recorded there. Revisit once the docs have real edit history.
+ *
+ * Imported by concrete path rather than through the `virtual:starlight/components/*`
+ * specifiers that Starlight's own Footer uses. Those resolve a configured user
+ * override if one exists, which would be the more composable choice, but they are
+ * only declared in `@astrojs/starlight/virtual-internal.d.ts`, which the public
+ * `virtual.d.ts` does not reference. So `astro check` cannot type them (ts2307),
+ * and since `npm run build` is `astro check && astro build`, using them breaks the
+ * build. Reaching into an internal declaration file to fix that would be worse.
+ *
+ * The two are equivalent here: the `components` map in astro.config.mjs overrides
+ * only Header, Footer and PageFrame, so there is no EditLink or Pagination
+ * override for the virtual specifier to find. If one is ever added, this file has
+ * to import it directly, because these concrete paths will not pick it up.
+ */
+import EditLink from '@astrojs/starlight/components/EditLink.astro';
+import Pagination from '@astrojs/starlight/components/Pagination.astro';
+---
+
+<footer class="sl-flex">
+  <div class="meta sl-flex">
+    <EditLink />
+  </div>
+  <Pagination />
+</footer>
+
+<style>
+  /* Not inside `@layer starlight.core`: this is site CSS overriding Starlight,
+     not a reimplementation of its layer, so it should win without a
+     specificity contest. Matches how starlight-custom.css is written. */
+  footer {
+    flex-direction: column;
+    gap: var(--space-5, 24px);
+  }
+
+  /* `.meta` keeps Starlight's class name so its stock rules still apply, but
+     the spacing above it comes from our scale rather than Starlight's 3rem, so
+     the gap between the article's last paragraph and the edit link reads the
+     same as the other vertical rhythm on the page. */
+  .meta {
+    gap: 12px 48px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: var(--space-6, 32px);
+    font-size: var(--text-body-sm, 14px);
+    color: var(--nr-text-muted);
+  }
+
+  /* A single child (the edit link, with no last-updated stamp beside it) would
+     otherwise be pushed to the inline end by Starlight's own
+     `.meta > p:only-child { margin-inline-start: auto }`. The edit link should
+     sit on the content's left edge, on the same x as the prose above it. */
+  .meta > :global(*:only-child) {
+    margin-inline-start: 0;
+  }
+</style>

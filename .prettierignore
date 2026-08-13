@@ -1,0 +1,32 @@
+dist
+node_modules
+package-lock.json
+.astro
+
+# Vendored and minified assets. Prettier does not know these are build output and
+# happily expands them, turning a handful of minified lines into thousands of
+# formatted ones. Formatting them also loses the point of shipping them minified.
+public/css
+**/*.min.js
+**/*.min.css
+
+# Doc and blog prose. `npm run sync:upstream` pulls this content from
+# node-red/node-red, so reflowing paragraphs here means every future sync arrives
+# as a conflict against our own rewrapping. Frontmatter quote style would churn
+# ~190 files for no reader-visible gain. Formatting stays on the code that is
+# actually ours: src/components, src/layouts, src/pages, src/lib, src/styles,
+# scripts and tests.
+src/content/**/*.md
+src/content/**/*.mdx
+
+# prettier-plugin-astro cannot parse this file. It has a `<style is:global>`
+# nested inside a `{tuning && (<>...</>)}` conditional, and the plugin tries to
+# read the CSS custom properties as JS, failing on the first one. A parse error
+# fails the whole lint run, unlike a formatting warning, so it has to be excluded
+# until the plugin handles style elements inside template expressions.
+src/components/WordmarkTuner.astro
+
+# Generated data and audit output, not hand-edited.
+**/survey/**
+# Audit and migration reports, all generated into a gitignored reports/ dir.
+reports/

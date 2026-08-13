@@ -1,0 +1,1679 @@
+/* ===================================================================
+   NODE-RED STARLIGHT DOCS THEME
+   Aligned with the main site design system (design-tokens.css)
+   =================================================================== */
+
+/* ===== CORE VARIABLE OVERRIDES =====
+
+   IMPORTANT: Starlight's default :root block declares DARK-mode values, and the
+   :root[data-theme='light'] block overrides them for light mode. If we set
+   token values in our own :root block they BEAT Starlight's defaults for both
+   themes (same specificity, later cascade). So:
+     - :root             -> brand-neutral tokens that are the same in both themes
+                            (typography, custom --nr-* tokens that don't break light mode)
+     - :root[data-theme='dark']   -> our dark-mode overrides for --sl-color-*
+     - :root[data-theme='light']  -> our light-mode overrides for --sl-color-*
+   Doing it this way restores Starlight's light/dark contract instead of
+   forcing every page into a single palette.
+*/
+:root {
+  /* Typography, theme-independent. Starlight resolves all docs type through
+     these two: its own core CSS uses them for body text, and this file uses
+     them for headings, the sidebar, breadcrumbs and code.
+
+     Both point at the variables the `fonts` block in astro.config.mjs
+     generates, which is the only supported handle on a self-hosted family and
+     NOT a stylistic preference. Astro appends a hash of each family's config to
+     the family name in the @font-face rules it writes, so the face that ships
+     is called "Google Sans Flex-<hash>" and the literal family lists these two
+     lines used to carry ('Google Sans Flex', system-ui, ... /
+     'Ubuntu Mono', 'Cascadia Code', ...) match nothing at all. An unmatched
+     family name is not an error, so that failure had no symptom other than
+     every docs page quietly rendering in system-ui.
+
+     No family list beside them on purpose: the variables already carry the real
+     family, the metric-matched local faces Astro derives from the font metrics,
+     and the configured fallbacks. Same two variables --font-sans and
+     --font-mono take in design-tokens.css, so marketing and docs cannot end up
+     on different faces. Anything here that needs a font goes through a token
+     for this reason; naming a family in a declaration is the bug. */
+  --sl-font: var(--font-google-sans-flex);
+  --sl-font-mono: var(--font-ubuntu-mono);
+
+  /* Sizing (theme-independent) */
+  --sl-content-width: 1155px;
+  --sl-sidebar-width: 18.75rem;
+  /* The fixed navbar's real height, not a look: SiteHeader lays out a 75px row
+     (`.header-inner`) and `.site-header` adds a 1px bottom border, so the band
+     covers 76px. Every offset in the docs shell derives from this token: the
+     PageFrame override's `.header` height and `.page` padding-top,
+     `.sidebar-pane`'s `inset-block`, the sticky sidebar's and the TOC's `top`,
+     the menu button's centring, and Starlight's own `scroll-padding-top` for
+     in-page anchors, which is declared inside its Page.astro.
+
+     Deliberately the navbar ALONE, even though the announcement band sits under
+     it. The band is in the page's flow and scrolls away, so every one of those
+     offsets wants the height of what stays pinned, which is this row. An earlier
+     revision folded the band in here, when it was pinned inside `.header`.
+
+     Starlight's stock value (4rem, 3.5rem on phones) described its own navbar,
+     and left all of them 12px short: the article pane started at y=64 under a
+     band ending at y=76, so the first rows of prose slid under it, and a
+     scrolled sidebar tucked its top 12px behind it.
+     Keep in step with SiteHeader's row height, which owns the 75px. */
+  --sl-nav-height: calc(75px + 1px);
+  /* Both sidenavs inset their contents by this, and Starlight's default 1rem
+     lands 3.5px inside the navbar's own edge at 1728px, so the group labels
+     read as shifted left of the wordmark directly above them. Worse as the
+     viewport grows, since the navbar's inset scales with its logo while a flat
+     1rem does not.
+     max() rather than a plain swap, so Starlight's value still acts as a floor
+     if it ever exceeds the navbar's. */
+  --sl-sidebar-pad-x: max(1rem, var(--nr-chrome-edge-pad));
+
+  /* Node-RED brand (theme-independent) */
+  --nr-red: #da0000;
+  --nr-red-hover: #b30000;
+  --nr-red-dark: #9f0000;
+  --nr-red-light: #fce5e5;
+  --nr-bg-dark: #1e1e1e;
+  --nr-bg-darker: #161616;
+  --nr-focus: #da0000;
+
+  /* Transitions */
+  --nr-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --nr-duration: 150ms;
+}
+
+/* ===== LIGHT MODE =====
+   Aligned with marketing site tokens:
+     --nr-surface       = body / page background           (#FFFFFF)
+     --nr-surface-alt   = subtle off-white (sidebar, code) (#FAFAFA)
+     --nr-surface-elev  = cards / floating panels          (#FFFFFF)
+   The docs adopts a layered look: white content centred on an off-white
+   sidebar so the two surfaces are clearly distinguishable. */
+:root[data-theme='light'],
+[data-theme='light'] ::backdrop {
+  --sl-color-accent-low: #fce5e5;
+  --sl-color-accent: #da0000;
+  --sl-color-accent-high: #9f0000; /* darker red for text on light bg: 5.7:1 on white */
+  --sl-color-white: #1a1a1a; /* in Starlight semantics, "white" = main text colour */
+  --sl-color-gray-1: #2d2d2d;
+  --sl-color-gray-2: #404040;
+  --sl-color-gray-3: #525252;
+  --sl-color-gray-4: #6b6b6b;
+  --sl-color-gray-5: #d4d4d4;
+  --sl-color-gray-6: #e5e5e5;
+  --sl-color-gray-7: #f5f5f5;
+  --sl-color-black: #ffffff;
+  --sl-color-bg: #ffffff;
+  --sl-color-bg-nav: #1e1e1e; /* dark header is the brand element on both themes */
+  --sl-color-bg-sidebar: #fafafa;
+  --sl-color-hairline-shade: #e5e5e5;
+  --sl-color-text: #2d2d2d;
+  --sl-color-text-accent: var(--sl-color-accent-high);
+
+  /* Node-RED tokens used directly by our overrides */
+  --nr-bg-content: #ffffff;
+  --nr-bg-sidebar: #fafafa; /* off-white sidebar */
+  --nr-black: #1a1a1a;
+  --nr-gray-900: #2d2d2d;
+  --nr-gray-700: #525252;
+  --nr-gray-500: #6b6b6b; /* AA on white; was #8A8A8A (3.5:1, fails) */
+  --nr-gray-300: #d4d4d4;
+  --nr-gray-200: #e5e5e5;
+  --nr-gray-100: #f5f5f5;
+  --nr-gray-50: #fafafa;
+  --nr-border: #e5e5e5;
+  --nr-code-text: #b11a2a; /* AAA: 7.1:1 on #FFF5F5 (was #DA0000 = 4.4:1) */
+  --nr-code-bg: #fff5f5;
+  /* Docs raster: even more subtle than the marketing default — at body-text
+     densities a busy raster gets in the way of reading. */
+  --nr-docs-raster: rgba(218, 0, 0, 0.04);
+}
+
+/* ===== DARK MODE =====
+   Aligned with marketing site dark tokens:
+     --nr-surface-alt  = body / page                #111114
+     --nr-surface      = sidebar / nav-adjacent     #18181B
+     --nr-surface-elev = main content (one step up) #1F1F23
+   Three layered surfaces give visual hierarchy and a more refined feel
+   than the previous flat #121212/#1a1a1a palette. */
+:root[data-theme='dark'],
+[data-theme='dark'] ::backdrop {
+  --sl-color-accent-low: #4a2828;
+  --sl-color-accent: #da0000;
+  --sl-color-accent-high: #ff5555; /* lighter red for text on dark bg: 4.9:1 on #1A1A1A */
+  --sl-color-bg: #111114;
+  --sl-color-bg-nav: #18181b;
+  --sl-color-bg-sidebar: #18181b;
+  --sl-color-hairline-shade: #2e2e33;
+  --sl-color-text: #e4e4e7;
+  --sl-color-text-accent: var(--sl-color-accent-high);
+
+  --nr-bg-content: #1f1f23; /* one step lighter than sidebar/nav */
+  --nr-bg-sidebar: #18181b;
+  --nr-black: #fafafa;
+  --nr-gray-900: #e4e4e7;
+  --nr-gray-700: #b5b5bd;
+  --nr-gray-500: #a8a8a8; /* AA on #18181B; ~5.6:1 */
+  --nr-gray-300: #5a5a5a;
+  --nr-gray-200: #2e2e33;
+  --nr-gray-100: #1f1f23;
+  --nr-gray-50: #18181b;
+  --nr-border: #2e2e33;
+  --nr-code-text: #ff8080; /* 5.7:1 on dark inline code bg */
+  --nr-code-bg: #2a1a1a;
+  --nr-docs-raster: rgba(218, 0, 0, 0.06);
+}
+
+/* ===== HEADER =====
+   SiteHeader.astro owns the layout — it already uses the same 3-column
+   grid that mirrors the docs page-body tracks (sidebar | main | toc),
+   so the navbar paints identically on marketing and docs.
+
+   Nothing to clear from here any more. Starlight's header chrome
+   (background / border / padding) used to be neutralised in this file with
+   `header.header { background: none; border-bottom: none; padding: 0; height:
+   auto }`; those declarations are gone from the PageFrame override itself, so
+   the wrapper is positioning and nothing else. Removing the neutraliser also
+   removed a trap it created: an unlayered `header.header` rule can be beaten by
+   a later unlayered one of equal weight, and a `@media (max-width: 755px)`
+   block near the bottom of this file did exactly that, putting `padding: 10px`
+   back on for phones. That is what the user saw as the docs navbar floating: at
+   390px the white band sat at x=10 y=10 w=370 with page background on three
+   sides of it. Both are deleted rather than overridden. */
+
+/* Logo link underline. The suppression for the whole navbar lives in
+   BaseLayout's global chrome list (`.header-logo`, alongside `footer a`,
+   `.nr-btn` and friends), and docs pages never load BaseLayout — they render
+   through Starlight's own layout. `header-logo` appears nowhere in the docs
+   CSS bundle, so the anchor fell back to the browser's default underline and
+   the docs wordmark was underlined while the identical marketing markup was
+   not. Restate it here, next to the other docs/marketing chrome
+   reconciliations.
+
+   The structural fix is for SiteHeader.astro to suppress this in its own
+   scoped styles, so the component carries it into any context rather than
+   depending on whichever layout wraps it. That file has unrelated work in
+   progress, so this stays here until that lands. */
+.site-header .header-logo,
+.site-header .header-logo:hover {
+  text-decoration: none;
+}
+
+/* ── Docs navbar at drawer widths ──
+   Starlight's sidebar is a persistent rail from `min-width: 50rem` and an
+   off-canvas drawer below it, so `max-width: 49.99rem` is that breakpoint's
+   exact complement, and everything in this block is about the widths where the
+   sidebar is the drawer. The bound used to be 50rem, which also matches at
+   exactly 800px, where Starlight has already switched to the rail and hidden its
+   own drawer button: at that one width the navbar was left with no site-nav
+   affordance at all.
+
+   1. Starlight renders its own `starlight-menu-button` to open the drawer, so
+      SiteHeader's hamburger is hidden here and the drawer is the single
+      navigation affordance. The main-site links live at the top of it
+      (PageFrame.astro's `docs-main-nav-mobile`, gated on this same breakpoint
+      further down). The search placeholder goes too, since the drawer exposes
+      Starlight's Pagefind search inside.
+
+      That button is no longer Starlight's fixed circular pill: it is restyled
+      into the same control as SiteHeader's hamburger, from the one definition
+      both follow in src/styles/nav-shared.css. Only its placement is docs-only,
+      and that is the rule at the end of this block.
+
+   2. The navbar's inline gutter switches from the shared docs-chrome inset
+      (--nr-chrome-edge-pad, 25.5px on phones) to the marketing gutter
+      (--grid-padding, 20px on phones and 32px from 768px). At these widths there
+      is no docs shell for the navbar to align to (the sidebar is an overlay
+      rather than a column), and both layouts render the same full-bleed band, so
+      a difference between them is noise, and a measurable one: the logo sat at
+      35.5 on docs against 20 on marketing at 390px, with both boxes paired
+      across navigations by view-transition-name (nr-header-mark). Above this
+      breakpoint the docs navbar keeps --nr-chrome-edge-pad, which is what puts
+      its logo on the same x as the sidebar rail's group labels directly below it
+      (measured: both 20.2px at 1440, both 25.2px at 1024) and the reason
+      --sl-sidebar-pad-x is derived from that token at the top of this file.
+
+   3. The trailing gutter also reserves the slot SiteHeader's hidden hamburger
+      would have taken: the button's own width plus the `.header-chrome` gap,
+      both taken from the shared tokens so the reservation cannot fall out of
+      step with the button it is reserving for. Two things fall out of that.
+      The drawer button stops overlapping the theme toggle (as Starlight's
+      circular pill they overlapped by 12.5px at 390px and 22.5px at 768px, two
+      controls stacked on one another), and the theme toggle lands on exactly
+      the x marketing gives it, it being the third paired part
+      (nr-header-theme). This is the reservation Starlight's own PageFrame put
+      on the header wrapper, moved to the element whose contents actually need
+      it. */
+@media (max-width: 49.99rem) {
+  :where(.page) .site-header .mobile-toggle,
+  :where(.page) .site-header .header-search {
+    display: none;
+  }
+
+  /* Two class selectors to outrank SiteHeader's own single-class scoped rule,
+     the same reason BaseLayout's marketing-side navbar rule uses two. Inline
+     padding only, so the 75px row keeps its zero block padding. */
+  :where(.page) .site-header .header-inner {
+    padding-inline-start: var(--grid-padding);
+    padding-inline-end: calc(
+      var(--grid-padding) + var(--nr-menu-button-w) + var(--nr-menu-button-gap)
+    );
+  }
+
+  /* The drawer button into the slot the gutter above just reserved, which is
+     exactly where the marketing hamburger sits: the reservation is the button's
+     width plus the chrome gap, so ending the button --grid-padding from the
+     edge puts it on the same x, and leaves the gap between it and the theme
+     toggle at the same 12px the flex row gives them on marketing. Measured at
+     390px: x=330 y=19.5 40x36 on both sides, against x=342 y=22 32x32 for
+     Starlight's stock placement, which ended 16px (--sl-nav-pad-x) from the
+     edge and so hung 4px into the navbar's own gutter.
+
+     Vertically centred in the row rather than in the band: --sl-nav-height is
+     the 75px row plus `.site-header`'s 1px bottom border, and the row is what
+     the marketing button centres in. Both terms are tokens, so the button stays
+     centred if either the row or the button is resized.
+
+     `position: fixed` is Starlight's and stays: the button lives inside
+     `nav.sidebar`, which is the drawer it opens, so it has to be lifted out of
+     that flow to sit in the navbar at all. Everything it paints comes from
+     src/styles/nav-shared.css. */
+  starlight-menu-button > button {
+    top: calc((var(--sl-nav-height) - 1px - var(--nr-menu-button-h)) / 2);
+    inset-inline-end: var(--grid-padding);
+  }
+
+  /* The drawer's contents follow the navbar's gutter, so its group labels stay
+     on the logo's x the way the rail's labels do above this breakpoint. Still a
+     max(), so Starlight's 1rem stays the floor. */
+  :root {
+    --sl-sidebar-pad-x: max(1rem, var(--grid-padding));
+  }
+}
+
+/* The injected main-site nav at the top of the docs sidebar (PageFrame.astro).
+   Styled to feel like a section header inside the sidebar rather than a separate
+   UI module.
+
+   Off by default and turned on only where the sidebar is a drawer, in the
+   `max-width: 49.99rem` block below. It used to be gated in the markup with
+   Starlight's `lg:sl-hidden`, which hides at 72rem (1152px) while the sidebar
+   becomes a persistent rail at 50rem (800px). From 800px to 1152px the list was
+   therefore a SITE group at the top of the rail, restating the top navbar's
+   links and pushing GETTING STARTED down by its own height (measured at 1024px:
+   display block, 338x492). The gate lives here rather than in the markup so it
+   reads next to the rule hiding SiteHeader's hamburger, which is the other half
+   of the same decision and turns on at the same width. */
+.docs-main-nav-mobile {
+  display: none;
+  border-bottom: 1px solid var(--nr-border);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 49.99rem) {
+  .docs-main-nav-mobile {
+    display: block;
+  }
+}
+
+.docs-main-nav-mobile-label {
+  margin: 0 0 6px;
+  padding: 16px 16px 6px;
+  font-family: var(--sl-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--nr-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.docs-main-nav-mobile ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Same state system as the docs sidebar below and the marketing rails: a
+   continuous hairline that reddens on hover and for the current page, which the
+   red semibold label then distinguishes from hover, theme-aware
+   tokens, and no background wash.
+
+   Every selector in this group is qualified by the list's own class, which is
+   not tidiness: this nav sits inside `.sidebar-content`, so `.sidebar-content a`
+   further down (0,1,1) outranks a lone class here (0,1,0) and was silently
+   supplying the padding, colour, size and hairline for these rows. Mostly it
+   supplied the same values, which is why it went unnoticed, but the sub-items'
+   indent was among the casualties: they measured 16px, flush with their
+   parents, against the 32px this file declared for them. Qualified, the
+   declared values are the ones that apply. */
+.docs-main-nav-mobile .docs-main-nav-mobile-link {
+  display: block;
+  padding: 6px 16px;
+  border-left: 2px solid var(--nr-border);
+  color: var(--nr-text-muted);
+  font-size: 14px;
+  font-family: var(--sl-font);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  transition: border-color var(--nr-duration) var(--nr-ease);
+}
+
+.docs-main-nav-mobile .docs-main-nav-mobile-link:hover,
+.docs-main-nav-mobile .docs-main-nav-mobile-link:focus-visible {
+  border-left-color: var(--nr-red);
+  color: var(--nr-text-strong);
+  background: none;
+}
+
+.docs-main-nav-mobile .docs-main-nav-mobile-link.is-active {
+  border-left-color: var(--nr-red);
+  color: var(--nr-text-link);
+  font-weight: 600;
+  background: none;
+}
+
+.docs-main-nav-mobile-sub {
+  margin: 0 !important;
+}
+
+/* Sub-items (the About children). The red turn-down arrow, the muted step and
+   the smaller size are shared with SiteHeader's own drawer, which lists the
+   same links, and live in src/styles/nav-shared.css: this drawer had neither
+   the arrow nor, in practice, the indent, so the two read as different lists.
+   What stays here is the indent's base, since it differs between the two
+   drawers. The parent link's text starts 16px inside this pane, so the shared
+   indent is added to that rather than being an absolute value. */
+.docs-main-nav-mobile .docs-main-nav-mobile-sublink {
+  display: block;
+  padding: 4px 16px 4px calc(16px + var(--nr-drawer-sublink-indent));
+  font-family: var(--sl-font);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  transition: color var(--nr-duration) var(--nr-ease);
+}
+
+/* Hover follows this drawer's own link system (label darkens, no wash) rather
+   than the marketing drawer's (label reddens). The two lists share their
+   hierarchy, not their states: every other link in this pane behaves this way,
+   and a red label here would read as the current page, which is what the
+   sidebar uses red for. */
+.docs-main-nav-mobile .docs-main-nav-mobile-sublink:hover,
+.docs-main-nav-mobile .docs-main-nav-mobile-sublink:focus-visible {
+  color: var(--nr-text-strong);
+  background: none;
+}
+
+/* No dark-mode colour overrides needed: every colour above is a theme-aware
+   token, which is the point of using them rather than the raw greyscale. */
+
+.site-title {
+  font-family: var(--sl-font);
+  font-weight: 700;
+  font-size: 20px;
+  color: #f0f0f0;
+  letter-spacing: -0.02em;
+}
+
+/* ===== SIDEBAR =====
+   Off-white surface (light) / cool dark surface (dark) so it reads as a
+   distinct chrome layer from the content panel. */
+nav.sidebar,
+nav.sidebar .sidebar-pane {
+  background: var(--nr-bg-sidebar);
+  border-inline-end: 1px solid var(--nr-border);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Section headers, matching .section-rail-heading in SectionRail.astro: sans
+   rather than mono, 12px, and the theme-aware `--nr-text-faint` token, which
+   clears AA in both themes (5.11:1 on the light pane, 5.18:1 on #18181B) and
+   so needs no separate dark-mode override.
+
+   No left padding, matching .section-rail-heading: the label's first glyph
+   sits on the same x as the hairline of the links below it, so the group has
+   one left edge rather than a line floating 16px out from its label. The links
+   keep their 16px text inset, so the indent past the hairline is what carries
+   the hierarchy. */
+.sidebar-content summary,
+.top-level > details > summary {
+  background: none;
+  color: var(--nr-text-faint);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 16px 16px 6px 0;
+  margin-top: 4px;
+}
+
+.sidebar-content .large {
+  font-size: inherit;
+}
+
+.sidebar-content .caret {
+  color: var(--nr-gray-500);
+  opacity: 0.4;
+}
+
+/* Suppress Starlight's own nesting chrome so the rail hairline below is the
+   only vertical line in the sidebar.
+
+   Starlight draws `border-inline-start: 1px solid <hairline>` plus an 8px
+   indent on every `ul ul li`, which is every item inside a sidebar group.
+   Left in place, the sidebar shows a faint 1px line with a separate 3px red
+   bar appearing beside it on the current item: two lines in two weights,
+   which is what made this read differently from the marketing rails.
+   Depth is re-expressed as text indent on the link instead, matching
+   .section-rail-sublink, so the hairline stays at a constant x. */
+.sidebar-content ul ul li {
+  margin-inline-start: 0;
+  padding-inline-start: 0;
+  border-inline-start: none;
+}
+
+/* Third level and deeper (e.g. API Reference > Admin API): indent the text,
+   not the marker. */
+.sidebar-content ul ul ul a {
+  padding-left: var(--space-6);
+}
+
+/* Sidebar links. Matches SectionRail.astro (the /about/ and blog post rails):
+   a continuous hairline down every item that turns brand red on hover and for
+   the current page, with the red semibold label separating the two, and no
+   background wash. Density stays at the docs sidebar's own
+   14px / 5px rhythm rather than the rail's 15px / 7px, because these labels
+   are far longer ("Adding nodes to the palette") in a fixed 18.75rem pane
+   and would start wrapping.
+
+   Note: the transition list explicitly omits `color` so a theme switch snaps
+   the link colour instantly. With `transition: all` the colour would animate
+   over 150 ms, long enough that a11y contrast probes captured mid-animation
+   could see an intermediate grey that fails AA (see a11y-themes.spec.ts).
+   The border accent still animates. */
+.sidebar-content a {
+  display: block;
+  padding: 5px 16px;
+  /* Hairline that the current-page marker thickens in place, so text never
+     shifts sideways between states. */
+  border-left: 2px solid var(--nr-border);
+  /* Square the left corners so the marker reads as a crisp vertical bar;
+     Starlight's stock 4px radius otherwise rounds its top and bottom. */
+  border-radius: 0;
+  /* Theme-aware tokens, so no separate dark-mode colour overrides are
+     needed: #4A4A4A on the off-white pane, #B5B5BD on #18181B. */
+  color: var(--nr-text-muted);
+  font-size: 14px;
+  font-family: var(--sl-font);
+  line-height: 1.5;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  transition: border-color var(--nr-duration) var(--nr-ease);
+}
+
+/* Hover reddens the hairline, matching .section-rail-link. A grey-on-grey hover
+   is too quiet to read as an affordance; the marker responds and the label only
+   darkens, which leaves the red label plus semibold below to mark the current
+   page. */
+.sidebar-content a:hover,
+.sidebar-content a:focus-visible {
+  color: var(--nr-text-strong);
+  border-left-color: var(--nr-red);
+  background: none;
+}
+
+/* Current page. `--nr-text-link` rather than the flat `--nr-red`, so the
+   marker's text colour matches the marketing rails. It also buys contrast
+   headroom: #9F0000 is 8.13:1 on the #FAFAFA pane against #DA0000's 5.05:1.
+   Both clear AA here; the 4.47:1 figure the content-link rules above cite for
+   #DA0000 is measured on pure white, not this off-white surface. */
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='true'] {
+  color: var(--nr-text-link);
+  border-left-color: var(--nr-red);
+  font-weight: 600;
+  background: none;
+}
+
+/* ===== FOOTER =====
+   SiteFooter caps both its rows at the content width so their columns line up
+   with the prose and the homepage drawing. Docs has no such column: the shell
+   is full-bleed, with the sidebar at 0 to 300 and the ToC at 1443 to 1728 on a
+   1728px viewport. A centred 1280 column there put the footer's left edge
+   inside the sidebar band and its right edge inside the ToC band, aligned to
+   neither. So the cap is lifted and the footer follows the shell, being page
+   chrome here rather than content: a sibling of page-body.
+
+   The gutter used to be --nr-chrome-edge-pad, the token the navbar and sidebar
+   share, so all the full-bleed chrome sat on one x at every width. That is
+   deliberately no longer the case: at ~20px it read as too tight for a footer,
+   and the wider --grid-padding was preferred over the shared edge. Both footer
+   rows take it, so the row boxes agree with each other even though their edge
+   now sits inboard of the navbar and sidebar. Do not "restore" the chrome token
+   without checking this was the intent.
+
+   Note this is the row box only, not the content inside it: the OpenJS row
+   keeps its logo track (see below), so its prose starts well inboard of the
+   link columns. Also deliberate.
+
+   Scoped to `.page` for clarity; this stylesheet only loads on docs routes
+   anyway, since it is registered through Starlight's `customCss`. */
+:where(.page) .site-footer .footer-main,
+:where(.page) .site-footer .footer-openjs-inner {
+  max-width: none;
+  padding-inline: var(--grid-padding);
+}
+
+/* The wordmark is redundant on docs: the navbar carries it directly above, and
+   here it only costs the link columns a quarter of the row. Dropped from the
+   accessibility tree as well as the layout, since the header's "Node-RED home"
+   link already does the job. */
+:where(.page) .site-footer .footer-logo {
+  display: none;
+}
+
+/* With the wordmark gone the nav is .footer-main's only child, and the
+   two-track `minmax(80px, 1fr) 4fr` template would strand it in the narrow
+   logo column. One track instead, so the four link columns divide the full
+   width evenly rather than being squeezed into the right-hand 4fr. */
+:where(.page) .site-footer .footer-main {
+  grid-template-columns: 1fr;
+}
+
+/* The OpenJS row keeps the two-track shape it has on marketing pages, logo
+   beside prose, so docs reads the same as the rest of the site. Collapsing it to
+   one track was tried (plus a 110ch measure cap, which put nav, sidebar, link
+   columns, logo and copyright all on one x) and rejected. Do not reinstate that.
+
+   Only the track widths are docs-specific, and only to land the prose on the
+   sidebar's right border, which is the one vertical rule running down this side
+   of a docs page. The logo track absorbs everything up to that border: the
+   sidebar is a fixed --sl-sidebar-width from the viewport edge, so subtracting
+   the row's own gutter gives a track whose end IS the border. The column gap
+   goes to 0 because that track is now wider than the logo it holds, ~252px
+   against a clamp(140px, 14vw, 200px) mark, so the leftover inside it already
+   reads as the gutter. Keeping --space-8 on top would push the prose past the
+   border by exactly that gap.
+
+   The link row starts on that same border, so the footer restates the docs shell
+   it hangs off: everything left of the border is the sidebar band, which holds
+   the Foundation logo the way the rail holds the nav, and everything right of it
+   is the content band, which holds the columns and the prose on one left edge.
+   The row is still full-bleed, so its trailing gutter stays the shared one and
+   the columns end level with the prose.
+
+   Confined to the widths where the layout this aligns to actually exists, and
+   where it fits. Below 951px SiteFooter drops the OpenJS row to a single track
+   and the sidebar is a drawer rather than a rail, so there is no border to meet.
+   The floor is 1024px rather than 951px because indenting the link row by the
+   sidebar width costs it 300px: at 951 that left 131px tracks and wrapped "Code
+   of Conduct" and "About Node-RED" onto two lines, where 1024 gives 145px and
+   they fit. 1024 is also where --grid-padding steps, so the treatment starts on a
+   breakpoint the design already has. Between 951 and 1023 both rows keep the
+   plain full-bleed gutter, which is internally consistent, just not mirroring the
+   rail. */
+@media (min-width: 1024px) {
+  :where(.page) .site-footer .footer-openjs-inner {
+    grid-template-columns: calc(var(--sl-sidebar-width) - var(--grid-padding)) 1fr;
+    column-gap: 0;
+  }
+
+  :where(.page) .site-footer .footer-main {
+    padding-inline-start: var(--sl-sidebar-width);
+  }
+}
+
+/* The docs sidebar's view-transition-name is NOT here, it is in the inline head
+   snippet, src/styles/view-transition-head.js, along with every other name and the
+   opt-in, because a name in bundled CSS lands too late to be captured. That file
+   also carries the 50rem floor, matching PageFrame's own breakpoint for flipping
+   --sl-sidebar-visibility to visible: below it the sidebar is an off-canvas drawer,
+   still laid out at 300px but `visibility: hidden`, so naming it there would capture
+   an empty snapshot and animate a blank panel across the viewport. See the nr-rail-*
+   keyframes in design-tokens.css for why the name is deliberately not shared with
+   the about/blog rail. */
+
+/* ===== CONTENT AREA ===== */
+
+/* Make a short page still reach the footer.
+   .page-body already stretches .main-frame to the full height left over below the
+   header, so the frame ends exactly where the footer begins. The row inside it
+   that holds the pane and the table of contents did not: .main-frame is a block
+   box, so that row took its content height and stopped. On a page with little
+   content, like docs/getting-started/flowfuse, the pane ended a couple of hundred
+   pixels above the footer while the sidebar beside it ran the full height, and
+   since the pane is what carries --nr-bg-content the shortfall showed up as a
+   band of bare page background boxed in by the sidebar and the footer.
+
+   Stretching the row rather than setting a min-height on the pane, because the
+   frame's height is already correct and derived: any calc against 100vh here
+   would have to re-derive the header and mobile-toc offsets that .main-frame's
+   own padding already accounts for, and would drift the moment either changed.
+
+   :has() to find the row, since .main-frame also holds a bare <script> and, below
+   the ToC breakpoint, a separate wrapper for the mobile table of contents. Only
+   the row with the pane in it should absorb the slack. */
+.main-frame {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-frame > div:has(.main-pane) {
+  flex: 1;
+}
+
+/* The row alone is not enough. Starlight puts `lg:sl-flex` on it, so it is only a
+   flex row above that breakpoint, where the pane stretches for free as a flex
+   item. Below it the row is a block box and the pane went back to its content
+   height, which left the gap intact in a band of widths (visible at 1024) even
+   though the row itself now filled. Filling the row covers both cases: the row's
+   height is definite once it grows, so the percentage resolves, and above the
+   breakpoint it is redundant rather than harmful. */
+.main-pane {
+  min-height: 100%;
+  background: var(--nr-bg-content);
+  padding: 0 30px;
+}
+
+.sl-container {
+  background: transparent;
+}
+
+/* ===== HEADINGS ===== */
+.content-panel h1:first-child,
+h1.content-title {
+  border-bottom: 3px solid var(--nr-red);
+  padding-bottom: 12px;
+  margin-top: 30px;
+  font-family: var(--sl-font);
+  font-weight: 600;
+  color: var(--nr-black);
+  letter-spacing: -0.025em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--sl-font);
+  font-weight: 600;
+  color: var(--nr-black);
+}
+
+h1 {
+  font-size: clamp(1.75rem, 3vw, 2rem);
+  margin-bottom: 16px;
+  letter-spacing: -0.025em;
+}
+h2 {
+  font-size: clamp(1.375rem, 2.5vw, 1.625rem);
+  margin-top: 40px;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+h3 {
+  font-size: 1.25rem;
+  margin-top: 32px;
+  margin-bottom: 8px;
+  letter-spacing: -0.015em;
+}
+h4 {
+  font-size: 1.0625rem;
+  margin-top: 24px;
+  letter-spacing: -0.01em;
+}
+h5 {
+  font-size: 0.9375rem;
+  margin-top: 20px;
+}
+
+/* ===== CONTENT TYPOGRAPHY ===== */
+.sl-markdown-content {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--nr-gray-900);
+}
+
+.sl-markdown-content p {
+  margin-bottom: 1.25em;
+}
+
+/* Content links — use the theme-aware accent token so contrast is AA in both
+   themes. --sl-color-text-accent resolves to:
+   - light mode: --sl-color-accent-high = #9F0000 (5.7:1 on white)
+   - dark mode:  --sl-color-accent-high = #FF5555 (4.9:1 on #1A1A1A)
+   The flat var(--nr-red) #DA0000 fails AA at 4.47:1 (light) and 3.66:1 (dark).
+   Always-on underline distinguishes the link from surrounding body text so
+   axe's `link-in-text-block` (WCAG 1.4.1) passes regardless of the adjacent
+   gray's contrast ratio against the link colour. */
+.sl-markdown-content a {
+  color: var(--sl-color-text-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: color var(--nr-duration) var(--nr-ease);
+}
+
+.sl-markdown-content a:hover {
+  text-decoration-thickness: 2px;
+  color: var(--nr-red-hover);
+}
+
+:root[data-theme='dark'] .sl-markdown-content a:hover {
+  color: #f5a0a0;
+}
+
+/* Anchor links generated by Starlight to the right of a heading and our
+   button-style links should not be underlined. */
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6) a,
+.sl-markdown-content a.button {
+  text-decoration: none;
+}
+
+/* ===== CODE BLOCKS ===== */
+.sl-markdown-content pre {
+  background: var(--nr-bg-dark);
+  color: #d4d4d4;
+  border-radius: 10px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--nr-code-border, #2d2d2d);
+  margin: 24px 0;
+}
+
+.sl-markdown-content pre code {
+  font-family: var(--sl-font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Inline code */
+.sl-markdown-content code:not(pre code) {
+  color: var(--nr-code-text);
+  background: var(--nr-code-bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--sl-font-mono);
+  font-size: 0.9em;
+}
+
+/* ===== TABLES ===== */
+.sl-markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* The --nr-gray-* ramp is safe here, unlike on the marketing pages: the dark
+   block above redefines the whole ramp, so gray-100 is a dark fill under /docs/
+   and the header text stays legible over it. The same rule written against the
+   ramp in BaseLayout had to move to semantic tokens, because nothing redefines
+   the ramp there. */
+.sl-markdown-content table th {
+  font-family: var(--sl-font);
+  font-weight: 600;
+  border-bottom: 2px solid var(--nr-red);
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--nr-gray-100);
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+}
+
+.sl-markdown-content table td {
+  border-bottom: 1px solid var(--nr-gray-200);
+  padding: 10px 14px;
+  font-size: 0.9375rem;
+}
+
+.sl-markdown-content table tr:hover {
+  background: var(--nr-gray-50);
+}
+
+/* ===== BLOCKQUOTES ===== */
+.sl-markdown-content blockquote {
+  border-left: 4px solid var(--nr-red);
+  margin: 24px 0;
+  padding: 12px 24px;
+  background: var(--nr-gray-50);
+  color: var(--nr-gray-900);
+  border-radius: 0 10px 10px 0;
+}
+
+/* ===== LISTS ===== */
+.sl-markdown-content ul,
+.sl-markdown-content ol {
+  padding-left: 28px;
+  margin: 16px 0;
+}
+
+.sl-markdown-content li {
+  margin: 6px 0;
+}
+
+/* ===== IMAGES ===== */
+.sl-markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* Screenshot figures carried over from the Jekyll site sit in a wrapper with a
+   hardcoded pixel width, e.g. `<div style="width: 792px" class="figure">`. There
+   are 34 of them across the docs and they range up to 792px, while the content
+   track is 298px at a 390px viewport. The img rule above caps images at their
+   PARENT's width, so a 467px wrapper still produced a 467px image and pushed the
+   whole document sideways: that is where /docs/creating-nodes/edit-dialog/'s
+   513px document width came from.
+
+   max-width clamps the inline `width` without having to out-specify it, since
+   the two are different properties and max-width always wins the clamp. Editing
+   34 files to strip the widths would be the other fix, but the inline value is
+   still doing useful work above the breakpoint (it stops a small screenshot from
+   being stretched), so capping is both smaller and less destructive. */
+.sl-markdown-content .figure {
+  max-width: 100%;
+}
+
+/* ===== BUTTONS ===== */
+.sl-markdown-content a.button,
+.action-button {
+  background: var(--nr-red);
+  color: var(--nr-bg-content);
+  padding: 12px 24px;
+  border-radius: 6px;
+  border: none;
+  font-family: var(--sl-font);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow:
+    0 4px 16px rgba(218, 0, 0, 0.2),
+    inset 0 -2px 0 0 rgba(126, 0, 0, 0.4);
+  text-decoration: none;
+  display: inline-block;
+  letter-spacing: -0.01em;
+  transition:
+    box-shadow var(--nr-duration) var(--nr-ease),
+    transform var(--nr-duration) var(--nr-ease);
+}
+
+.sl-markdown-content a.button:hover,
+.action-button:hover {
+  background: var(--nr-red-hover);
+  box-shadow:
+    0 8px 32px rgba(218, 0, 0, 0.25),
+    inset 0 -2px 0 0 rgba(126, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ===== BREADCRUMBS =====
+   White on #DA0000 = 4.47:1 (fails AA 4.5:1 by a hair). Darken background
+   to --nr-red-hover (#B30000) so white = 6.4:1 (AAA for large text). */
+nav[aria-label='Breadcrumbs'] {
+  background: var(--nr-red-hover);
+  min-height: 50px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+}
+
+nav[aria-label='Breadcrumbs'] a,
+nav[aria-label='Breadcrumbs'] span {
+  color: white;
+  font-family: var(--sl-font);
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+}
+
+nav[aria-label='Breadcrumbs'] a:hover {
+  text-decoration: underline;
+}
+
+/* ===== RIGHT SIDEBAR (Table of Contents) =====
+   Two concerns split here:
+
+   1. The vertical hairline that separates the TOC column from the
+      content. Starlight's stock CSS puts it on `.right-sidebar`, which
+      we converted from `position: fixed; height: 100vh` to
+      `position: sticky; height: auto` so it no longer bleeds into the
+      full-bleed footer (the sticky element only spans the TOC's own
+      height — ~120px when the TOC is short).
+
+      To get the line back to running the full content height *without*
+      reintroducing the footer-bleed bug, we move the border off the
+      sticky `.right-sidebar` and onto its parent
+      `.right-sidebar-container`, which is a flex sibling of `.main-pane`
+      and therefore stretches to the main content's full height by
+      default flex `align-items: stretch`. When the content ends and the
+      full-bleed footer starts, so does the line.
+
+   2. TOC content treatment. Native Starlight uses generous block padding
+      and a quiet active-state (text colour change, no left rail). We
+      keep the brand-red rail for the active item — it's a recognisable
+      Node-RED affordance — but bump padding so the items read with the
+      same breathing space as Starlight's defaults. */
+
+/* Suppress Starlight's mobile-only "On this page" details/summary bar.
+   The mobile TOC is rendered by `MobileTableOfContents.astro` inside a
+   `<mobile-starlight-toc>` custom element wrapped by `.lg:sl-hidden`.
+   At small viewports the desktop TOC is already hidden by the
+   `(max-width: 1100px) .right-sidebar-panel { display: none }` rule
+   above; on docs pages we'd rather have no TOC at all on mobile than
+   a wide pinned dropdown bar over the article. Also reserve the
+   `--sl-mobile-toc-height` to 0 so PageFrame's `padding-top: calc(
+   var(--sl-nav-height) + var(--sl-mobile-toc-height))` doesn't leave
+   an empty stripe between the navbar and the article. */
+mobile-starlight-toc,
+.main-frame mobile-starlight-toc,
+.main-frame > .lg\:sl-hidden:has(mobile-starlight-toc) {
+  display: none !important;
+}
+
+:root {
+  --sl-mobile-toc-height: 0rem;
+}
+
+@media (min-width: 72rem) {
+  .right-sidebar-container {
+    /* Flex stretch makes this element the full content height. The
+       hairline lives here so it spans top-to-bottom of the content area
+       and stops cleanly at the footer band. */
+    border-inline-start: 1px solid var(--sl-color-hairline-shade);
+
+    /* Starlight's stock width formula
+       `var(--sl-sidebar-width) + (100% - --sl-content-width - --sl-sidebar-width) / 2`
+       collapses to ~142px at 1440vw with our 1155px content width because
+       both columns absorb the negative deficit (content+sidebar exceeds
+       the available main-frame width).
+       Floor the container at 17rem (272px) so TOC items don't wrap to 3+
+       lines. Above ~1700vw the formula naturally exceeds this floor and
+       the TOC grows with the viewport — the min-width only kicks in at
+       smaller desktop widths where the formula would otherwise collapse. */
+    min-width: 17rem;
+  }
+
+  /* Companion fix: Starlight's stock .main-pane has `width: calc(...)`
+     with the same content-width-derived formula. When our min-width
+     above bumps the TOC column to 272px, main-pane's `width:` stays at
+     the original ~997px and the two columns overflow their flex parent
+     by ~25px, producing a horizontal scrollbar at 1440vw. Switch
+     main-pane to flex sizing and allow it to shrink below content-width
+     so it absorbs the deficit cleanly. */
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .right-sidebar {
+    position: sticky;
+    top: var(--sl-nav-height);
+    height: auto;
+    max-height: calc(100vh - var(--sl-nav-height));
+    padding-top: 0;
+    /* Suppress Starlight's stock border on .right-sidebar — the parent
+       container owns the hairline now. */
+    border-inline-start: 0;
+  }
+}
+
+.right-sidebar-panel {
+  /* Generous outer padding matches Starlight's native `1rem
+     var(--sl-sidebar-pad-x)` rhythm. The sticky element above gives the
+     panel its full breathing room from the navbar. */
+  padding: 1.25rem var(--sl-sidebar-pad-x, 1rem);
+  font-size: 13px;
+}
+
+.right-sidebar-panel h2 {
+  font-family: var(--sl-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--nr-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+}
+
+.right-sidebar-panel a {
+  color: var(--nr-gray-500);
+  font-size: 13px;
+  font-family: var(--sl-font);
+  /* The Node-RED brand-red rail acts as the current-item indicator. The
+     8px left padding aligns nested TOC items with native Starlight's
+     `--pad-inline: 0.5rem`; the extra block padding gives the rows the
+     breathing space they were missing. */
+  border-left: 2px solid transparent;
+  /* Match the sidebar: square left corners so the current-item rail isn't
+     rounded by Starlight's stock 4px radius. */
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  padding: 6px 8px 6px 10px;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  transition:
+    border-color var(--nr-duration) var(--nr-ease),
+    color var(--nr-duration) var(--nr-ease);
+}
+
+/* Hover and current-item states match the left sidebar and the marketing rails,
+   so red behaves the same in every pane of the page: the hairline reddens on
+   hover, and the red label plus semibold is what marks the current item. */
+.right-sidebar-panel a:hover,
+.right-sidebar-panel a:focus-visible {
+  border-left-color: var(--nr-red);
+  color: var(--nr-text-strong);
+}
+
+.right-sidebar-panel a[aria-current='true'] {
+  border-left-color: var(--nr-red);
+  /* --nr-text-link, not the flat --nr-red, for the same reason as the sidebar:
+     it is the AA-checked per-theme token and matches the rails exactly. */
+  color: var(--nr-text-link);
+  font-weight: 600;
+}
+
+/* ===== SEARCH ===== */
+site-search button {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #a3a3a3;
+  border-radius: 6px;
+  /* Colour and border may ease; the hover fill lands instantly, so
+     `background` is deliberately absent from this list rather than being
+     swept in by `transition: all`. */
+  transition:
+    color var(--nr-duration) var(--nr-ease),
+    border-color var(--nr-duration) var(--nr-ease);
+}
+
+site-search button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #f0f0f0;
+}
+
+/* The Ctrl/Cmd K kbd hint inside the search button is hidden globally
+   (see also src/components/starlight/Header.astro). The shortcut wasn't
+   actually wired up and Cmd+F covers the same intent; removing the
+   indicator keeps the search button compact. */
+site-search button kbd {
+  display: none;
+}
+
+/* ===== PAGINATION ===== */
+/* Red text on the page surface, so the per-theme text tokens rather than the
+   chrome --nr-red / --nr-red-hover pair: those measured 3.11:1 and 2.46:1 on the
+   dark docs surface. Every docs page has these prev/next links, so this was the
+   most widespread of the red-text contrast failures. */
+.pagination-links a {
+  color: var(--nr-text-link);
+  font-family: var(--sl-font);
+  letter-spacing: -0.01em;
+  transition: color var(--nr-duration) var(--nr-ease);
+}
+
+.pagination-links a:hover {
+  color: var(--nr-text-link-hover);
+}
+
+/* ===== CALLOUTS / ASIDES ===== */
+.starlight-aside {
+  border-left: 4px solid var(--nr-red);
+  background: var(--nr-gray-50);
+  padding: 16px 20px;
+  margin: 24px 0;
+  border-radius: 0 10px 10px 0;
+}
+
+.starlight-aside--note {
+  border-left-color: #3498db;
+  background: #f0f7fc;
+}
+
+.starlight-aside--tip {
+  border-left-color: #2ecc71;
+  background: #f0fcf5;
+}
+
+.starlight-aside--caution {
+  border-left-color: #f39c12;
+  background: #fef9f0;
+}
+
+.starlight-aside--danger {
+  border-left-color: #e74c3c;
+  background: #fdf2f2;
+}
+
+/* In dark mode, light pastel aside backgrounds destroy contrast. Use
+   translucent washes of the accent colour instead. The accent border on
+   the left is preserved. */
+:root[data-theme='dark'] .starlight-aside--note {
+  background: rgba(52, 152, 219, 0.1);
+}
+:root[data-theme='dark'] .starlight-aside--tip {
+  background: rgba(46, 204, 113, 0.1);
+}
+:root[data-theme='dark'] .starlight-aside--caution {
+  background: rgba(243, 156, 18, 0.1);
+}
+:root[data-theme='dark'] .starlight-aside--danger {
+  background: rgba(231, 76, 60, 0.1);
+}
+
+/* ===== FOCUS ===== */
+:focus-visible {
+  outline: 3px solid var(--nr-focus);
+  outline-offset: 2px;
+}
+
+/* ===== GRID RASTER (subtle docs background) =====
+   Theme-aware via --nr-docs-raster. Less intense than the marketing
+   raster so it doesn't compete with body text. */
+.main-pane::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--nr-docs-raster) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: -1;
+  mask: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(0, 0, 0, 0.25) 0%, transparent 70%);
+  -webkit-mask: radial-gradient(
+    ellipse 80% 60% at 50% 30%,
+    rgba(0, 0, 0, 0.25) 0%,
+    transparent 70%
+  );
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1100px) {
+  .right-sidebar-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 755px) {
+  .site-title {
+    font-size: 18px;
+  }
+
+  h1 {
+    font-size: 1.625rem;
+  }
+  h2 {
+    font-size: 1.375rem;
+  }
+  h3 {
+    font-size: 1.125rem;
+  }
+}
+
+/* ===== BODY / PAGE BACKGROUND =====
+   Starlight uses --sl-color-bg on <body>. With our new layered surfaces the
+   body sits behind the (white) main-pane and (off-white) sidebar in light
+   mode, and behind the (#1F1F23) content and (#18181B) sidebar in dark
+   mode. Pick a body bg that complements both. */
+:root[data-theme='light'] body {
+  background: var(--sl-color-bg, #ffffff);
+}
+:root[data-theme='dark'] body {
+  background: var(--sl-color-bg, #111114);
+}
+
+/* ===== PAGE BODY (sidebar + main flex row on desktop) =====
+   PageFrame.astro wraps the sidebar and main-frame in a .page-body
+   element so they can share a single flex-row track on desktop. That
+   lets the sidebar use position:sticky instead of position:fixed, so it
+   STOPS at the page bottom — and the full-width footer below sits
+   cleanly underneath. On mobile, .page-body collapses to display:contents
+   so the existing fixed mobile-menu overlay behaviour is preserved. */
+.page-body {
+  display: contents;
+}
+
+@media (min-width: 50rem) {
+  .page-body {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .page-body > nav.sidebar {
+    flex-shrink: 0;
+    width: var(--sl-sidebar-width);
+  }
+
+  /* Replace Starlight's fixed-positioned sidebar-pane with a sticky
+     one that tracks scroll and stops at the .page-body bottom (i.e.,
+     just above the full-width footer). Reset inset-* first so the
+     subsequent `top` declaration isn't clobbered by the longhand
+     it desugars to. */
+  .page-body > nav.sidebar .sidebar-pane {
+    position: sticky;
+    inset-inline-start: auto;
+    inset-block-end: auto;
+    top: var(--sl-nav-height);
+    width: var(--sl-sidebar-width);
+    max-height: calc(100vh - var(--sl-nav-height));
+    overflow-y: auto;
+  }
+
+  /* Main frame is now a flex sibling, so the old padding-inline-start
+     reservation for the fixed sidebar is unnecessary. */
+  .page-body > .main-frame {
+    flex: 1;
+    min-width: 0;
+    padding-inline-start: 0;
+  }
+}
+
+/* ===== FOOTER (docs) =====
+   Full-bleed across the viewport. PageFrame puts <FooterContent /> as a
+   direct child of .page, outside .main-frame, so the dark band spans
+   the entire viewport width — matching the marketing site footer. The
+   sticky-sidebar treatment above means the sidebar stops above the
+   footer rather than overlapping its leftmost strip. */
+.page > footer {
+  border-top: 1px solid var(--nr-border);
+}
+
+/* ===== DOC-CALLOUT (legacy Jekyll component) =====
+   Inline-logo callout box at the top of docs/getting-started/* pages
+   (Raspberry Pi / Debian logos next to "if you're on a Pi…", etc.).
+   Two problems Starlight introduced for this legacy markup:
+
+   1. Starlight's .sl-markdown-content img rule sets `height: auto;
+      max-width: 100%`, which overrides the `height="30"` attribute on
+      the <img> tags. The result is logo SVGs blowing up to the full
+      content width (a 700-px Raspberry Pi taking over the page).
+   2. There was no .doc-callout CSS at all, so the box rendered without
+      its yellow tint / border / padding.
+
+   Fix: scope a callout container style (matching the live site's
+   docs.css) and force inline-logo geometry on <img> children. The
+   `max-width: none` reset is what lets the height attribute win again. */
+.sl-markdown-content .doc-callout {
+  margin: 10px 0;
+  padding: 10px;
+  background: #ffffe0;
+  border: 1px solid #be9a9a;
+  border-radius: 3px;
+  font-size: 0.85em;
+  overflow: hidden; /* contain the floated logo strip */
+}
+:root[data-theme='dark'] .sl-markdown-content .doc-callout {
+  background: rgba(255, 248, 200, 0.06);
+  border-color: rgba(190, 154, 154, 0.35);
+}
+.sl-markdown-content .doc-callout img {
+  height: 30px;
+  width: auto;
+  max-width: none;
+  display: inline;
+  vertical-align: middle;
+}
+
+/* ===== NODE HELP PANELS (docs/creating-nodes/help-style-guide) =====
+   Ported from the Jekyll tree's css/node-help.scss, which the migration dropped
+   along with css/editor-style.min.css. The page linked /css/node-help.css and
+   that link 404'd, so its five example panels rendered as ordinary docs prose.
+
+   Those panels are the whole point of that page: it teaches how to write a
+   node's help text by showing the markup beside a rendition of how the editor's
+   Information sidebar renders it. Without the editor's help typography the
+   rendition looks nothing like the sidebar it is illustrating, so the
+   before-and-after stops teaching anything.
+
+   Deliberately NOT theme-aware, and deliberately not built on the --nr-*
+   semantic tokens. The panels carry .nr-light-panel, which forces an always
+   light backdrop (#f5f5f5) for the reason documented at that class in
+   design-tokens.css. Semantic tokens here would put near-white text on that
+   light panel in dark mode, which is exactly the bug .nr-light-panel exists to
+   prevent. The values below are therefore fixed and chosen against #f5f5f5.
+
+   #AD1625 on the property names is the editor's own help-sidebar red, not the
+   site's --nr-red (#DA0000). Kept as the editor's value because this is a
+   rendition of the editor, not site chrome, and it measures 5.6:1 on the panel.
+
+   Scoped to .node-help so nothing here reaches the surrounding docs prose. */
+.sl-markdown-content .node-help {
+  font-size: 14px;
+  line-height: 1.5em;
+}
+
+.sl-markdown-content .node-help :is(ul, ol) {
+  padding: 0 0 0 2em;
+  margin: 0;
+}
+
+.sl-markdown-content .node-help p {
+  margin: 0 0 10px;
+}
+
+/* The editor's help headings run on a tighter scale than the docs body, at
+   weight 500, which is what makes a rendition read as sidebar rather than page. */
+.sl-markdown-content .node-help :is(h1, h2, h3, h4, h5) {
+  font-weight: 500;
+  line-height: 1.3em;
+  color: #000;
+}
+
+.sl-markdown-content .node-help h1 {
+  font-size: 1.296em;
+  margin: 8px auto;
+}
+
+.sl-markdown-content .node-help h2 {
+  font-size: 1.215em;
+  margin: 8px auto;
+}
+
+.sl-markdown-content .node-help h3 {
+  font-size: 1.138em;
+  margin: 7px auto 5px;
+}
+
+.sl-markdown-content .node-help :is(h4, h5) {
+  font-size: 1.067em;
+  margin: 8px auto 5px;
+}
+
+/* The message-properties list is the distinctive part: a bordered definition
+   list whose terms are monospace property names in the editor's red, with the
+   accepted types set small and italic against the right edge. */
+.sl-markdown-content .node-help dl.message-properties {
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  margin: 5px auto 10px;
+}
+
+.sl-markdown-content .node-help dl.message-properties > dt {
+  padding: 0 3px 2px 3px;
+  font-family: var(--font-mono, monospace);
+  font-weight: normal;
+  margin: 5px 3px 1px;
+  color: #ad1625;
+  white-space: nowrap;
+}
+
+/* Optional properties are italic, which is how the editor marks them. */
+.sl-markdown-content .node-help dl.message-properties > dt.optional {
+  font-style: italic;
+}
+
+.sl-markdown-content .node-help dl.message-properties > dt .property-type {
+  font-family: var(--font-sans, sans-serif);
+  color: #666;
+  font-style: italic;
+  font-size: 11px;
+  float: right;
+}
+
+/* Contains the floated type label so the next term starts on its own line. */
+.sl-markdown-content .node-help dl.message-properties > dt::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+.sl-markdown-content .node-help dl.message-properties > dd {
+  margin: 0 8px 2px 13px;
+  vertical-align: top;
+}
+
+/* Multi-output nodes list one bordered entry per port, each of which may hold
+   its own message-properties list. The inner border is dropped so the two do
+   not read as a box inside a box. */
+.sl-markdown-content .node-help ol.node-ports {
+  margin: 0;
+  padding: 0;
+}
+
+.sl-markdown-content .node-help ol.node-ports li {
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  list-style-position: inside;
+  padding: 3px;
+  margin-bottom: 5px;
+}
+
+.sl-markdown-content .node-help ol.node-ports li dl.message-properties {
+  border: none;
+}
+
+/* The collapsible Details header. The caret rotates when expanded, which is
+   the editor's own affordance; the transition is inherited from the site's
+   reduced-motion handling in design-tokens.css. */
+.sl-markdown-content .node-help .node-info-header {
+  color: #333;
+}
+
+.sl-markdown-content .node-help .node-info-header:is(:hover, :focus) {
+  text-decoration: none;
+}
+
+.sl-markdown-content .node-help .node-info-header i {
+  width: 10px;
+  text-align: center;
+  margin-right: 4px;
+  transition: transform var(--nr-duration, 0.2s) var(--nr-ease, ease-in-out);
+}
+
+.sl-markdown-content .node-help .node-info-header.expanded i {
+  transform: rotate(90deg);
+}
+
+/* ===== DOCS PLATFORM ROWS (docs/getting-started index) =====
+   Row-based layout matching the homepage Get Started pattern: each
+   platform is a clickable row with icon / name / description / arrow
+   columns. Replaces the old .post-preview card grid which read like
+   a different visual system from the rest of the site. */
+.sl-markdown-content .docs-platforms {
+  display: block;
+  margin: 24px 0;
+  border-top: 1px solid var(--nr-border);
+}
+.sl-markdown-content .docs-platform {
+  display: grid;
+  grid-template-columns: 64px minmax(160px, 1.2fr) minmax(0, 2fr) 24px;
+  column-gap: 24px;
+  align-items: center;
+  padding: 14px 8px;
+  border-bottom: 1px solid var(--nr-border);
+  color: inherit;
+  text-decoration: none;
+}
+.sl-markdown-content .docs-platform:hover {
+  background: var(--nr-red-subtle, rgba(218, 0, 0, 0.06));
+  text-decoration: none;
+}
+.sl-markdown-content .docs-platform-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sl-markdown-content .docs-platform-icon img {
+  max-width: 64px;
+  max-height: 64px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin: 0;
+}
+.sl-markdown-content .docs-platform-name {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin: 0;
+  border: 0;
+  color: var(--nr-text-strong);
+  transition: color var(--nr-duration, 150ms) ease;
+}
+.sl-markdown-content .docs-platform:hover .docs-platform-name {
+  color: var(--nr-red);
+}
+.sl-markdown-content .docs-platform-desc {
+  font-size: 0.92em;
+  color: var(--nr-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+.sl-markdown-content .docs-platform-arrow {
+  color: var(--nr-text-faint, #ccc);
+  font-size: 18px;
+  line-height: 1;
+  transition:
+    color var(--nr-duration, 150ms) ease,
+    transform var(--nr-duration, 150ms) ease;
+}
+.sl-markdown-content .docs-platform:hover .docs-platform-arrow {
+  color: var(--nr-red);
+  transform: translateX(3px);
+}
+
+/* Mobile: collapse into a compact 2-row layout — icon left, name
+   stacked above description in the middle, arrow on the right. */
+@media (max-width: 600px) {
+  .sl-markdown-content .docs-platform {
+    grid-template-columns: 48px 1fr 24px;
+    column-gap: 14px;
+    row-gap: 2px;
+  }
+  .sl-markdown-content .docs-platform-icon {
+    width: 48px;
+    height: 48px;
+    grid-column: 1;
+    grid-row: 1 / 3;
+  }
+  .sl-markdown-content .docs-platform-icon img {
+    max-width: 48px;
+    max-height: 48px;
+  }
+  .sl-markdown-content .docs-platform-name {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .sl-markdown-content .docs-platform-desc {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .sl-markdown-content .docs-platform-arrow {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    align-self: center;
+    justify-self: end;
+  }
+}
+
+/* ===== POST-PREVIEW CARDS (docs/tutorials) =====
+   Card chrome carried over from the Jekyll site's blog.css, but not its geometry.
+
+   The original was inline-block at `width: calc(100% / 3 - 12px)` with a fixed
+   250px height, its link absolutely positioned to fill the card, and the body
+   clipped at `max-height: 180px`. That was written for a full-bleed Jekyll page.
+   Dropped into a docs route the card sits in the article column, between the
+   sidebar and the table of contents, which is roughly a third of the viewport, so
+   thirds of it came out near 200px: headings broke across lines, the body wrapped
+   to a hard column of very short lines, and the 250px floor then clipped it.
+
+   The retracking is a grid whose columns come from the container, not the
+   viewport, which is the actual fix: the old breakpoints measured the window
+   while the thing that had gone narrow was the column inside it. auto-fit means
+   the card count follows the room available, so the same page is 3-up on a wide
+   window, 2-up once the table of contents appears, and 1-up in a narrow column,
+   with no breakpoint naming any of those.
+
+   min(260px, 100%) is the usual auto-fit guard: a bare 260px minimum cannot
+   shrink below its floor and would push the row wider than a column narrower
+   than that.
+
+   Heights are content-driven now, so nothing clips, and grid's default stretch
+   keeps a row level without a fixed value. The link becomes a flex column
+   filling the cell, which keeps the whole card clickable without the absolute
+   positioning that made the fixed height load-bearing.
+
+   The 100px image cap is kept from the original, matching live nodered.org, for
+   any card that grows a header icon. Nothing currently ships one. */
+.post-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-7);
+}
+
+/* margin: 0 is load-bearing, not tidying. Starlight gives adjacent children in
+   markdown content a top margin, which lands on every card but the first, so the
+   cards after it dropped 16px and a row of three sat with one card proud of the
+   other two. The old rule masked this by carrying its own margin for gutters. The
+   grid's gap owns all spacing now, so the margin has to be cleared rather than
+   just left unset. */
+.post-preview {
+  margin: 0;
+  background: var(--nr-surface);
+  border: 1px solid var(--nr-border);
+  border-radius: 4px;
+  transition:
+    border-color var(--duration-fast, 150ms) ease,
+    box-shadow var(--duration-fast, 150ms) ease;
+}
+.post-preview > a {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-5);
+  color: inherit;
+  text-decoration: none;
+}
+.post-preview > a:hover {
+  text-decoration: none;
+}
+.post-preview:hover {
+  border-color: var(--nr-border-strong, #999);
+  box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.15);
+}
+.post-preview .post-header img {
+  max-width: 100px;
+  height: auto;
+}
+/* Down from 22px: at a third of the article column that set "Node-RED Academy"
+   over two lines before the body had started. */
+.post-preview h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  border: 0;
+}
+.post-preview .post-content {
+  margin: 0;
+  color: var(--nr-text-muted);
+  font-size: 0.9em;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

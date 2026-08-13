@@ -1,0 +1,435 @@
+---
+/**
+ * Widget lab: every configuration of the docs-widget illustrations that the three
+ * documentation pages need, on one page, driven by exactly the config those pages
+ * will use.
+ *
+ * WHAT IT IS FOR. Two things that are hard to do against the docs pages
+ * themselves. First, seeing all the cases at once, in both themes and at every
+ * breakpoint, without scrolling through reference documentation to find them.
+ * Second, giving the drift test in tests/e2e/docs-widgets.spec.ts one URL where
+ * every class name the components can render is guaranteed to be present, so the
+ * test does not have to guess which docs page grew or lost a demo.
+ *
+ * STATUS: kept, as a permanent internal harness. It carries `noindex` and is
+ * excluded from the sitemap by the `filter` on `sitemap()` in astro.config.mjs.
+ * Those two go together: a crawler that never fetches the page cannot read the
+ * meta tag, so dropping either one leaves the URL indexable. If this page is ever
+ * renamed or retired, update the filter in the same commit, and repoint the drift
+ * test in tests/e2e/docs-widgets.spec.ts, which relies on this URL rendering
+ * every class name the components can produce.
+ *
+ * The `state` readouts under each demo are the harness, not the component. They
+ * exist so an interaction can be checked without opening devtools, and so the
+ * change event contract is visible.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DocsWidgets from '../components/docs-widgets/DocsWidgets.astro';
+
+/* Configs are the real thing, not paraphrases: each of these objects is what the
+   corresponding docs page passes to the widget today, so if the demo and the code
+   sample above it ever disagree, it shows up here first. */
+const typedInputCases = [
+  {
+    id: 'ti-str',
+    heading: 'Built-in String, Number, Boolean types',
+    source: 'docs/api/ui/typedInput (example 1), creating-nodes/edit-dialog (example 1)',
+    config: { type: 'str', types: ['str', 'num', 'bool'] },
+    value: '',
+  },
+  {
+    id: 'ti-msg',
+    heading: 'Message properties',
+    source: 'docs/api/ui/typedInput (example 2)',
+    config: { type: 'msg', types: ['msg'] },
+    value: '',
+  },
+  {
+    id: 'ti-flow',
+    heading: 'Flow / global context properties',
+    source: 'docs/api/ui/typedInput (example 3)',
+    config: { type: 'flow', types: ['flow', 'global'] },
+    value: '',
+  },
+  {
+    id: 'ti-fruit',
+    heading: 'Select from a list of options',
+    source: 'docs/api/ui/typedInput (example 4), creating-nodes/edit-dialog (example 4)',
+    config: {
+      type: 'fruit',
+      types: [
+        {
+          value: 'fruit',
+          options: [
+            { value: 'apple', label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' },
+          ],
+        },
+      ],
+    },
+    value: '',
+  },
+  {
+    id: 'ti-fruit-multi',
+    heading: 'Select multiple items from a list of options',
+    source: 'docs/api/ui/typedInput (example 5), creating-nodes/edit-dialog (example 5)',
+    config: {
+      type: 'fruit',
+      types: [
+        {
+          value: 'fruit',
+          multiple: true,
+          options: [
+            { value: 'apple', label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' },
+          ],
+        },
+      ],
+    },
+    value: '',
+  },
+  {
+    id: 'ti-json',
+    heading: 'JSON, with its expand button',
+    source: 'creating-nodes/edit-dialog (example 2)',
+    config: { type: 'json', types: ['json'] },
+    value: '{"a": 123}',
+  },
+  {
+    id: 'ti-msg-flow-global',
+    heading: 'msg / flow / global together',
+    source: 'creating-nodes/edit-dialog (example 3)',
+    config: { type: 'msg', types: ['msg', 'flow', 'global'] },
+    value: 'payload',
+  },
+];
+
+/* The animal list from the autoComplete page, in full. The page's own code
+   samples print a trimmed version with a "view the page source" note, which is
+   the arrangement being reproduced here. */
+const animals = [
+  'Aardvark',
+  'Alligator',
+  'Alpaca',
+  'Anaconda',
+  'Ant',
+  'Antelope',
+  'Ape',
+  'Aphid',
+  'Armadillo',
+  'Asp',
+  'Ass',
+  'Baboon',
+  'Badger',
+  'Bald Eagle',
+  'Barracuda',
+  'Bass',
+  'Basset Hound',
+  'Bat',
+  'Bear',
+  'Beaver',
+  'Bedbug',
+  'Bee',
+  'Beetle',
+  'Bird',
+  'Bison',
+  'Black panther',
+  'Black Widow Spider',
+  'Blue Jay',
+  'Blue Whale',
+  'Bobcat',
+  'Buffalo',
+  'Butterfly',
+  'Buzzard',
+  'Camel',
+  'Caribou',
+  'Carp',
+  'Cat',
+  'Caterpillar',
+  'Catfish',
+  'Cheetah',
+  'Chicken',
+  'Chimpanzee',
+  'Chipmunk',
+  'Cobra',
+  'Cod',
+  'Condor',
+  'Cougar',
+  'Cow',
+  'Coyote',
+  'Crab',
+  'Crane',
+  'Cricket',
+  'Crocodile',
+  'Crow',
+  'Cuckoo',
+  'Deer',
+  'Dinosaur',
+  'Dog',
+  'Dolphin',
+  'Donkey',
+  'Dove',
+  'Dragonfly',
+  'Duck',
+  'Eagle',
+  'Eel',
+  'Elephant',
+  'Emu',
+  'Falcon',
+  'Ferret',
+  'Finch',
+  'Fish',
+  'Flamingo',
+  'Flea',
+  'Fly',
+  'Fox',
+  'Frog',
+  'Goat',
+  'Goose',
+  'Gopher',
+  'Gorilla',
+  'Grasshopper',
+  'Hamster',
+  'Hare',
+  'Hawk',
+  'Hippopotamus',
+  'Horse',
+  'Hummingbird',
+  'Humpback Whale',
+  'Husky',
+  'Iguana',
+  'Impala',
+  'Kangaroo',
+  'Ladybug',
+  'Leopard',
+  'Lion',
+  'Lizard',
+  'Llama',
+  'Lobster',
+  'Mongoose',
+  'Monitor lizard',
+  'Monkey',
+  'Moose',
+  'Mosquito',
+  'Moth',
+  'Mountain goat',
+  'Mouse',
+  'Mule',
+  'Octopus',
+  'Orca',
+  'Ostrich',
+  'Otter',
+  'Owl',
+  'Ox',
+  'Oyster',
+  'Panda',
+  'Parrot',
+  'Peacock',
+  'Pelican',
+  'Penguin',
+  'Perch',
+  'Pheasant',
+  'Pig',
+  'Pigeon',
+  'Polar bear',
+  'Porcupine',
+  'Quail',
+  'Rabbit',
+  'Raccoon',
+  'Rat',
+  'Rattlesnake',
+  'Raven',
+  'Rooster',
+  'Sea lion',
+  'Sheep',
+  'Shrew',
+  'Skunk',
+  'Snail',
+  'Snake',
+  'Spider',
+  'Tiger',
+  'Walrus',
+  'Whale',
+  'Wolf',
+  'Zebra',
+];
+
+const autoCompleteCases = [
+  {
+    id: 'ac-plain',
+    heading: 'Auto-complete on a plain input',
+    source: 'docs/api/ui/autoComplete (example 1)',
+    config: { source: animals, highlight: false },
+  },
+  {
+    id: 'ac-async',
+    heading: 'Asynchronous search',
+    source: 'docs/api/ui/autoComplete (example 2)',
+    config: { source: animals, highlight: false, delay: 1000 },
+  },
+  {
+    id: 'ac-custom',
+    heading: 'Custom result labels',
+    source: 'docs/api/ui/autoComplete (example 3)',
+    config: { source: animals, highlight: true },
+  },
+];
+---
+
+<BaseLayout
+  title="Widget lab"
+  description="Internal harness for the dependency-free Node-RED editor widget illustrations used in the docs."
+  noindex
+>
+  <DocsWidgets />
+
+  <div class="lab">
+    <header class="lab-head">
+      <h1>Widget lab</h1>
+      <p>
+        Every configuration of <code>&lt;nr-typed-input&gt;</code> and
+        <code>&lt;nr-auto-complete&gt;</code> that the three widget documentation pages need. Each demo
+        is driven by the same config object the docs page passes, printed above it.
+      </p>
+      <p class="lab-note">
+        Internal harness. Not linked from the site navigation, and awaiting a decision on whether it
+        stays.
+      </p>
+    </header>
+
+    <section aria-labelledby="lab-ti">
+      <h2 id="lab-ti">typedInput</h2>
+      {
+        typedInputCases.map((testCase) => (
+          <article class="case" id={testCase.id}>
+            <h3>{testCase.heading}</h3>
+            <p class="case-source">{testCase.source}</p>
+            <pre class="case-config">{JSON.stringify(testCase.config, null, 2)}</pre>
+            <div class="nr-widget-demo">
+              <nr-typed-input
+                config={JSON.stringify(testCase.config)}
+                value={testCase.value}
+                aria-label={testCase.heading}
+                data-case={testCase.id}
+              />
+            </div>
+            <p class="case-state" data-state-for={testCase.id}>
+              type: <span data-state-type>-</span>, value: <span data-state-value>-</span>
+            </p>
+          </article>
+        ))
+      }
+    </section>
+
+    <section aria-labelledby="lab-ac">
+      <h2 id="lab-ac">autoComplete</h2>
+      {
+        autoCompleteCases.map((testCase) => (
+          <article class="case" id={testCase.id}>
+            <h3>{testCase.heading}</h3>
+            <p class="case-source">{testCase.source}</p>
+            <pre class="case-config">
+              {JSON.stringify({ ...testCase.config, source: ['... animals ...'] }, null, 2)}
+            </pre>
+            <div class="nr-widget-demo">
+              <p>Pick an animal</p>
+              <nr-auto-complete
+                config={JSON.stringify(testCase.config)}
+                aria-label={testCase.heading}
+                data-case={testCase.id}
+              />
+            </div>
+            <p class="case-state" data-state-for={testCase.id}>
+              value: <span data-state-value>-</span>
+            </p>
+          </article>
+        ))
+      }
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .lab {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--space-6) var(--grid-padding) var(--space-9);
+    color: var(--nr-text-body);
+  }
+
+  .lab-head h1 {
+    font-size: var(--text-h1);
+    margin: 0 0 var(--space-3);
+  }
+
+  .lab-note {
+    border-left: 3px solid var(--nr-red);
+    padding-left: var(--space-3);
+    color: var(--nr-text-muted);
+    font-size: var(--text-body-sm);
+  }
+
+  h2 {
+    font-size: var(--text-h2);
+    margin: var(--space-8) 0 var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--nr-border);
+  }
+
+  .case {
+    margin-bottom: var(--space-7);
+  }
+
+  .case h3 {
+    font-size: var(--text-h4);
+    margin: 0 0 var(--space-1);
+  }
+
+  .case-source {
+    margin: 0;
+    font-size: var(--text-caption);
+    color: var(--nr-text-faint);
+  }
+
+  .case-config {
+    margin: var(--space-3) 0 0;
+    padding: var(--space-3);
+    overflow-x: auto;
+    background: var(--nr-surface-alt);
+    border: 1px solid var(--nr-border);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--nr-text-body);
+  }
+
+  .case-state {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--nr-text-muted);
+  }
+</style>
+
+<script>
+  /* Harness wiring only: mirror each element's change event into the readout
+     under it. Uses the same createElement/textContent discipline as the rest of
+     the site, which matters here because the values come from the widgets. */
+  for (const el of document.querySelectorAll('[data-case]')) {
+    const caseId = el.getAttribute('data-case');
+    const readout = document.querySelector(`[data-state-for="${caseId}"]`);
+    if (!readout) continue;
+    const typeOut = readout.querySelector('[data-state-type]');
+    const valueOut = readout.querySelector('[data-state-value]');
+    const paint = (detail: { type?: string | undefined; value?: string | undefined }) => {
+      if (typeOut) typeOut.textContent = detail.type ?? '-';
+      if (valueOut) valueOut.textContent = detail.value === '' ? '(empty)' : (detail.value ?? '-');
+    };
+    el.addEventListener('change', (evt) => paint((evt as CustomEvent).detail ?? {}));
+    paint({
+      type: (el as HTMLElement & { type?: string }).type,
+      value: (el as HTMLElement & { value?: string }).value,
+    });
+  }
+</script>

@@ -1,6 +1,85 @@
-vendor
-.bundle
+# build output
+dist/
+.output/
+.vercel/
+.netlify/
+
+# generated types / Astro cache
+.astro/
+.astro-cache/
+
+# dependencies
+node_modules/
+
+# tooling caches
+.cache/
+.turbo/
+.nyc_output/
+coverage/
+.lighthouseci/
+.tsbuildinfo
+*.tsbuildinfo
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+
+# OS / editor detritus
 .DS_Store
-_site
-.jekyll-cache
-Gemfile.lock
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Test / E2E artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+playwright/.auth/
+
+# Local assistant / editor scratch directories.
+.claude/
+
+# Local container dev. Never belongs upstream: compose.yaml is machine-specific
+# and .npm / .config are caches the container writes if HOME is misconfigured.
+/compose.yaml
+/.npm/
+/.config/
+
+# Probe / snapshot scripts left at repo root by ad-hoc tooling
+/snap*.mjs
+/probe*.mjs
+/scratch*.mjs
+/tmp-*.mjs
+
+# Local tmp / snapshot scratch dirs
+/tmp/
+/.tmp-*/
+/snaps/
+/snap-out/
+tmp-shots/
+
+# Screenshots dropped at repo root by Playwright / verification scripts
+/*.png
+/*.jpg
+/*.jpeg
+
+# Design exports used as script input, never distributed. See
+# scripts/build-editor-svg.mjs.
+/*.svg
+scripts/_*.mjs
+
+# Audit output written by scripts/audit-*.ts and the a11y spec. Regenerated on
+# demand, so it is a local report rather than a source file.
+/reports/
