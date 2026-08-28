@@ -11,6 +11,7 @@
     "start": "astro dev",
     "check": "astro check",
     "build": "astro check && astro build",
+    "build:preview": "astro check && astro build && node scripts/rebase-dist-urls.mjs",
     "build:sandbox": "DISABLE_PAGEFIND=1 astro check && DISABLE_PAGEFIND=1 astro build",
     "preview": "astro preview",
     "astro": "astro",

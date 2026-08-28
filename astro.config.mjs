@@ -38,16 +38,25 @@ const INTERNAL_ROUTES = new Set(['/widget-lab']);
 // resolve relative paths, and Starlight's `head` entries are plain static
 // attrs with no access to Astro.site). A pasted literal down there would
 // drift silently if the site ever moves, so both derive from one value.
-const SITE = 'https://nodered.org';
+const SITE = process.env.SITE_ORIGIN || 'https://nodered.org';
+
+// Sub-path the site is served from, with a leading and a trailing slash.
+// '/' on nodered.org, which is served from the root of its own domain. A
+// GitHub Pages *project* site lives under https://<user>.github.io/<repo>/
+// instead, so a preview deploy sets SITE_BASE='/<repo>/'. Normalised here so
+// the value is the same shape however it is written in the environment.
+const baseSegments = (process.env.SITE_BASE || '/').split('/').filter(Boolean);
+const BASE = baseSegments.length ? `/${baseSegments.join('/')}/` : '/';
 // Same asset and same resolution rule as the marketing side's default
 // social image (BaseLayout.astro resolves `/node-red-icon.png` against
 // Astro.site into `resolvedOgImage`), so a docs link and a marketing link
 // preview with identical artwork.
-const DOCS_OG_IMAGE = new URL('/node-red-icon.png', SITE).href;
+const DOCS_OG_IMAGE = new URL(`${BASE}node-red-icon.png`, SITE).href;
 
 // https://astro.build/config
 export default defineConfig({
   site: SITE,
+  base: BASE,
   // Shiki syntax-highlighting theme. Our code blocks render on a dark
   // surface (`pre { background: var(--nr-bg-dark) }` = #1E1E1E) in both
   // light and dark site themes, so the syntax-highlighting palette must
@@ -530,7 +539,7 @@ export default defineConfig({
           tag: 'link',
           attrs: {
             rel: 'icon',
-            href: '/favicon.ico',
+            href: `${BASE}favicon.ico`,
           },
         },
         // Starlight already emits `twitter:card: summary_large_image` on every
@@ -581,7 +590,17 @@ export default defineConfig({
     // BaseLayout, and both halves are needed, since a crawler that never fetches
     // the page cannot read the meta tag. Keep this list and those props in step.
     sitemap({
-      filter: (page) => !INTERNAL_ROUTES.has(new URL(page).pathname.replace(/\/$/, '')),
+      filter: (page) => {
+        // Sitemap entries are absolute URLs and therefore carry the base;
+        // INTERNAL_ROUTES is written base-less. Strip it before comparing, or
+        // a based build silently stops filtering.
+        const path = new URL(page).pathname.replace(/\/$/, '');
+        const route =
+          BASE !== '/' && path.startsWith(BASE.slice(0, -1))
+            ? path.slice(BASE.length - 1) || '/'
+            : path;
+        return !INTERNAL_ROUTES.has(route);
+      },
     }),
   ],
   // THE ONLY REDIRECT MECHANISM THIS SITE HAS. Read this before adding a

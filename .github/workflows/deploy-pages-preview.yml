@@ -1,0 +1,117 @@
+# Publishes a preview of the Astro rebuild to this fork's GitHub Pages site.
+#
+# Sibling of deploy-pages.yml, which publishes nodered.org from `main` and is
+# untouched by this branch. The two differ in exactly two ways: the branch that
+# triggers them, and the fact that this one builds under a sub-path.
+#
+# The sub-path is the whole reason this file exists. A fork's Pages site is a
+# *project* site, served from https://<owner>.github.io/<repo>/ rather than from
+# a domain root, so a build that assumes the root publishes a site whose every
+# asset and link 404s. `Configure Pages` reports the origin and base path for
+# whatever repository this runs in; both are handed to the build, where
+# astro.config.mjs turns SITE_BASE into Astro's `base` and
+# scripts/rebase-dist-urls.mjs fixes up the hand-written root-absolute links
+# that Astro leaves alone. Nothing is hardcoded to one fork.
+name: Deploy preview to GitHub Pages
+
+on:
+  # This branch only. The production workflow answers for `main`; a second
+  # workflow listening there would mean two deployments racing for one Pages
+  # site.
+  push:
+    branches:
+      - astro-rebuild-gh-pages
+  # Manual re-publish, for a rebuild without a commit. Dispatch it on this
+  # branch: it builds whichever ref it is dispatched on.
+  workflow_dispatch:
+
+permissions:
+  # Read the repository for the build.
+  contents: read
+  # Create a Pages deployment.
+  pages: write
+  # actions/deploy-pages authenticates to the Pages service with an OIDC token
+  # minted for this run rather than a stored secret.
+  id-token: write
+
+# One deployment at a time, and never cancel one that is already publishing.
+# The group name is shared with deploy-pages.yml on purpose: both write to the
+# same Pages site, so they must queue against each other rather than run
+# concurrently.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # Matches deploy-pages.yml and checks.yml, and satisfies package.json engines
+  # (^22.22.3 || ^24.16.0 || >=26.3.0).
+  NODE_VERSION: '24'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Every action is pinned to a full commit SHA, and to the same SHAs
+      # deploy-pages.yml uses. A tag is a mutable pointer; a SHA is not, and
+      # this job holds permission to publish. Do not replace these with tags.
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Emits `origin` (https://<owner>.github.io) and `base_path`
+      # (/<repo>, empty for a user site) for this repository. Both feed the
+      # build below. Requires the repository's Pages source to be set to
+      # "GitHub Actions"; with Pages off, this step is where the run fails.
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # .npmrc sets ignore-scripts=true, and package-lock.json carries the
+      # prebuilt @img/sharp-linux-x64 and @pagefind/linux-x64 binaries this
+      # runner needs, so no system packages are required.
+      - name: Install dependencies
+        run: npm ci
+
+      # DISABLE_PAGEFIND is deliberately unset: GitHub's runners are 4 KB-page
+      # x64 hosts where Pagefind runs correctly, and it has to run or the docs
+      # search box ships silently broken.
+      #
+      # GITHUB_TOKEN is read by src/lib/releases.ts for the build-time release
+      # fetch behind the nav version badge and /releases; without it the request
+      # is unauthenticated and rate-limited per shared runner IP.
+      - name: Build under the Pages sub-path
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SITE_ORIGIN: ${{ steps.pages.outputs.origin }}
+          SITE_BASE: ${{ steps.pages.outputs.base_path }}
+        run: npm run build
+
+      # Rewrites the root-absolute links Astro's `base` cannot see, and replaces
+      # robots.txt so a preview of a site published elsewhere does not compete
+      # with it in search results. Fails the run if any such link survives,
+      # rather than publishing pages that 404. No-op when base_path is empty.
+      - name: Move the built site under the sub-path
+        env:
+          SITE_BASE: ${{ steps.pages.outputs.base_path }}
+        run: node scripts/rebase-dist-urls.mjs
+
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
